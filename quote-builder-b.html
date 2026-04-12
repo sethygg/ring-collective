@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your Ring | The Ring Collective</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Georgia, 'Times New Roman', serif; color: #2c2c2c; background: #f5f0eb; min-height: 100vh; }
+        
+        /* Nav */
+        nav { display: flex; justify-content: center; align-items: center; padding: 18px 40px; background: #fff; border-bottom: 1px solid #e8e4df; }
+        .logo { font-size: 1.4rem; font-weight: bold; color: #b08d57; text-decoration: none; letter-spacing: 1px; }
+        
+        /* Progress bar */
+        .progress-bar { display: flex; justify-content: center; align-items: center; padding: 30px 20px 20px; background: #f5f0eb; gap: 0; }
+        .step-indicator { display: flex; align-items: center; }
+        .step-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; }
+        .step-dot.active { background: #b08d57; color: #fff; }
+        .step-dot.completed { background: #b08d57; color: #fff; }
+        .step-dot.inactive { background: #e8e4df; color: #999; }
+        .step-line { width: 80px; height: 2px; background: #e8e4df; transition: background 0.3s; }
+        .step-line.completed { background: #b08d57; }
+        .step-label { font-size: 0.75rem; color: #999; margin-top: 6px; text-align: center; }
+        .step-label.active { color: #b08d57; font-weight: 600; }
+        .step-group { display: flex; flex-direction: column; align-items: center; }
+        
+        /* Main content area */
+        .wizard-container { max-width: 700px; margin: 0 auto; padding: 40px 20px 30px; min-height: 60vh; display: flex; flex-direction: column; align-items: center; }
+        .wizard-container h2 { font-size: 1.8rem; color: #1a1a1a; text-align: center; margin-bottom: 8px; }
+        .wizard-container .subtitle { font-size: 1rem; color: #888; text-align: center; margin-bottom: 36px; }
+        
+        /* Step screens */
+        .step-screen { display: none; width: 100%; animation: fadeIn 0.3s ease; }
+        .step-screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Option cards */
+        .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; max-width: 600px; margin: 0 auto; }
+        .option-card { background: #fff; border: 2px solid #e8e4df; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .option-card:hover { border-color: #ccc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .option-card.selected { border-color: #b08d57; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
+        .option-card .card-icon { font-size: 2rem; margin-bottom: 10px; }
+        .option-card h3 { font-size: 1.05rem; color: #333; margin-bottom: 4px; }
+        .option-card p { font-size: 0.85rem; color: #999; }
+        
+        /* Image option cards */
+        .img-option-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; width: 100%; max-width: 600px; margin: 0 auto; }
+        .img-option-card { background: #fff; border: 2px solid #e8e4df; border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .img-option-card:hover { border-color: #ccc; transform: translateY(-2px); }
+        .img-option-card.selected { border-color: #b08d57; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
+        .img-option-card img { width: 100%; height: 100px; object-fit: contain; padding: 8px; }
+        .img-option-card span { display: block; padding: 8px; font-size: 0.85rem; color: #333; font-weight: 600; }
+        
+        /* Metal cards */
+        .metal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; width: 100%; max-width: 600px; margin: 0 auto; }
+        .metal-card { background: #fff; border: 2px solid #e8e4df; border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .metal-card:hover { border-color: #ccc; transform: translateY(-2px); }
+        .metal-card.selected { border-color: #b08d57; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
+        .metal-card img { width: 100%; height: 120px; object-fit: contain; padding: 8px; }
+        .metal-card span { display: block; padding: 8px; font-size: 0.85rem; color: #333; font-weight: 600; }
+        
+        /* Form inputs */
+        .form-group { width: 100%; max-width: 500px; margin: 0 auto 20px; }
+        .form-group label { display: block; font-size: 0.95rem; color: #555; margin-bottom: 8px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; border: 2px solid #e8e4df; border-radius: 8px; font-size: 1rem; font-family: Georgia, serif; background: #fff; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #b08d57; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        
+        /* Upload area */
+        .upload-area { border: 2px dashed #d4cfc8; border-radius: 12px; padding: 40px; text-align: center; background: #fff; cursor: pointer; transition: border-color 0.2s; max-width: 500px; margin: 0 auto; }
+        .upload-area:hover { border-color: #b08d57; }
+        .upload-area p { color: #888; font-size: 1rem; }
+        .upload-area .upload-link { color: #b08d57; font-weight: 600; text-decoration: underline; }
+        .upload-area .upload-note { font-size: 0.8rem; color: #bbb; margin-top: 8px; }
+        .skip-link { display: block; text-align: center; margin-top: 16px; color: #999; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
+        .skip-link:hover { color: #b08d57; }
+        
+        /* Budget slider */
+        .budget-display { text-align: center; font-size: 2rem; color: #b08d57; font-weight: bold; margin-bottom: 20px; }
+        .budget-slider { width: 100%; max-width: 500px; margin: 0 auto; display: block; -webkit-appearance: none; height: 6px; border-radius: 3px; background: #e8e4df; outline: none; }
+        .budget-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #b08d57; cursor: pointer; }
+        .budget-range { display: flex; justify-content: space-between; max-width: 500px; margin: 10px auto 0; font-size: 0.8rem; color: #999; }
+        
+        /* Navigation buttons */
+        .nav-buttons { display: flex; justify-content: center; gap: 16px; margin-top: 40px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .btn-back { padding: 14px 32px; border: 2px solid #e8e4df; background: #fff; color: #555; border-radius: 8px; font-size: 1rem; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s; }
+        .btn-back:hover { border-color: #ccc; }
+        .btn-next { padding: 14px 48px; border: none; background: #1a1a1a; color: #fff; border-radius: 8px; font-size: 1rem; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s; flex-grow: 1; }
+        .btn-next:hover { background: #333; }
+        .btn-next.gold { background: #b08d57; }
+        .btn-next.gold:hover { background: #96763e; }
+        
+        /* Success screen */
+        .success-screen { text-align: center; padding: 60px 20px; }
+        .success-icon { font-size: 3rem; margin-bottom: 16px; }
+        .success-screen h2 { color: #b08d57; margin-bottom: 12px; }
+        .success-screen p { color: #666; font-size: 1.05rem; line-height: 1.7; }
+        
+        /* File list */
+        .file-list { margin-top: 16px; }
+        .file-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .file-item span { font-size: 0.9rem; color: #555; }
+        .file-item button { background: none; border: none; color: #c00; cursor: pointer; font-size: 0.85rem; }
+        
+        @media (max-width: 600px) {
+            .img-option-grid, .metal-grid { grid-template-columns: repeat(2, 1fr); }
+            .option-grid { grid-template-columns: 1fr; }
+            .wizard-container h2 { font-size: 1.4rem; }
+            .step-line { width: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">The Ring Collective</a>
+    </nav>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+        <div class="step-group">
+            <div class="step-dot active" id="dot1">1</div>
+            <div class="step-label active" id="label1">Stone</div>
+        </div>
+        <div class="step-line" id="line1"></div>
+        <div class="step-group">
+            <div class="step-dot inactive" id="dot2">2</div>
+            <div class="step-label" id="label2">Details</div>
+        </div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-group">
+            <div class="step-dot inactive" id="dot3">3</div>
+            <div class="step-label" id="label3">Design</div>
+        </div>
+        <div class="step-line" id="line3"></div>
+        <div class="step-group">
+            <div class="step-dot inactive" id="dot4">4</div>
+            <div class="step-label" id="label4">Budget</div>
+        </div>
+        <div class="step-line" id="line4"></div>
+        <div class="step-group">
+            <div class="step-dot inactive" id="dot5">5</div>
+            <div class="step-label" id="label5">You</div>
+        </div>
+    </div>
+
+    <div class="wizard-container">
+
+        <!-- Step 1: Stone Type -->
+        <div class="step-screen active" id="step1">
+            <h2>What type of center stone?</h2>
+            <p class="subtitle">Choose the stone type for your ring.</p>
+            <div class="option-grid">
+                <div class="option-card" onclick="selectWizardOption(this, 'stoneType', 'Lab Diamond')">
+                    <div class="card-icon">&#128142;</div>
+                    <h3>Lab Diamond</h3>
+                    <p>Same brilliance, 40-60% less</p>
+                </div>
+                <div class="option-card" onclick="selectWizardOption(this, 'stoneType', 'Moissanite')">
+                    <div class="card-icon">&#10024;</div>
+                    <h3>Moissanite</h3>
+                    <p>Maximum sparkle, best value</p>
+                </div>
+                <div class="option-card" onclick="selectWizardOption(this, 'stoneType', 'Setting Only')">
+                    <div class="card-icon">&#128296;</div>
+                    <h3>Setting Only</h3>
+                    <p>I have my own stone</p>
+                </div>
+                <div class="option-card" onclick="selectWizardOption(this, 'stoneType', 'Not Sure')">
+                    <div class="card-icon">&#10067;</div>
+                    <h3>Not Sure Yet</h3>
+                    <p>Help me decide</p>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-next" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Stone Shape (hidden if Setting Only) -->
+        <div class="step-screen" id="step2">
+            <h2>Choose your stone shape</h2>
+            <p class="subtitle">Each shape has its own personality.</p>
+            <div class="img-option-grid">
+                <div class="img-option-card" onclick="selectWizardImg(this, 'stoneShape', 'Round')">
+                    <img src="images/round.jpg" alt="Round"><span>Round</span>
+                </div>
+                <div class="img-option-card" onclick="selectWizardImg(this, 'stoneShape', 'Oval')">
+                    <img src="images/oval.jpg" alt="Oval"><span>Oval</span>
+                </div>
+                <div class="img-option-card" onclick="selectWizardImg(this, 'stoneShape', 'Cushion')">
+                    <img src="images/cushion.jpg" alt="Cushion"><span>Cushion</span>
+                </div>
+                <div class="img-option-card" onclick="selectWizardImg(this, 'stoneShape', 'Pear')">
+                    <img src="images/pear.jpg" alt="Pear"><span>Pear</span>
+                </div>
+                <div class="img-option-card" onclick="selectWizardImg(this, 'stoneShape', 'Emerald')">
+                    <img src="images/emerald.jpg" alt="Emerald"><span>Emerald</span>
+                </div>
+                <div class="img-option-card" onclick="selectWizardImg(this, 'stoneShape', 'Princess')">
+                    <img src="images/princess.jpg" alt="Princess"><span>Princess</span>
+                </div>
+                <div class="img-option-card" onclick="selectWizardImg(this, 'stoneShape', 'Marquise')">
+                    <img src="images/marquise.jpg" alt="Marquise"><span>Marquise</span>
+                </div>
+                <div class="img-option-card" onclick="selectWizardImg(this, 'stoneShape', 'Radiant')">
+                    <img src="images/radiant.jpg" alt="Radiant"><span>Radiant</span>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-back" onclick="prevStep()">Back</button>
+                <button class="btn-next" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Metal + Ring Size -->
+        <div class="step-screen" id="step3">
+            <h2>Pick your metal</h2>
+            <p class="subtitle">Choose the metal for your ring band.</p>
+            <div class="metal-grid">
+                <div class="metal-card" onclick="selectWizardImg(this, 'metal', 'Yellow Gold')">
+                    <img src="images/yellow-gold.jpg" alt="Yellow Gold"><span>Yellow Gold</span>
+                </div>
+                <div class="metal-card" onclick="selectWizardImg(this, 'metal', 'White Gold')">
+                    <img src="images/white-gold.jpg" alt="White Gold"><span>White Gold</span>
+                </div>
+                <div class="metal-card" onclick="selectWizardImg(this, 'metal', 'Rose Gold')">
+                    <img src="images/rose-gold.jpg" alt="Rose Gold"><span>Rose Gold</span>
+                </div>
+                <div class="metal-card" onclick="selectWizardImg(this, 'metal', 'Platinum')">
+                    <img src="images/platinum.jpg" alt="Platinum"><span>Platinum</span>
+                </div>
+            </div>
+            <div style="margin-top: 30px;">
+                <div class="form-group">
+                    <label>Ring Size</label>
+                    <select id="ringSize">
+                        <option value="">Choose ring size</option>
+                        <option value="4">Size 4</option><option value="4.5">Size 4.5</option>
+                        <option value="5">Size 5</option><option value="5.5">Size 5.5</option>
+                        <option value="6">Size 6</option><option value="6.5">Size 6.5</option>
+                        <option value="7">Size 7</option><option value="7.5">Size 7.5</option>
+                        <option value="8">Size 8</option><option value="8.5">Size 8.5</option>
+                        <option value="9">Size 9</option><option value="9.5">Size 9.5</option>
+                        <option value="10">Size 10</option>
+                        <option value="unsure">I'm not sure</option>
+                    </select>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-back" onclick="prevStep()">Back</button>
+                <button class="btn-next" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Reference Image + Description -->
+        <div class="step-screen" id="step4">
+            <h2>Show us your inspiration</h2>
+            <p class="subtitle">Upload a photo of a ring you love — from Instagram, Pinterest, a store, anywhere.</p>
+            <div class="upload-area" onclick="document.getElementById('fileUpload').click()">
+                <p>Drop your photos here or <span class="upload-link">Upload</span></p>
+                <p class="upload-note">Max 10MB per image</p>
+                <input type="file" id="fileUpload" accept="image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
+            </div>
+            <div class="file-list" id="fileList"></div>
+            <span class="skip-link" onclick="nextStep()">I don't have photos yet</span>
+            <div class="form-group" style="margin-top: 24px;">
+                <label>Describe your dream ring (optional)</label>
+                <textarea id="description" placeholder="Any special details, ideas, or instructions..."></textarea>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-back" onclick="prevStep()">Back</button>
+                <button class="btn-next" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Budget + Timeline -->
+        <div class="step-screen" id="step5">
+            <h2>Budget and timeline</h2>
+            <p class="subtitle">Help us tailor the perfect ring for your budget.</p>
+            <div class="budget-display" id="budgetDisplay">$3,000</div>
+            <input type="range" class="budget-slider" min="500" max="20000" step="250" value="3000" oninput="updateWizardBudget(this.value)">
+            <div class="budget-range"><span>$500</span><span>$20,000+</span></div>
+            <div style="margin-top: 30px;">
+                <div class="form-group">
+                    <label>When do you need it?</label>
+                    <select id="timeline">
+                        <option value="">Choose timeline</option>
+                        <option value="2-3 weeks">2-3 weeks</option>
+                        <option value="1-2 months">1-2 months</option>
+                        <option value="3+ months">3+ months</option>
+                        <option value="No rush">No rush — take your time</option>
+                    </select>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-back" onclick="prevStep()">Back</button>
+                <button class="btn-next" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 6: Contact Info -->
+        <div class="step-screen" id="step6">
+            <h2>Almost there!</h2>
+            <p class="subtitle">Tell us how to reach you with your custom quote.</p>
+            <div class="form-group">
+                <label>First Name *</label>
+                <input type="text" id="firstName" placeholder="Your first name">
+            </div>
+            <div class="form-group">
+                <label>Last Name *</label>
+                <input type="text" id="lastName" placeholder="Your last name">
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" id="email" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Phone (optional)</label>
+                <input type="tel" id="phone" placeholder="(555) 123-4567">
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-back" onclick="prevStep()">Back</button>
+                <button class="btn-next gold" onclick="submitWizard()">Get My Free Quote</button>
+            </div>
+        </div>
+
+        <!-- Success -->
+        <div class="step-screen" id="stepSuccess">
+            <div class="success-screen">
+                <div class="success-icon">&#10003;</div>
+                <h2>Your Quote Request is In!</h2>
+                <p>We've received your ring details and will get back to you within 24 hours with a custom quote.<br><br>Keep an eye on your inbox!</p>
+                <div style="margin-top: 30px;">
+                    <a href="index.html" style="color: #b08d57; font-size: 1rem;">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let currentStep = 1;
+    const totalSteps = 6;
+    let formData = {};
+    let uploadedFiles = [];
+
+    function selectWizardOption(card, key, value) {
+        card.parentElement.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        formData[key] = value;
+    }
+
+    function selectWizardImg(card, key, value) {
+        card.parentElement.querySelectorAll('.img-option-card, .metal-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        formData[key] = value;
+    }
+
+    function nextStep() {
+        if (currentStep >= totalSteps) return;
+        
+        // Skip stone shape step if "Setting Only" selected
+        if (currentStep === 1 && formData.stoneType === 'Setting Only') {
+            currentStep = 3;
+        } else {
+            currentStep++;
+        }
+        showStep(currentStep);
+    }
+
+    function prevStep() {
+        if (currentStep <= 1) return;
+        
+        // Skip back over stone shape if "Setting Only"
+        if (currentStep === 3 && formData.stoneType === 'Setting Only') {
+            currentStep = 1;
+        } else {
+            currentStep--;
+        }
+        showStep(currentStep);
+    }
+
+    function showStep(step) {
+        document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+        
+        // Update progress dots
+        for (let i = 1; i <= 5; i++) {
+            const dot = document.getElementById('dot' + i);
+            const label = document.getElementById('label' + i);
+            const line = document.getElementById('line' + i);
+            
+            if (i < step || (i < step - 0)) {
+                dot.className = 'step-dot completed';
+                dot.innerHTML = '&#10003;';
+                if (label) label.className = 'step-label';
+            } else if (i === step || (step === 6 && i === 5)) {
+                dot.className = 'step-dot active';
+                dot.innerHTML = i;
+                if (label) label.className = 'step-label active';
+            } else {
+                dot.className = 'step-dot inactive';
+                dot.innerHTML = i;
+                if (label) label.className = 'step-label';
+            }
+            
+            if (line) {
+                line.className = i < step ? 'step-line completed' : 'step-line';
+            }
+        }
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateWizardBudget(val) {
+        val = parseInt(val);
+        let display = val >= 20000 ? '$20,000+' : '$' + val.toLocaleString();
+        document.getElementById('budgetDisplay').textContent = display;
+        formData.budget = val;
+    }
+
+    function handleFiles(files) {
+        for (let f of files) {
+            if (f.size > 10 * 1024 * 1024) { alert(f.name + ' is too large. Max 10MB.'); continue; }
+            uploadedFiles.push(f);
+        }
+        renderFileList();
+    }
+
+    function renderFileList() {
+        const list = document.getElementById('fileList');
+        list.innerHTML = '';
+        uploadedFiles.forEach((f, i) => {
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            div.innerHTML = '<span>' + f.name + ' (' + (f.size / 1024 / 1024).toFixed(1) + ' MB)</span><button onclick="removeFile(' + i + ')">Remove</button>';
+            list.appendChild(div);
+        });
+    }
+
+    function removeFile(i) {
+        uploadedFiles.splice(i, 1);
+        renderFileList();
+    }
+
+    function submitWizard() {
+        const fn = document.getElementById('firstName').value.trim();
+        const ln = document.getElementById('lastName').value.trim();
+        const em = document.getElementById('email').value.trim();
+        
+        if (!fn || !ln || !em) { alert('Please fill in your name and email.'); return; }
+        if (!em.includes('@')) { alert('Please enter a valid email.'); return; }
+        
+        // Show success
+        document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('stepSuccess').classList.add('active');
+        document.querySelector('.progress-bar').style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    </script>
+</body>
+</html>

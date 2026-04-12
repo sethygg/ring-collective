@@ -294,5 +294,37 @@
     </div>
 
 <footer>&copy; 2026 The Ring Collective. All rights reserved.</footer>
+
+    <script>
+    // A/B Test: Randomly assign visitors to quote builder A or B
+    // Version sticks for the session so they always see the same one
+    function getQuoteVersion() {
+        var v = sessionStorage.getItem('quoteVersion');
+        if (!v) {
+            v = Math.random() < 0.5 ? 'a' : 'b';
+            sessionStorage.setItem('quoteVersion', v);
+        }
+        return v;
+    }
+    function goToQuote() {
+        var version = getQuoteVersion();
+        if (version === 'b') {
+            window.location.href = 'quote-builder-b.html';
+        } else {
+            window.location.href = 'quote-builder.html';
+        }
+    }
+    // Override all quote builder links on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        var links = document.querySelectorAll('a[href="quote-builder.html"]');
+        links.forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                goToQuote();
+            });
+        });
+    });
+    </script>
+
 </body>
 </html>
