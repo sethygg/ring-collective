@@ -49,6 +49,110 @@
     .logo { font-family: 'Playfair Display', Georgia, serif !important; }
     </style>
 
+
+    <style>
+    /* ===== MOBILE OPTIMIZATION ===== */
+    
+    /* Hamburger Menu */
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: #1F2A44; margin: 5px 0; transition: all 0.3s; border-radius: 2px; }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+    
+    .mobile-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(250,247,242,0.98); z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 28px; backdrop-filter: blur(10px); }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #1F2A44; text-decoration: none; transition: color 0.2s; }
+    .mobile-menu a:hover { color: #D9B48C; }
+    .mobile-menu .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 2rem; color: #1F2A44; cursor: pointer; }
+    
+    @media (max-width: 768px) {
+        /* Nav */
+        .hamburger { display: block !important; }
+        .nav-links { display: none !important; }
+        nav { padding: 14px 20px !important; }
+        .logo { font-size: 1.1rem !important; }
+        
+        /* Hero */
+        h1 { font-size: 2rem !important; line-height: 1.2 !important; }
+        
+        /* How It Works - stack vertically */
+        .steps-row, [style*="grid-template-columns: repeat(3"] {
+            grid-template-columns: 1fr !important;
+            gap: 24px !important;
+        }
+        
+        /* Stats bar - 2x2 grid */
+        [style*="grid-template-columns: repeat(4, 1fr)"] {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 16px !important;
+        }
+        
+        /* Testimonials - single column */
+        [style*="grid-template-columns: repeat(3, 1fr)"] {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+        }
+        
+        /* Trust badges - wrap */
+        [style*="justify-content: center; gap: 40px"] {
+            gap: 16px !important;
+            flex-direction: column !important;
+            align-items: center !important;
+        }
+        
+        /* Slider cards - show 1 at a time */
+        [style*="min-width: calc(33.333%"] {
+            min-width: 85% !important;
+        }
+        
+        /* Education cards */
+        [style*="grid-template-columns: 1fr 1fr 1fr"] {
+            grid-template-columns: 1fr !important;
+        }
+        
+        /* General mobile spacing */
+        .section, [style*="padding: 60px 20px"] {
+            padding: 40px 16px !important;
+        }
+        
+        /* Buttons - full width on mobile */
+        .cta-btn, [style*="padding: 14px 36px"] {
+            display: block !important;
+            width: 100% !important;
+            max-width: 320px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+            padding: 16px 24px !important;
+            font-size: 1.1rem !important;
+        }
+        
+        /* Section headings */
+        h2 { font-size: 1.5rem !important; }
+        
+        /* Body text */
+        p { font-size: 1rem !important; line-height: 1.7 !important; }
+        
+        /* Cards - add breathing room */
+        [style*="border-radius: 12px; padding: 28px"] {
+            padding: 20px !important;
+        }
+        
+        /* Footer */
+        footer { padding: 24px 16px !important; font-size: 0.8rem !important; }
+    }
+    
+    @media (max-width: 480px) {
+        h1 { font-size: 1.7rem !important; }
+        h2 { font-size: 1.3rem !important; }
+        
+        /* Stats - single column on very small screens */
+        [style*="grid-template-columns: repeat(4, 1fr)"] {
+            grid-template-columns: 1fr 1fr !important;
+        }
+    }
+    </style>
+
 </head>
 <body>
     <nav>
@@ -58,7 +162,18 @@
             <li><a href="#learn">Learn</a></li>
             <li><a href="quote-builder-b.html">Build Your Ring</a></li>
         </ul>
+    <button class="hamburger" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
     </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <button class="close-btn" onclick="toggleMobileMenu()">&times;</button>
+        <a href="index.html" onclick="toggleMobileMenu()">Home</a>
+        <a href="diamond-guide.html" onclick="toggleMobileMenu()">Diamond Guide</a>
+        <a href="setting-styles.html" onclick="toggleMobileMenu()">Setting Styles</a>
+        <a href="metal-types.html" onclick="toggleMobileMenu()">Metal Types</a>
+        <a href="quote-builder-b.html" style="color: #2E5C4A; font-weight: 700;" onclick="toggleMobileMenu()">Get a Quote</a>
+    </div>
+
     <section class="hero">
         <h1>Your Ring. Your Story.</h1>
         <p>Every love story is unique, and your engagement ring should be too. We handcraft custom rings tailored to your style, your stone, and your budget.</p>
@@ -303,6 +418,17 @@
 <footer>&copy; 2026 The Ring Collective. All rights reserved.</footer>
 
     
+
+
+    <script>
+    function toggleMobileMenu() {
+        var menu = document.getElementById('mobileMenu');
+        var hamburger = document.querySelector('.hamburger');
+        menu.classList.toggle('open');
+        hamburger.classList.toggle('active');
+        document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+    }
+    </script>
 
 </body>
 </html>

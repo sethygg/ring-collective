@@ -69,6 +69,167 @@
     .logo { font-family: 'Playfair Display', Georgia, serif !important; }
     </style>
 
+<style>
+/* ===== MOBILE OPTIMIZATION ===== */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1001;
+    background: none;
+    border: none;
+}
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background: #1F2A44;
+    margin: 3px 0;
+    transition: 0.3s;
+    border-radius: 2px;
+}
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+.mobile-menu {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(250, 247, 242, 0.98);
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+.mobile-menu.active { display: flex; }
+.mobile-menu a {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: #1F2A44;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+.mobile-menu a:hover { color: #D9B48C; }
+
+@media (max-width: 768px) {
+    .hamburger { display: flex; }
+    nav { padding: 15px 20px !important; }
+    nav a:not(.hamburger):not([style*="background"]) { display: none; }
+    
+    h1 { font-size: 28px !important; }
+    h2 { font-size: 22px !important; }
+    h3 { font-size: 18px !important; }
+    
+    /* Hero/header sections */
+    section:first-of-type, div[style*="padding: 80px"], div[style*="padding: 60px"] {
+        padding: 40px 20px !important;
+    }
+    
+    /* Grid layouts - stack on mobile */
+    div[style*="grid-template-columns: 1fr 1fr 1fr 1fr"],
+    div[style*="grid-template-columns: repeat(4"],
+    div[style*="grid-template-columns: 1fr 1fr 1fr"],
+    div[style*="grid-template-columns: repeat(3"] {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 15px !important;
+    }
+    
+    div[style*="grid-template-columns: 1fr 1fr"][style*="gap"] {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    /* Side by side comparison cards */
+    div[style*="display: flex"][style*="gap: 40px"],
+    div[style*="display: flex"][style*="gap: 30px"] {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+    
+    /* Sections padding */
+    section, div[style*="max-width"] {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+    
+    div[style*="max-width: 1200px"], div[style*="max-width: 1100px"], div[style*="max-width: 1000px"] {
+        padding: 40px 20px !important;
+    }
+    
+    /* Cards */
+    div[style*="border-radius"][style*="padding: 30px"],
+    div[style*="border-radius"][style*="padding: 40px"] {
+        padding: 20px !important;
+    }
+    
+    /* Images in grids */
+    img[style*="border-radius"] {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* Tables */
+    table {
+        font-size: 13px !important;
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    th, td {
+        padding: 8px 10px !important;
+        white-space: nowrap !important;
+    }
+    
+    /* CTA buttons */
+    a[style*="background"][style*="padding"][style*="border-radius"] {
+        display: block !important;
+        text-align: center !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 15px !important;
+        padding: 14px 20px !important;
+    }
+    
+    /* Footer */
+    footer div[style*="display: flex"] {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 15px !important;
+    }
+    
+    /* Paragraph text */
+    p { font-size: 15px !important; line-height: 1.7 !important; }
+    
+    /* Stone shape grid - 2 columns on mobile */
+    div[style*="grid-template-columns: repeat(4, 1fr)"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 { font-size: 24px !important; }
+    h2 { font-size: 20px !important; }
+    h3 { font-size: 16px !important; }
+    
+    nav { padding: 12px 15px !important; }
+    
+    div[style*="grid-template-columns: 1fr 1fr 1fr 1fr"],
+    div[style*="grid-template-columns: repeat(4"],
+    div[style*="grid-template-columns: 1fr 1fr 1fr"],
+    div[style*="grid-template-columns: repeat(3"],
+    div[style*="grid-template-columns: repeat(2, 1fr)"] {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+    }
+    
+    p { font-size: 14px !important; }
+    
+    table { font-size: 12px !important; }
+    th, td { padding: 6px 8px !important; }
+}
+</style>
 </head>
 <body>
     <nav>
@@ -80,7 +241,15 @@
             <li><a href="metal-types.html">Metal Types</a></li>
             <li><a href="quote-builder-b.html">Get a Quote</a></li>
         </ul>
-    </nav>
+        <button class="hamburger" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a>
+    <a href="diamond-guide.html">Diamond Guide</a>
+    <a href="setting-styles.html">Setting Styles</a>
+    <a href="metal-types.html">Metal Types</a>
+    <a href="quote-builder-b.html">Build Your Ring</a>
+</div>
 
     <div class="hero">
         <h1>Setting Styles</h1>
@@ -212,5 +381,14 @@
     <footer>
         <p>&copy; 2026 The Ring Collective. All rights reserved. | <a href="mailto:seth@kornutra.com">Contact Us</a></p>
     </footer>
+<script>
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    const hamburger = document.querySelector('.hamburger');
+    menu.classList.toggle('active');
+    hamburger.classList.toggle('active');
+    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+}
+</script>
 </body>
 </html>

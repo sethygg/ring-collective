@@ -117,11 +117,182 @@
     .logo { font-family: 'Playfair Display', Georgia, serif !important; }
     </style>
 
+<style>
+/* ===== WIZARD MOBILE OPTIMIZATION ===== */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1001;
+    background: none;
+    border: none;
+}
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background: #1F2A44;
+    margin: 3px 0;
+    transition: 0.3s;
+    border-radius: 2px;
+}
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+.mobile-menu {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(250, 247, 242, 0.98);
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+.mobile-menu.active { display: flex; }
+.mobile-menu a {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: #1F2A44;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+    .hamburger { display: flex; }
+    nav { padding: 15px 20px !important; }
+    nav a:not(.hamburger):not([style*="background"]) { display: none; }
+    
+    /* Wizard container */
+    div[style*="max-width: 700px"], div[style*="max-width: 600px"], div[style*="max-width: 800px"] {
+        margin: 20px auto !important;
+        padding: 25px 20px !important;
+    }
+    
+    h1 { font-size: 24px !important; }
+    h2 { font-size: 20px !important; }
+    h3 { font-size: 18px !important; }
+    p { font-size: 15px !important; line-height: 1.6 !important; }
+    
+    /* Progress bar */
+    div[style*="display: flex"][style*="justify-content: center"][style*="gap"] {
+        gap: 8px !important;
+        padding: 0 10px !important;
+        flex-wrap: wrap !important;
+    }
+    div[style*="display: flex"][style*="justify-content: center"] span {
+        font-size: 11px !important;
+    }
+    
+    /* Option grids (stone type, shape, metal) */
+    div[style*="display: grid"][style*="grid-template-columns: repeat(3"],
+    div[style*="display: grid"][style*="grid-template-columns: 1fr 1fr 1fr"] {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+    
+    div[style*="display: grid"][style*="grid-template-columns: repeat(4"],
+    div[style*="display: grid"][style*="grid-template-columns: 1fr 1fr 1fr 1fr"] {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+    
+    /* Option cards */
+    div[style*="cursor: pointer"][style*="border-radius"][style*="padding"] {
+        padding: 12px !important;
+    }
+    
+    /* Images in wizard options */
+    img[style*="width: 100%"], img[style*="max-width"] {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* Form inputs */
+    input[type="text"], input[type="email"], input[type="tel"], input[type="number"], 
+    textarea, select {
+        font-size: 16px !important;
+        padding: 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Buttons */
+    button[style*="background"][style*="padding"] {
+        width: 100% !important;
+        padding: 14px 20px !important;
+        font-size: 16px !important;
+    }
+    
+    /* Nav buttons row */
+    div[style*="display: flex"][style*="justify-content: space-between"] {
+        gap: 10px !important;
+    }
+    div[style*="display: flex"][style*="justify-content: space-between"] button {
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+    
+    /* File upload area */
+    div[style*="border: 2px dashed"], div[style*="border-style: dashed"] {
+        padding: 25px 15px !important;
+    }
+    
+    /* Range slider */
+    input[type="range"] {
+        width: 100% !important;
+    }
+    
+    /* Budget display */
+    div[style*="font-size: 28px"], div[style*="font-size: 32px"], span[style*="font-size: 28px"], span[style*="font-size: 32px"] {
+        font-size: 24px !important;
+    }
+    
+    /* Footer */
+    footer div[style*="display: flex"] {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 15px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    nav { padding: 12px 15px !important; }
+    h1 { font-size: 22px !important; }
+    h2 { font-size: 18px !important; }
+    p { font-size: 14px !important; }
+    
+    div[style*="max-width: 700px"], div[style*="max-width: 600px"], div[style*="max-width: 800px"] {
+        padding: 20px 15px !important;
+    }
+    
+    /* Stack option grids to 2 col on small */
+    div[style*="display: grid"][style*="grid-template-columns"] {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+    }
+    
+    button[style*="background"][style*="padding"] {
+        padding: 12px 16px !important;
+        font-size: 15px !important;
+    }
+}
+</style>
 </head>
 <body>
     <nav>
         <a href="index.html" class="logo">The Ring Collective</a>
-    </nav>
+        <button class="hamburger" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a>
+    <a href="diamond-guide.html">Diamond Guide</a>
+    <a href="setting-styles.html">Setting Styles</a>
+    <a href="metal-types.html">Metal Types</a>
+    <a href="quote-builder-b.html">Build Your Ring</a>
+</div>
 
     <!-- Progress Bar -->
     <div class="progress-bar">
@@ -465,5 +636,14 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     </script>
+<script>
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    const hamburger = document.querySelector('.hamburger');
+    menu.classList.toggle('active');
+    hamburger.classList.toggle('active');
+    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+}
+</script>
 </body>
 </html>
