@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setting Styles | The Ring Collective</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Georgia, 'Times New Roman', serif; color: #2c2c2c; background: #faf9f7; }
+        
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; background: #fff; border-bottom: 1px solid #e8e4df; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.4rem; font-weight: bold; color: #b08d57; text-decoration: none; letter-spacing: 1px; }
+        .nav-links { display: flex; gap: 28px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 0.95rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #b08d57; }
+        
+        .hero { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #fff 0%, #f5f0eb 100%); }
+        .hero h1 { font-size: 2.4rem; color: #1a1a1a; margin-bottom: 12px; }
+        .hero p { font-size: 1.15rem; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        
+        .section { max-width: 850px; margin: 0 auto; padding: 50px 20px; }
+        .section h2 { font-size: 1.8rem; color: #1a1a1a; margin-bottom: 16px; border-left: 4px solid #b08d57; padding-left: 16px; }
+        .section p { font-size: 1.05rem; color: #555; line-height: 1.8; margin-bottom: 16px; }
+        .section-alt { background: #fff; }
+        
+        /* Setting cards */
+        .settings-grid { display: grid; grid-template-columns: 1fr; gap: 28px; margin: 30px 0; }
+        .setting-card { background: #fff; border-radius: 12px; padding: 32px; border: 1px solid #e8e4df; transition: transform 0.2s; }
+        .setting-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .section-alt .setting-card { background: #faf9f7; }
+        .setting-card h3 { font-size: 1.35rem; color: #b08d57; margin-bottom: 10px; }
+        .setting-card p { margin-bottom: 10px; }
+        .setting-card .best-for { font-size: 0.9rem; color: #b08d57; font-style: italic; margin-top: 8px; margin-bottom: 0; }
+        
+        /* Pros list */
+        .pros { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+        .pro-tag { background: #f5f0eb; color: #7a6840; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; }
+        
+        /* Setting Only section */
+        .setting-only-box { background: linear-gradient(135deg, #f5f0eb 0%, #ebe5db 100%); border-radius: 12px; padding: 32px; border: 2px solid #b08d57; margin: 30px 0; }
+        .setting-only-box h3 { font-size: 1.3rem; color: #1a1a1a; margin-bottom: 12px; }
+        .setting-only-box p { font-size: 1.05rem; color: #555; line-height: 1.8; margin-bottom: 12px; }
+        .setting-only-box .steps { margin-top: 16px; }
+        .setting-only-box .step { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+        .step-num { background: #b08d57; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; flex-shrink: 0; }
+        .step-text { font-size: 0.95rem; color: #555; line-height: 1.6; }
+        
+        /* CTA */
+        .cta { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%); color: #fff; }
+        .cta h2 { font-size: 1.8rem; margin-bottom: 12px; }
+        .cta p { font-size: 1.05rem; color: #ccc; margin-bottom: 24px; }
+        .cta-btn { display: inline-block; padding: 14px 36px; background: #b08d57; color: #fff; text-decoration: none; border-radius: 6px; font-size: 1.05rem; font-family: Georgia, serif; transition: background 0.3s; }
+        .cta-btn:hover { background: #96763e; }
+        
+        footer { text-align: center; padding: 30px; color: #999; font-size: 0.85rem; background: #1a1a1a; }
+        footer a { color: #b08d57; text-decoration: none; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8rem; }
+            nav { padding: 14px 20px; }
+            .nav-links { gap: 16px; }
+            .pros { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">The Ring Collective</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="diamond-guide.html">Diamond Guide</a></li>
+            <li><a href="setting-styles.html" style="color: #b08d57;">Setting Styles</a></li>
+            <li><a href="metal-types.html">Metal Types</a></li>
+            <li><a href="quote-builder.html">Get a Quote</a></li>
+        </ul>
+    </nav>
+
+    <div class="hero">
+        <h1>Setting Styles</h1>
+        <p>The setting is the foundation of your ring — it holds the stone, defines the look, and protects your investment. Here's what you need to know.</p>
+    </div>
+
+    <div class="section">
+        <h2>Popular Setting Types</h2>
+        <p>Every ring starts with a setting. The right choice depends on your style, lifestyle, and the stone you're working with. Here are the most popular options we build.</p>
+        
+        <div class="settings-grid">
+            <div class="setting-card">
+                <h3>Solitaire</h3>
+                <p>The timeless classic — a single center stone on a clean band. The solitaire lets your diamond or moissanite take center stage with nothing to compete with it. This is the most popular engagement ring setting for a reason: it's elegant, versatile, and never goes out of style.</p>
+                <div class="pros">
+                    <span class="pro-tag">Timeless</span>
+                    <span class="pro-tag">Maximizes stone visibility</span>
+                    <span class="pro-tag">Easy to clean</span>
+                    <span class="pro-tag">Pairs with any wedding band</span>
+                </div>
+                <p class="best-for">Best for: Those who want the stone to be the star of the show.</p>
+            </div>
+            
+            <div class="setting-card">
+                <h3>Halo</h3>
+                <p>A ring of smaller diamonds surrounds the center stone, creating a dazzling frame that makes the center stone appear larger and more brilliant. Halos add serious sparkle and are one of the most requested styles we build from customer reference images.</p>
+                <div class="pros">
+                    <span class="pro-tag">Makes center stone look larger</span>
+                    <span class="pro-tag">Extra sparkle</span>
+                    <span class="pro-tag">Vintage or modern looks</span>
+                </div>
+                <p class="best-for">Best for: Maximum sparkle and a larger overall look on a budget.</p>
+            </div>
+            
+            <div class="setting-card">
+                <h3>Pav&eacute;</h3>
+                <p>Tiny diamonds are set into the band itself, creating a continuous shimmer along the ring. Pav&eacute; settings add extra brilliance without overwhelming the center stone. The result is a band that catches light from every angle.</p>
+                <div class="pros">
+                    <span class="pro-tag">Band sparkles everywhere</span>
+                    <span class="pro-tag">Elegant and refined</span>
+                    <span class="pro-tag">Works with any center stone</span>
+                </div>
+                <p class="best-for">Best for: Those who love sparkle and want their ring to shine from every direction.</p>
+            </div>
+            
+            <div class="setting-card">
+                <h3>Three-Stone</h3>
+                <p>Three stones sit together — typically a larger center stone flanked by two smaller ones. The three stones traditionally represent past, present, and future. This setting adds visual weight and significance to your ring.</p>
+                <div class="pros">
+                    <span class="pro-tag">Symbolic meaning</span>
+                    <span class="pro-tag">Substantial look</span>
+                    <span class="pro-tag">Mix stone shapes</span>
+                </div>
+                <p class="best-for">Best for: Those who want a meaningful design with a bold, eye-catching presence.</p>
+            </div>
+            
+            <div class="setting-card">
+                <h3>Bezel</h3>
+                <p>A sleek metal rim wraps completely around the stone's edge, holding it securely in place. Bezel settings offer the best stone protection of any setting type and have a modern, clean aesthetic that's become increasingly popular.</p>
+                <div class="pros">
+                    <span class="pro-tag">Most protective setting</span>
+                    <span class="pro-tag">Modern and sleek</span>
+                    <span class="pro-tag">Great for active lifestyles</span>
+                    <span class="pro-tag">Low snag risk</span>
+                </div>
+                <p class="best-for">Best for: Active lifestyles and those who prefer a modern, minimalist look.</p>
+            </div>
+            
+            <div class="setting-card">
+                <h3>Cathedral</h3>
+                <p>Arching metal supports rise from the band to hold the center stone high, similar to the arches of a cathedral. This setting elevates the stone above the band, giving it a dramatic, regal presence and allowing more light to enter from below.</p>
+                <div class="pros">
+                    <span class="pro-tag">Elevates the stone</span>
+                    <span class="pro-tag">Dramatic profile</span>
+                    <span class="pro-tag">Excellent light performance</span>
+                </div>
+                <p class="best-for">Best for: Those who want their stone to sit high and command attention.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setting Only Option -->
+    <div class="section section-alt">
+        <h2>Setting Only Option</h2>
+        <p>Already have your stone — or plan to source one yourself? We can build just the setting for you. This is a popular choice for customers who have a family heirloom stone, purchased a loose diamond separately, or want to hand-pick their stone from a dealer.</p>
+        
+        <div class="setting-only-box">
+            <h3>How Setting Only Works</h3>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Send us a reference image of the ring style you love, along with your stone's measurements (or we can advise on sizing).</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-text">We design and build your custom setting in your choice of metal — crafted to fit your specific stone.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-text">We ship you the completed setting, and you take it to your local jeweler to have your stone set.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prong types -->
+    <div class="section">
+        <h2>Prong Styles</h2>
+        <p>Prongs are the small metal claws that hold your stone in place. The number and style of prongs affect both the look and security of your ring.</p>
+        
+        <div class="settings-grid">
+            <div class="setting-card">
+                <h3>4-Prong</h3>
+                <p>Shows more of the stone with less metal coverage. Creates a clean, open look that lets maximum light into the diamond. Slightly less secure than 6-prong but the most popular choice for a reason — your stone is the star.</p>
+            </div>
+            <div class="setting-card">
+                <h3>6-Prong</h3>
+                <p>The classic Tiffany-style. Six prongs offer extra security and give round stones a slightly rounder appearance. The additional prongs mean slightly less stone is visible, but the trade-off in security is worth it for many customers.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta">
+        <h2>Have a Ring Style in Mind?</h2>
+        <p>Send us a photo of any ring you love and we'll recreate it with your perfect stone and metal choice.</p>
+        <a href="quote-builder.html" class="cta-btn">Request a Quote</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 The Ring Collective. All rights reserved. | <a href="mailto:seth@kornutra.com">Contact Us</a></p>
+    </footer>
+</body>
+</html>

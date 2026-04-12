@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metal Types | The Ring Collective</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Georgia, 'Times New Roman', serif; color: #2c2c2c; background: #faf9f7; }
+        
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; background: #fff; border-bottom: 1px solid #e8e4df; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.4rem; font-weight: bold; color: #b08d57; text-decoration: none; letter-spacing: 1px; }
+        .nav-links { display: flex; gap: 28px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 0.95rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #b08d57; }
+        
+        .hero { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #fff 0%, #f5f0eb 100%); }
+        .hero h1 { font-size: 2.4rem; color: #1a1a1a; margin-bottom: 12px; }
+        .hero p { font-size: 1.15rem; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        
+        .section { max-width: 850px; margin: 0 auto; padding: 50px 20px; }
+        .section h2 { font-size: 1.8rem; color: #1a1a1a; margin-bottom: 16px; border-left: 4px solid #b08d57; padding-left: 16px; }
+        .section p { font-size: 1.05rem; color: #555; line-height: 1.8; margin-bottom: 16px; }
+        .section-alt { background: #fff; }
+        
+        /* Metal cards with images */
+        .metals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin: 30px 0; }
+        .metal-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.2s; }
+        .metal-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .section-alt .metal-card { background: #faf9f7; }
+        .metal-card img { width: 100%; height: 220px; object-fit: contain; background: #f5f0eb; padding: 10px; }
+        .metal-info { padding: 24px; }
+        .metal-info h3 { font-size: 1.3rem; color: #b08d57; margin-bottom: 10px; }
+        .metal-info p { font-size: 0.95rem; color: #555; line-height: 1.7; margin-bottom: 10px; }
+        
+        /* Specs */
+        .specs { margin-top: 14px; }
+        .spec-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0ece7; font-size: 0.9rem; }
+        .spec-row:last-child { border-bottom: none; }
+        .spec-label { color: #999; }
+        .spec-value { color: #333; font-weight: 600; }
+        
+        /* Comparison table */
+        .table-wrap { overflow-x: auto; margin: 30px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        th { background: #1a1a1a; color: #fff; padding: 14px 18px; text-align: left; font-weight: 600; }
+        td { padding: 14px 18px; border-bottom: 1px solid #e8e4df; color: #555; }
+        tr:nth-child(even) { background: #f5f0eb; }
+        tr:hover { background: #ebe5db; }
+        
+        /* Tips */
+        .tip-box { background: linear-gradient(135deg, #f5f0eb 0%, #ebe5db 100%); border-radius: 12px; padding: 28px; border-left: 4px solid #b08d57; margin: 24px 0; }
+        .tip-box h3 { font-size: 1.1rem; color: #1a1a1a; margin-bottom: 10px; }
+        .tip-box p { font-size: 0.95rem; color: #555; line-height: 1.7; margin-bottom: 0; }
+        
+        .cta { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%); color: #fff; }
+        .cta h2 { font-size: 1.8rem; margin-bottom: 12px; }
+        .cta p { font-size: 1.05rem; color: #ccc; margin-bottom: 24px; }
+        .cta-btn { display: inline-block; padding: 14px 36px; background: #b08d57; color: #fff; text-decoration: none; border-radius: 6px; font-size: 1.05rem; font-family: Georgia, serif; transition: background 0.3s; }
+        .cta-btn:hover { background: #96763e; }
+        
+        footer { text-align: center; padding: 30px; color: #999; font-size: 0.85rem; background: #1a1a1a; }
+        footer a { color: #b08d57; text-decoration: none; }
+        
+        @media (max-width: 768px) {
+            .metals-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.8rem; }
+            nav { padding: 14px 20px; }
+            .nav-links { gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">The Ring Collective</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="diamond-guide.html">Diamond Guide</a></li>
+            <li><a href="setting-styles.html">Setting Styles</a></li>
+            <li><a href="metal-types.html" style="color: #b08d57;">Metal Types</a></li>
+            <li><a href="quote-builder.html">Get a Quote</a></li>
+        </ul>
+    </nav>
+
+    <div class="hero">
+        <h1>Metal Types</h1>
+        <p>The metal you choose sets the tone for your entire ring — from warm and classic to cool and modern. Here's what makes each one unique.</p>
+    </div>
+
+    <div class="section">
+        <h2>Our Metals</h2>
+        <p>We work with four premium metals, each with its own character and advantages. Every ring we build is crafted in your choice of metal to match your style and budget.</p>
+        
+        <div class="metals-grid">
+            <div class="metal-card">
+                <img src="images/yellow-gold.jpg" alt="Yellow Gold Ring">
+                <div class="metal-info">
+                    <h3>Yellow Gold</h3>
+                    <p>The most traditional choice for engagement rings. Yellow gold has a warm, rich tone that complements warmer skin tones beautifully. It's classic, timeless, and has been the standard for centuries.</p>
+                    <div class="specs">
+                        <div class="spec-row"><span class="spec-label">Common Purities</span><span class="spec-value">14K / 18K</span></div>
+                        <div class="spec-row"><span class="spec-label">Durability</span><span class="spec-value">Very Good</span></div>
+                        <div class="spec-row"><span class="spec-label">Maintenance</span><span class="spec-value">Low — ages beautifully</span></div>
+                        <div class="spec-row"><span class="spec-label">Best With</span><span class="spec-value">Warm skin tones</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metal-card">
+                <img src="images/white-gold.jpg" alt="White Gold Ring">
+                <div class="metal-info">
+                    <h3>White Gold</h3>
+                    <p>A modern favorite that offers the look of platinum at a more accessible price point. White gold is created by alloying yellow gold with white metals and is finished with a rhodium plating for that bright, silvery shine.</p>
+                    <div class="specs">
+                        <div class="spec-row"><span class="spec-label">Common Purities</span><span class="spec-value">14K / 18K</span></div>
+                        <div class="spec-row"><span class="spec-label">Durability</span><span class="spec-value">Very Good</span></div>
+                        <div class="spec-row"><span class="spec-label">Maintenance</span><span class="spec-value">Re-plate every 1-2 years</span></div>
+                        <div class="spec-row"><span class="spec-label">Best With</span><span class="spec-value">Cool skin tones</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metal-card">
+                <img src="images/rose-gold.jpg" alt="Rose Gold Ring">
+                <div class="metal-info">
+                    <h3>Rose Gold</h3>
+                    <p>The most romantic metal choice with its warm, pinkish hue. Rose gold gets its color from a higher copper content in the alloy. It's become extremely popular for its unique, vintage-inspired look that flatters nearly every skin tone.</p>
+                    <div class="specs">
+                        <div class="spec-row"><span class="spec-label">Common Purities</span><span class="spec-value">14K</span></div>
+                        <div class="spec-row"><span class="spec-label">Durability</span><span class="spec-value">Excellent (copper adds strength)</span></div>
+                        <div class="spec-row"><span class="spec-label">Maintenance</span><span class="spec-value">Very Low</span></div>
+                        <div class="spec-row"><span class="spec-label">Best With</span><span class="spec-value">All skin tones</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metal-card">
+                <img src="images/platinum.jpg" alt="Platinum Ring">
+                <div class="metal-info">
+                    <h3>Platinum</h3>
+                    <p>The premium choice — platinum is the densest, most durable precious metal for jewelry. It's naturally white (no plating needed), hypoallergenic, and develops a beautiful patina over time. It's heavier on the finger, giving it a luxurious feel.</p>
+                    <div class="specs">
+                        <div class="spec-row"><span class="spec-label">Purity</span><span class="spec-value">950 Platinum</span></div>
+                        <div class="spec-row"><span class="spec-label">Durability</span><span class="spec-value">Exceptional</span></div>
+                        <div class="spec-row"><span class="spec-label">Maintenance</span><span class="spec-value">Very Low — no replating</span></div>
+                        <div class="spec-row"><span class="spec-label">Best With</span><span class="spec-value">All skin tones, sensitive skin</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison table -->
+    <div class="section section-alt">
+        <h2>Quick Comparison</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metal</th>
+                        <th>Price Range</th>
+                        <th>Hardness</th>
+                        <th>Hypoallergenic</th>
+                        <th>Maintenance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Yellow Gold (14K)</td>
+                        <td>$$</td>
+                        <td>Good</td>
+                        <td>Usually</td>
+                        <td>Low</td>
+                    </tr>
+                    <tr>
+                        <td>White Gold (14K)</td>
+                        <td>$$</td>
+                        <td>Good</td>
+                        <td>Varies</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>Rose Gold (14K)</td>
+                        <td>$$</td>
+                        <td>Very Good</td>
+                        <td>No (copper)</td>
+                        <td>Low</td>
+                    </tr>
+                    <tr>
+                        <td>Platinum (950)</td>
+                        <td>$$$</td>
+                        <td>Excellent</td>
+                        <td>Yes</td>
+                        <td>Low</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="tip-box">
+            <h3>Our Recommendation</h3>
+            <p>For most customers, 14K white gold or yellow gold offers the best balance of beauty, durability, and value. If you have sensitive skin or want the absolute best, platinum is the way to go. Not sure? Tell us in your quote request and we'll recommend the perfect metal for your ring style and budget.</p>
+        </div>
+    </div>
+
+    <!-- 14K vs 18K -->
+    <div class="section">
+        <h2>14K vs. 18K Gold</h2>
+        <p>You'll see gold rings offered in 14K and 18K — here's the difference. 14K gold is 58.3% pure gold mixed with alloy metals, making it more durable and scratch-resistant. 18K gold is 75% pure gold, giving it a richer color but making it slightly softer.</p>
+        <p>For engagement rings that will be worn daily, we typically recommend 14K for its durability. If you prefer a deeper gold color and are gentle on your jewelry, 18K is a beautiful upgrade. We can build in either — just let us know your preference when requesting a quote.</p>
+    </div>
+
+    <div class="cta">
+        <h2>Know What Metal You Want?</h2>
+        <p>Send us a reference image and your metal choice, and we'll craft your dream ring.</p>
+        <a href="quote-builder.html" class="cta-btn">Request a Quote</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 The Ring Collective. All rights reserved. | <a href="mailto:seth@kornutra.com">Contact Us</a></p>
+    </footer>
+</body>
+</html>

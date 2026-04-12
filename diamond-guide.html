@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diamond Guide | The Ring Collective</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Georgia, 'Times New Roman', serif; color: #2c2c2c; background: #faf9f7; }
+        
+        /* Nav */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; background: #fff; border-bottom: 1px solid #e8e4df; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.4rem; font-weight: bold; color: #b08d57; text-decoration: none; letter-spacing: 1px; }
+        .nav-links { display: flex; gap: 28px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 0.95rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #b08d57; }
+        
+        /* Hero */
+        .hero { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #fff 0%, #f5f0eb 100%); }
+        .hero h1 { font-size: 2.4rem; color: #1a1a1a; margin-bottom: 12px; }
+        .hero p { font-size: 1.15rem; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        
+        /* Content sections */
+        .section { max-width: 850px; margin: 0 auto; padding: 50px 20px; }
+        .section h2 { font-size: 1.8rem; color: #1a1a1a; margin-bottom: 16px; border-left: 4px solid #b08d57; padding-left: 16px; }
+        .section p { font-size: 1.05rem; color: #555; line-height: 1.8; margin-bottom: 16px; }
+        .section-alt { background: #fff; }
+        
+        /* Lab vs Natural comparison */
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 30px 0; }
+        .compare-card { background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #e8e4df; }
+        .compare-card.highlight { border-color: #b08d57; box-shadow: 0 0 0 2px rgba(176, 141, 87, 0.15); }
+        .compare-card h3 { font-size: 1.2rem; color: #1a1a1a; margin-bottom: 12px; }
+        .compare-card.highlight h3 { color: #b08d57; }
+        .compare-card ul { list-style: none; padding: 0; }
+        .compare-card li { padding: 8px 0; font-size: 0.95rem; color: #555; border-bottom: 1px solid #f0ece7; display: flex; align-items: flex-start; gap: 8px; }
+        .compare-card li:last-child { border-bottom: none; }
+        .check { color: #b08d57; font-weight: bold; }
+        
+        /* 4 C's grid */
+        .four-cs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 30px 0; }
+        .c-card { background: #faf9f7; border-radius: 12px; padding: 28px; border: 1px solid #e8e4df; }
+        .c-card h3 { font-size: 1.3rem; color: #b08d57; margin-bottom: 10px; }
+        .c-card p { font-size: 0.95rem; color: #555; line-height: 1.7; margin-bottom: 0; }
+        
+        /* Shapes section */
+        .shapes-intro { font-size: 1.05rem; color: #555; line-height: 1.8; margin-bottom: 24px; }
+        .shapes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 30px 0; }
+        .shape-card { text-align: center; background: #fff; border-radius: 12px; padding: 18px; border: 1px solid #e8e4df; transition: transform 0.2s; }
+        .shape-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .shape-card img { width: 100%; height: 140px; object-fit: contain; border-radius: 8px; margin-bottom: 10px; }
+        .shape-card span { font-size: 0.95rem; color: #333; font-weight: 600; }
+        
+        /* CTA */
+        .cta { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%); color: #fff; }
+        .cta h2 { font-size: 1.8rem; margin-bottom: 12px; }
+        .cta p { font-size: 1.05rem; color: #ccc; margin-bottom: 24px; }
+        .cta-btn { display: inline-block; padding: 14px 36px; background: #b08d57; color: #fff; text-decoration: none; border-radius: 6px; font-size: 1.05rem; font-family: Georgia, serif; transition: background 0.3s; }
+        .cta-btn:hover { background: #96763e; }
+        
+        /* Footer */
+        footer { text-align: center; padding: 30px; color: #999; font-size: 0.85rem; background: #1a1a1a; }
+        footer a { color: #b08d57; text-decoration: none; }
+        
+        @media (max-width: 768px) {
+            .comparison, .four-cs { grid-template-columns: 1fr; }
+            .shapes-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero h1 { font-size: 1.8rem; }
+            nav { padding: 14px 20px; }
+            .nav-links { gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">The Ring Collective</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="diamond-guide.html" style="color: #b08d57;">Diamond Guide</a></li>
+            <li><a href="setting-styles.html">Setting Styles</a></li>
+            <li><a href="metal-types.html">Metal Types</a></li>
+            <li><a href="quote-builder.html">Get a Quote</a></li>
+        </ul>
+    </nav>
+
+    <div class="hero">
+        <h1>The Diamond Guide</h1>
+        <p>Everything you need to know about choosing the perfect stone for your ring — and why lab-grown diamonds are the smart choice.</p>
+    </div>
+
+    <!-- Lab vs Natural -->
+    <div class="section">
+        <h2>Lab-Grown vs. Natural Diamonds</h2>
+        <p>Lab-grown diamonds are real diamonds — they have the same chemical composition, crystal structure, and brilliance as mined diamonds. The only difference is their origin. One comes from the earth over billions of years, the other is created in a controlled lab environment in weeks.</p>
+        <p>At The Ring Collective, we specialize in lab-grown diamonds and moissanite because we believe you should get the most stunning ring possible without the inflated price tag or ethical concerns of mining.</p>
+        
+        <div class="comparison">
+            <div class="compare-card highlight">
+                <h3>Lab-Grown Diamonds</h3>
+                <ul>
+                    <li><span class="check">&#10003;</span> 40-60% less expensive than mined</li>
+                    <li><span class="check">&#10003;</span> Chemically identical to natural diamonds</li>
+                    <li><span class="check">&#10003;</span> Ethically sourced, no mining impact</li>
+                    <li><span class="check">&#10003;</span> Available in larger sizes for your budget</li>
+                    <li><span class="check">&#10003;</span> Same hardness (10 on Mohs scale)</li>
+                    <li><span class="check">&#10003;</span> Certified by GIA, IGI, and other labs</li>
+                </ul>
+            </div>
+            <div class="compare-card">
+                <h3>Natural Diamonds</h3>
+                <ul>
+                    <li><span class="check">&#8226;</span> Formed over billions of years underground</li>
+                    <li><span class="check">&#8226;</span> Higher price per carat</li>
+                    <li><span class="check">&#8226;</span> Environmental impact from mining</li>
+                    <li><span class="check">&#8226;</span> Supply controlled by few companies</li>
+                    <li><span class="check">&#8226;</span> Same physical properties as lab-grown</li>
+                    <li><span class="check">&#8226;</span> Traditionally marketed as "rare"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 C's -->
+    <div class="section section-alt">
+        <h2>Understanding the 4 C's</h2>
+        <p>Whether lab-grown or natural, every diamond is graded on four key characteristics. Here's what matters most when choosing your stone.</p>
+        
+        <div class="four-cs">
+            <div class="c-card">
+                <h3>Cut</h3>
+                <p>The most important factor for sparkle. Cut refers to how well a diamond's facets interact with light. An excellent cut maximizes brilliance — this is where you don't want to compromise. We always recommend prioritizing cut quality above all else.</p>
+            </div>
+            <div class="c-card">
+                <h3>Color</h3>
+                <p>Diamonds are graded from D (colorless) to Z (light yellow). For most rings, grades G through I offer the best balance — they appear white to the naked eye but cost significantly less than D-F grades. We'll help you find the sweet spot.</p>
+            </div>
+            <div class="c-card">
+                <h3>Clarity</h3>
+                <p>Clarity measures tiny imperfections called inclusions. Grades VS1 and VS2 are the smart choice — inclusions are invisible without magnification, and you save considerably compared to flawless grades. Your ring will look just as stunning.</p>
+            </div>
+            <div class="c-card">
+                <h3>Carat</h3>
+                <p>Carat is the diamond's weight, not its size. A well-cut 1.5ct diamond can look larger than a poorly cut 2ct stone. With lab-grown diamonds, your budget stretches further — you can often go a full carat larger for the same price as a natural stone.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Moissanite section -->
+    <div class="section">
+        <h2>Moissanite: The Brilliant Alternative</h2>
+        <p>Moissanite is an incredible option if you want maximum sparkle at a fraction of the cost. It's nearly as hard as diamond (9.25 on the Mohs scale) and actually has more fire and brilliance than a diamond — meaning it throws even more rainbow flashes in the light.</p>
+        <p>Originally discovered in a meteor crater, moissanite is now lab-created and is one of the most popular choices for engagement rings. It's perfect for those who want a show-stopping stone without the diamond price tag. A 2-carat equivalent moissanite can cost 90% less than a natural diamond of the same size.</p>
+    </div>
+
+    <!-- Stone Shapes -->
+    <div class="section section-alt">
+        <h2>Popular Stone Shapes</h2>
+        <p class="shapes-intro">The shape of your center stone is one of the biggest style decisions you'll make. Each shape has its own personality — from the classic brilliance of a round to the vintage elegance of a cushion cut.</p>
+        
+        <div class="shapes-grid">
+            <div class="shape-card">
+                <img src="images/round.jpg" alt="Round Cut">
+                <span>Round</span>
+            </div>
+            <div class="shape-card">
+                <img src="images/oval.jpg" alt="Oval Cut">
+                <span>Oval</span>
+            </div>
+            <div class="shape-card">
+                <img src="images/cushion.jpg" alt="Cushion Cut">
+                <span>Cushion</span>
+            </div>
+            <div class="shape-card">
+                <img src="images/pear.jpg" alt="Pear Cut">
+                <span>Pear</span>
+            </div>
+            <div class="shape-card">
+                <img src="images/emerald.jpg" alt="Emerald Cut">
+                <span>Emerald</span>
+            </div>
+            <div class="shape-card">
+                <img src="images/princess.jpg" alt="Princess Cut">
+                <span>Princess</span>
+            </div>
+            <div class="shape-card">
+                <img src="images/marquise.jpg" alt="Marquise Cut">
+                <span>Marquise</span>
+            </div>
+            <div class="shape-card">
+                <img src="images/radiant.jpg" alt="Radiant Cut">
+                <span>Radiant</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta">
+        <h2>Ready to Find Your Perfect Stone?</h2>
+        <p>Send us a reference image and we'll build your dream ring with the ideal stone for your style and budget.</p>
+        <a href="quote-builder.html" class="cta-btn">Request a Quote</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 The Ring Collective. All rights reserved. | <a href="mailto:seth@kornutra.com">Contact Us</a></p>
+    </footer>
+</body>
+</html>
