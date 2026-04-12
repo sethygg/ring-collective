@@ -4,92 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Build Your Ring | The Ring Collective</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Georgia', serif; color: #2c2c2c; background-color: #faf9f7; }
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #fff; border-bottom: 1px solid #e8e4df; }
-        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #1a1a1a; text-transform: uppercase; }
+        body { font-family: 'Georgia', serif; color: #2A3654; background-color: #FAF7F2; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #fff; border-bottom: 1px solid #F0EDE6; }
+        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #1F2A44; text-transform: uppercase; }
         .logo a { text-decoration: none; color: inherit; }
         .nav-links { display: flex; gap: 35px; list-style: none; }
-        .nav-links a { text-decoration: none; color: #555; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
-        .nav-links a:hover { color: #b08d57; }
-        .page-header { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #f5f0eb 0%, #e8e0d5 100%); }
-        .page-header h1 { font-size: 40px; font-weight: normal; margin-bottom: 12px; color: #1a1a1a; letter-spacing: 2px; }
+        .nav-links a { text-decoration: none; color: #4A5568; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a:hover { color: #D9B48C; }
+        .page-header { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #FAF7F2 0%, #e8e0d5 100%); }
+        .page-header h1 { font-size: 40px; font-weight: normal; margin-bottom: 12px; color: #1F2A44; letter-spacing: 2px; }
         .page-header p { font-size: 17px; color: #666; max-width: 550px; margin: 0 auto; line-height: 1.7; }
         .form-container { max-width: 760px; margin: 0 auto; padding: 50px 20px 80px; }
         .form-section { margin-bottom: 45px; }
-        .form-section-title { font-size: 22px; font-weight: normal; color: #1a1a1a; letter-spacing: 1px; margin-bottom: 8px; }
+        .form-section-title { font-size: 22px; font-weight: normal; color: #1F2A44; letter-spacing: 1px; margin-bottom: 8px; }
         .form-section-subtitle { font-size: 14px; color: #999; margin-bottom: 25px; }
-        .form-section-divider { width: 50px; height: 2px; background-color: #b08d57; margin-bottom: 25px; }
+        .form-section-divider { width: 50px; height: 2px; background-color: #D9B48C; margin-bottom: 25px; }
         .upload-area { border: 2px dashed #d4cfc8; border-radius: 8px; padding: 50px 30px; text-align: center; cursor: pointer; transition: all 0.3s; background-color: #fff; position: relative; }
-        .upload-area:hover { border-color: #b08d57; background-color: #fdfcfa; }
-        .upload-area.has-files { border-color: #b08d57; border-style: solid; }
+        .upload-area:hover { border-color: #D9B48C; background-color: #fdfcfa; }
+        .upload-area.has-files { border-color: #D9B48C; border-style: solid; }
         .upload-icon { font-size: 48px; margin-bottom: 15px; }
-        .upload-area h3 { font-size: 18px; font-weight: normal; color: #1a1a1a; margin-bottom: 8px; }
+        .upload-area h3 { font-size: 18px; font-weight: normal; color: #1F2A44; margin-bottom: 8px; }
         .upload-area p { font-size: 14px; color: #999; }
         .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
         .file-list { margin-top: 15px; }
-        .file-item { display: flex; align-items: center; justify-content: space-between; background: #f5f0eb; padding: 10px 15px; border-radius: 6px; margin-top: 8px; font-size: 14px; }
+        .file-item { display: flex; align-items: center; justify-content: space-between; background: #FAF7F2; padding: 10px 15px; border-radius: 6px; margin-top: 8px; font-size: 14px; }
         .file-item button { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 16px; }
-        label { display: block; font-size: 14px; color: #555; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase; }
+        label { display: block; font-size: 14px; color: #4A5568; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase; }
         .required::after { content: ' *'; color: #c0392b; }
-        input[type="text"], input[type="email"], input[type="tel"], select, textarea { width: 100%; padding: 14px 16px; border: 1px solid #d4cfc8; border-radius: 4px; font-family: 'Georgia', serif; font-size: 15px; color: #2c2c2c; background-color: #fff; transition: border-color 0.3s; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: #b08d57; }
+        input[type="text"], input[type="email"], input[type="tel"], select, textarea { width: 100%; padding: 14px 16px; border: 1px solid #d4cfc8; border-radius: 4px; font-family: 'Georgia', serif; font-size: 15px; color: #2A3654; background-color: #fff; transition: border-color 0.3s; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #D9B48C; }
         textarea { resize: vertical; min-height: 100px; }
         .field-hint { font-size: 12px; color: #aaa; margin-top: 5px; }
         .field-row { display: flex; gap: 20px; margin-bottom: 20px; }
         .field-row .field { flex: 1; }
         .field { margin-bottom: 20px; }
-        .size-helper { font-size: 13px; color: #b08d57; cursor: pointer; margin-top: 6px; display: inline-block; }
+        .size-helper { font-size: 13px; color: #D9B48C; cursor: pointer; margin-top: 6px; display: inline-block; }
         .size-helper:hover { text-decoration: underline; }
-        .size-tip { display: none; background: #fff; border: 1px solid #e8e4df; border-radius: 6px; padding: 20px; margin-top: 10px; font-size: 14px; color: #666; line-height: 1.7; }
+        .size-tip { display: none; background: #fff; border: 1px solid #F0EDE6; border-radius: 6px; padding: 20px; margin-top: 10px; font-size: 14px; color: #666; line-height: 1.7; }
         .size-tip.visible { display: block; }
         .option-cards { display: flex; flex-wrap: wrap; gap: 12px; }
         .option-card { flex: 1; min-width: 100px; padding: 12px 8px; border: 1px solid #d4cfc8; border-radius: 6px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fff; }
-        .option-card:hover { border-color: #b08d57; }
-        .option-card.selected { border-color: #b08d57; background-color: #faf5ee; box-shadow: 0 0 0 1px #b08d57; }
-        .option-card .card-label { font-size: 13px; color: #1a1a1a; margin-top: 8px; }
+        .option-card:hover { border-color: #D9B48C; }
+        .option-card.selected { border-color: #D9B48C; background-color: #faf5ee; box-shadow: 0 0 0 1px #D9B48C; }
+        .option-card .card-label { font-size: 13px; color: #1F2A44; margin-top: 8px; }
         .option-card .card-emoji { font-size: 24px; }
         .option-card input[type="radio"] { display: none; }
         .option-card img { width: 80px; height: 80px; object-fit: contain; border-radius: 4px; }
         .img-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        .img-card { padding: 10px; border: 2px solid #e8e4df; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fff; }
-        .img-card:hover { border-color: #b08d57; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .img-card.selected { border-color: #b08d57; background-color: #faf5ee; box-shadow: 0 0 0 2px #b08d57; }
+        .img-card { padding: 10px; border: 2px solid #F0EDE6; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fff; }
+        .img-card:hover { border-color: #D9B48C; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .img-card.selected { border-color: #D9B48C; background-color: #faf5ee; box-shadow: 0 0 0 2px #D9B48C; }
         .img-card img { width: 100%; height: 180px; object-fit: contain; border-radius: 4px; }
-        .img-card .card-label { font-size: 13px; color: #1a1a1a; margin-top: 8px; font-weight: normal; }
+        .img-card .card-label { font-size: 13px; color: #1F2A44; margin-top: 8px; font-weight: normal; }
         .img-card input[type="radio"] { display: none; }
         .metal-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        .metal-card { padding: 10px; border: 2px solid #e8e4df; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fff; }
-        .metal-card:hover { border-color: #b08d57; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .metal-card.selected { border-color: #b08d57; background-color: #faf5ee; box-shadow: 0 0 0 2px #b08d57; }
+        .metal-card { padding: 10px; border: 2px solid #F0EDE6; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fff; }
+        .metal-card:hover { border-color: #D9B48C; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .metal-card.selected { border-color: #D9B48C; background-color: #faf5ee; box-shadow: 0 0 0 2px #D9B48C; }
         .metal-card img { width: 100%; height: 200px; object-fit: contain; border-radius: 4px; }
-        .metal-card .card-label { font-size: 13px; color: #1a1a1a; margin-top: 8px; }
+        .metal-card .card-label { font-size: 13px; color: #1F2A44; margin-top: 8px; }
         .metal-card input[type="radio"] { display: none; }
-        .budget-display { text-align: center; font-size: 28px; color: #b08d57; margin-bottom: 15px; letter-spacing: 1px; }
+        .budget-display { text-align: center; font-size: 28px; color: #D9B48C; margin-bottom: 15px; letter-spacing: 1px; }
         input[type="range"] { width: 100%; -webkit-appearance: none; height: 4px; background: #d4cfc8; border-radius: 2px; outline: none; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #b08d57; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #D9B48C; cursor: pointer; }
         .budget-labels { display: flex; justify-content: space-between; font-size: 12px; color: #999; margin-top: 8px; }
         .submit-section { text-align: center; padding-top: 20px; }
-        .btn-submit { display: inline-block; padding: 18px 60px; background-color: #b08d57; color: #fff; font-family: 'Georgia', serif; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; border: none; cursor: pointer; transition: background-color 0.3s; border-radius: 4px; }
+        .btn-submit { display: inline-block; padding: 18px 60px; background-color: #D9B48C; color: #fff; font-family: 'Georgia', serif; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; border: none; cursor: pointer; transition: background-color 0.3s; border-radius: 4px; }
         .btn-submit:hover { background-color: #96753e; }
         .submit-note { font-size: 13px; color: #999; margin-top: 15px; }
         .success-message { display: none; text-align: center; padding: 60px 20px; }
-        .success-message h2 { font-size: 32px; font-weight: normal; color: #1a1a1a; margin-bottom: 15px; }
+        .success-message h2 { font-size: 32px; font-weight: normal; color: #1F2A44; margin-bottom: 15px; }
         .success-message p { font-size: 16px; color: #666; line-height: 1.7; max-width: 450px; margin: 0 auto; }
         .success-icon { font-size: 60px; margin-bottom: 20px; }
-        footer { padding: 40px 60px; text-align: center; background-color: #1a1a1a; color: #777; font-size: 13px; letter-spacing: 1px; }
-        .info-box { background: #fff; border: 1px solid #e8e4df; border-radius: 8px; padding: 30px; margin-bottom: 25px; line-height: 1.8; }
-        .info-box h3 { font-size: 18px; font-weight: normal; color: #1a1a1a; margin-bottom: 12px; }
+        footer { padding: 40px 60px; text-align: center; background-color: #1F2A44; color: #777; font-size: 13px; letter-spacing: 1px; }
+        .info-box { background: #fff; border: 1px solid #F0EDE6; border-radius: 8px; padding: 30px; margin-bottom: 25px; line-height: 1.8; }
+        .info-box h3 { font-size: 18px; font-weight: normal; color: #1F2A44; margin-bottom: 12px; }
         .info-box p { font-size: 14px; color: #666; margin-bottom: 10px; }
-        .info-box .highlight { color: #b08d57; font-weight: bold; }
+        .info-box .highlight { color: #D9B48C; font-weight: bold; }
         .info-box ul { list-style: none; padding: 0; margin: 12px 0; }
-        .info-box ul li { padding: 6px 0; font-size: 14px; color: #555; }
-        .info-box ul li::before { content: "\2713  "; color: #b08d57; font-weight: bold; }
-        .setting-only-note { display: none; background: #f5f0eb; border-radius: 8px; padding: 20px; margin-top: 15px; font-size: 14px; color: #555; line-height: 1.7; }
+        .info-box ul li { padding: 6px 0; font-size: 14px; color: #4A5568; }
+        .info-box ul li::before { content: "\2713  "; color: #D9B48C; font-weight: bold; }
+        .setting-only-note { display: none; background: #FAF7F2; border-radius: 8px; padding: 20px; margin-top: 15px; font-size: 14px; color: #4A5568; line-height: 1.7; }
         .setting-only-note.visible { display: block; }
         @media (max-width: 768px) { nav { flex-direction: column; gap: 15px; padding: 20px; } .field-row { flex-direction: column; gap: 0; } .img-cards { grid-template-columns: repeat(2, 1fr); } .metal-cards { grid-template-columns: repeat(2, 1fr); } .option-cards { flex-direction: column; } .option-card { min-width: unset; } .form-container { padding: 30px 15px 60px; } }
     </style>
+
+    <style>
+    h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif !important; }
+    .logo { font-family: 'Playfair Display', Georgia, serif !important; }
+    </style>
+
 </head>
 <body>
     <nav>
@@ -97,7 +104,7 @@
         <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
             <li><a href="index.html#learn">Learn</a></li>
-            <li><a href="quote-builder.html" style="color: #b08d57;">Build Your Ring</a></li>
+            <li><a href="quote-builder.html" style="color: #D9B48C;">Build Your Ring</a></li>
         </ul>
     </nav>
     <div class="page-header">
@@ -114,7 +121,7 @@
                 <div class="upload-icon">&#x1F4F7;</div>
                 <h3>Drop your ring photos here</h3>
                 <p>or click to browse — JPG, PNG up to 10MB each</p>
-                <p style="margin-top: 10px; font-size: 13px; color: #b08d57;">Upload photos from the web, screenshots from stores, or your own pictures</p>
+                <p style="margin-top: 10px; font-size: 13px; color: #D9B48C;">Upload photos from the web, screenshots from stores, or your own pictures</p>
             </div>
             <div class="file-list" id="fileList"></div>
         </div>
@@ -220,7 +227,7 @@
         <div class="success-icon">&#x1F48D;</div>
         <h2>Quote Request Received!</h2>
         <p>Thank you! We've received your ring details and will send you a personalized quote within 24 hours. Keep an eye on your inbox.</p>
-        <br><br><a href="index.html" style="color: #b08d57; font-size: 15px;">Back to Home</a>
+        <br><br><a href="index.html" style="color: #D9B48C; font-size: 15px;">Back to Home</a>
     </div>
     <footer>&copy; 2026 The Ring Collective. All rights reserved.</footer>
     <script>

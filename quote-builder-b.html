@@ -4,30 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Build Your Ring | The Ring Collective</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Georgia, 'Times New Roman', serif; color: #2c2c2c; background: #f5f0eb; min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; color: #2A3654; background: #FAF7F2; min-height: 100vh; }
         
         /* Nav */
-        nav { display: flex; justify-content: center; align-items: center; padding: 18px 40px; background: #fff; border-bottom: 1px solid #e8e4df; }
-        .logo { font-size: 1.4rem; font-weight: bold; color: #b08d57; text-decoration: none; letter-spacing: 1px; }
+        nav { display: flex; justify-content: center; align-items: center; padding: 18px 40px; background: #fff; border-bottom: 1px solid #F0EDE6; }
+        .logo { font-size: 1.4rem; font-weight: bold; color: #D9B48C; text-decoration: none; letter-spacing: 1px; }
         
         /* Progress bar */
-        .progress-bar { display: flex; justify-content: center; align-items: center; padding: 30px 20px 20px; background: #f5f0eb; gap: 0; }
+        .progress-bar { display: flex; justify-content: center; align-items: center; padding: 30px 20px 20px; background: #FAF7F2; gap: 0; }
         .step-indicator { display: flex; align-items: center; }
         .step-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; }
-        .step-dot.active { background: #b08d57; color: #fff; }
-        .step-dot.completed { background: #b08d57; color: #fff; }
-        .step-dot.inactive { background: #e8e4df; color: #999; }
-        .step-line { width: 80px; height: 2px; background: #e8e4df; transition: background 0.3s; }
-        .step-line.completed { background: #b08d57; }
+        .step-dot.active { background: #2E5C4A; color: #D9B48C; }
+        .step-dot.completed { background: #2E5C4A; color: #D9B48C; }
+        .step-dot.inactive { background: #F0EDE6; color: #999; }
+        .step-line { width: 80px; height: 2px; background: #F0EDE6; transition: background 0.3s; }
+        .step-line.completed { background: #D9B48C; }
         .step-label { font-size: 0.75rem; color: #999; margin-top: 6px; text-align: center; }
-        .step-label.active { color: #b08d57; font-weight: 600; }
+        .step-label.active { color: #D9B48C; font-weight: 600; }
         .step-group { display: flex; flex-direction: column; align-items: center; }
         
         /* Main content area */
         .wizard-container { max-width: 700px; margin: 0 auto; padding: 40px 20px 30px; min-height: 60vh; display: flex; flex-direction: column; align-items: center; }
-        .wizard-container h2 { font-size: 1.8rem; color: #1a1a1a; text-align: center; margin-bottom: 8px; }
+        .wizard-container h2 { font-size: 1.8rem; color: #1F2A44; text-align: center; margin-bottom: 8px; }
         .wizard-container .subtitle { font-size: 1rem; color: #888; text-align: center; margin-bottom: 36px; }
         
         /* Step screens */
@@ -37,70 +38,70 @@
         
         /* Option cards */
         .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; max-width: 600px; margin: 0 auto; }
-        .option-card { background: #fff; border: 2px solid #e8e4df; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .option-card { background: #fff; border: 2px solid #F0EDE6; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; }
         .option-card:hover { border-color: #ccc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-        .option-card.selected { border-color: #b08d57; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
+        .option-card.selected { border-color: #D9B48C; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
         .option-card .card-icon { font-size: 2rem; margin-bottom: 10px; }
         .option-card h3 { font-size: 1.05rem; color: #333; margin-bottom: 4px; }
         .option-card p { font-size: 0.85rem; color: #999; }
         
         /* Image option cards */
         .img-option-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; width: 100%; max-width: 600px; margin: 0 auto; }
-        .img-option-card { background: #fff; border: 2px solid #e8e4df; border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .img-option-card { background: #fff; border: 2px solid #F0EDE6; border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.2s; text-align: center; }
         .img-option-card:hover { border-color: #ccc; transform: translateY(-2px); }
-        .img-option-card.selected { border-color: #b08d57; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
+        .img-option-card.selected { border-color: #D9B48C; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
         .img-option-card img { width: 100%; height: 100px; object-fit: contain; padding: 8px; }
         .img-option-card span { display: block; padding: 8px; font-size: 0.85rem; color: #333; font-weight: 600; }
         
         /* Metal cards */
         .metal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; width: 100%; max-width: 600px; margin: 0 auto; }
-        .metal-card { background: #fff; border: 2px solid #e8e4df; border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .metal-card { background: #fff; border: 2px solid #F0EDE6; border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.2s; text-align: center; }
         .metal-card:hover { border-color: #ccc; transform: translateY(-2px); }
-        .metal-card.selected { border-color: #b08d57; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
+        .metal-card.selected { border-color: #D9B48C; box-shadow: 0 0 0 2px rgba(176,141,87,0.2); }
         .metal-card img { width: 100%; height: 120px; object-fit: contain; padding: 8px; }
         .metal-card span { display: block; padding: 8px; font-size: 0.85rem; color: #333; font-weight: 600; }
         
         /* Form inputs */
         .form-group { width: 100%; max-width: 500px; margin: 0 auto 20px; }
-        .form-group label { display: block; font-size: 0.95rem; color: #555; margin-bottom: 8px; font-weight: 600; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; border: 2px solid #e8e4df; border-radius: 8px; font-size: 1rem; font-family: Georgia, serif; background: #fff; transition: border-color 0.2s; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #b08d57; }
+        .form-group label { display: block; font-size: 0.95rem; color: #4A5568; margin-bottom: 8px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; border: 2px solid #F0EDE6; border-radius: 8px; font-size: 1rem; font-family: 'Inter', sans-serif; background: #fff; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #D9B48C; }
         .form-group textarea { resize: vertical; min-height: 100px; }
         
         /* Upload area */
         .upload-area { border: 2px dashed #d4cfc8; border-radius: 12px; padding: 40px; text-align: center; background: #fff; cursor: pointer; transition: border-color 0.2s; max-width: 500px; margin: 0 auto; }
-        .upload-area:hover { border-color: #b08d57; }
+        .upload-area:hover { border-color: #D9B48C; }
         .upload-area p { color: #888; font-size: 1rem; }
-        .upload-area .upload-link { color: #b08d57; font-weight: 600; text-decoration: underline; }
+        .upload-area .upload-link { color: #D9B48C; font-weight: 600; text-decoration: underline; }
         .upload-area .upload-note { font-size: 0.8rem; color: #bbb; margin-top: 8px; }
         .skip-link { display: block; text-align: center; margin-top: 16px; color: #999; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
-        .skip-link:hover { color: #b08d57; }
+        .skip-link:hover { color: #D9B48C; }
         
         /* Budget slider */
-        .budget-display { text-align: center; font-size: 2rem; color: #b08d57; font-weight: bold; margin-bottom: 20px; }
-        .budget-slider { width: 100%; max-width: 500px; margin: 0 auto; display: block; -webkit-appearance: none; height: 6px; border-radius: 3px; background: #e8e4df; outline: none; }
-        .budget-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #b08d57; cursor: pointer; }
+        .budget-display { text-align: center; font-size: 2rem; color: #D9B48C; font-weight: bold; margin-bottom: 20px; }
+        .budget-slider { width: 100%; max-width: 500px; margin: 0 auto; display: block; -webkit-appearance: none; height: 6px; border-radius: 3px; background: #F0EDE6; outline: none; }
+        .budget-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #D9B48C; cursor: pointer; }
         .budget-range { display: flex; justify-content: space-between; max-width: 500px; margin: 10px auto 0; font-size: 0.8rem; color: #999; }
         
         /* Navigation buttons */
         .nav-buttons { display: flex; justify-content: center; gap: 16px; margin-top: 40px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .btn-back { padding: 14px 32px; border: 2px solid #e8e4df; background: #fff; color: #555; border-radius: 8px; font-size: 1rem; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s; }
+        .btn-back { padding: 14px 32px; border: 2px solid #F0EDE6; background: #fff; color: #4A5568; border-radius: 8px; font-size: 1rem; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.2s; }
         .btn-back:hover { border-color: #ccc; }
-        .btn-next { padding: 14px 48px; border: none; background: #1a1a1a; color: #fff; border-radius: 8px; font-size: 1rem; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s; flex-grow: 1; }
+        .btn-next { padding: 14px 48px; border: none; background: #1F2A44; color: #fff; border-radius: 8px; font-size: 1rem; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.2s; flex-grow: 1; }
         .btn-next:hover { background: #333; }
-        .btn-next.gold { background: #b08d57; }
-        .btn-next.gold:hover { background: #96763e; }
+        .btn-next.gold { background: #D9B48C; }
+        .btn-next.gold:hover { background: #C4A070; }
         
         /* Success screen */
         .success-screen { text-align: center; padding: 60px 20px; }
         .success-icon { font-size: 3rem; margin-bottom: 16px; }
-        .success-screen h2 { color: #b08d57; margin-bottom: 12px; }
+        .success-screen h2 { color: #D9B48C; margin-bottom: 12px; }
         .success-screen p { color: #666; font-size: 1.05rem; line-height: 1.7; }
         
         /* File list */
         .file-list { margin-top: 16px; }
         .file-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .file-item span { font-size: 0.9rem; color: #555; }
+        .file-item span { font-size: 0.9rem; color: #4A5568; }
         .file-item button { background: none; border: none; color: #c00; cursor: pointer; font-size: 0.85rem; }
         
         @media (max-width: 600px) {
@@ -110,6 +111,12 @@
             .step-line { width: 40px; }
         }
     </style>
+
+    <style>
+    h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif !important; }
+    .logo { font-family: 'Playfair Display', Georgia, serif !important; }
+    </style>
+
 </head>
 <body>
     <nav>
@@ -332,7 +339,7 @@
                 <h2>Your Quote Request is In!</h2>
                 <p>We've received your ring details and will get back to you within 24 hours with a custom quote.<br><br>Keep an eye on your inbox!</p>
                 <div style="margin-top: 30px;">
-                    <a href="index.html" style="color: #b08d57; font-size: 1rem;">Back to Home</a>
+                    <a href="index.html" style="color: #D9B48C; font-size: 1rem;">Back to Home</a>
                 </div>
             </div>
         </div>

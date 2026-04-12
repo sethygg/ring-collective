@@ -4,63 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diamond Guide | The Ring Collective</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Georgia, 'Times New Roman', serif; color: #2c2c2c; background: #faf9f7; }
+        body { font-family: 'Inter', sans-serif; color: #2A3654; background: #FAF7F2; }
         
         /* Nav */
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; background: #fff; border-bottom: 1px solid #e8e4df; position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 1.4rem; font-weight: bold; color: #b08d57; text-decoration: none; letter-spacing: 1px; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; background: #fff; border-bottom: 1px solid #F0EDE6; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.4rem; font-weight: bold; color: #D9B48C; text-decoration: none; letter-spacing: 1px; }
         .nav-links { display: flex; gap: 28px; list-style: none; }
-        .nav-links a { text-decoration: none; color: #555; font-size: 0.95rem; transition: color 0.2s; }
-        .nav-links a:hover { color: #b08d57; }
+        .nav-links a { text-decoration: none; color: #4A5568; font-size: 0.95rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #D9B48C; }
         
         /* Hero */
-        .hero { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #fff 0%, #f5f0eb 100%); }
-        .hero h1 { font-size: 2.4rem; color: #1a1a1a; margin-bottom: 12px; }
+        .hero { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #fff 0%, #FAF7F2 100%); }
+        .hero h1 { font-size: 2.4rem; color: #1F2A44; margin-bottom: 12px; }
         .hero p { font-size: 1.15rem; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.6; }
         
         /* Content sections */
         .section { max-width: 850px; margin: 0 auto; padding: 50px 20px; }
-        .section h2 { font-size: 1.8rem; color: #1a1a1a; margin-bottom: 16px; border-left: 4px solid #b08d57; padding-left: 16px; }
-        .section p { font-size: 1.05rem; color: #555; line-height: 1.8; margin-bottom: 16px; }
+        .section h2 { font-size: 1.8rem; color: #1F2A44; margin-bottom: 16px; border-left: 4px solid #D9B48C; padding-left: 16px; }
+        .section p { font-size: 1.05rem; color: #4A5568; line-height: 1.8; margin-bottom: 16px; }
         .section-alt { background: #fff; }
         
         /* Lab vs Natural comparison */
         .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 30px 0; }
-        .compare-card { background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #e8e4df; }
-        .compare-card.highlight { border-color: #b08d57; box-shadow: 0 0 0 2px rgba(176, 141, 87, 0.15); }
-        .compare-card h3 { font-size: 1.2rem; color: #1a1a1a; margin-bottom: 12px; }
-        .compare-card.highlight h3 { color: #b08d57; }
+        .compare-card { background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #F0EDE6; }
+        .compare-card.highlight { border-color: #D9B48C; box-shadow: 0 0 0 2px rgba(176, 141, 87, 0.15); }
+        .compare-card h3 { font-size: 1.2rem; color: #1F2A44; margin-bottom: 12px; }
+        .compare-card.highlight h3 { color: #D9B48C; }
         .compare-card ul { list-style: none; padding: 0; }
-        .compare-card li { padding: 8px 0; font-size: 0.95rem; color: #555; border-bottom: 1px solid #f0ece7; display: flex; align-items: flex-start; gap: 8px; }
+        .compare-card li { padding: 8px 0; font-size: 0.95rem; color: #4A5568; border-bottom: 1px solid #F0EDE6; display: flex; align-items: flex-start; gap: 8px; }
         .compare-card li:last-child { border-bottom: none; }
-        .check { color: #b08d57; font-weight: bold; }
+        .check { color: #D9B48C; font-weight: bold; }
         
         /* 4 C's grid */
         .four-cs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 30px 0; }
-        .c-card { background: #faf9f7; border-radius: 12px; padding: 28px; border: 1px solid #e8e4df; }
-        .c-card h3 { font-size: 1.3rem; color: #b08d57; margin-bottom: 10px; }
-        .c-card p { font-size: 0.95rem; color: #555; line-height: 1.7; margin-bottom: 0; }
+        .c-card { background: #FAF7F2; border-radius: 12px; padding: 28px; border: 1px solid #F0EDE6; }
+        .c-card h3 { font-size: 1.3rem; color: #D9B48C; margin-bottom: 10px; }
+        .c-card p { font-size: 0.95rem; color: #4A5568; line-height: 1.7; margin-bottom: 0; }
         
         /* Shapes section */
-        .shapes-intro { font-size: 1.05rem; color: #555; line-height: 1.8; margin-bottom: 24px; }
+        .shapes-intro { font-size: 1.05rem; color: #4A5568; line-height: 1.8; margin-bottom: 24px; }
         .shapes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 30px 0; }
-        .shape-card { text-align: center; background: #fff; border-radius: 12px; padding: 18px; border: 1px solid #e8e4df; transition: transform 0.2s; }
+        .shape-card { text-align: center; background: #fff; border-radius: 12px; padding: 18px; border: 1px solid #F0EDE6; transition: transform 0.2s; }
         .shape-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
         .shape-card img { width: 100%; height: 140px; object-fit: contain; border-radius: 8px; margin-bottom: 10px; }
         .shape-card span { font-size: 0.95rem; color: #333; font-weight: 600; }
         
         /* CTA */
-        .cta { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%); color: #fff; }
+        .cta { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1F2A44 0%, #2A3654 100%); color: #fff; }
         .cta h2 { font-size: 1.8rem; margin-bottom: 12px; }
         .cta p { font-size: 1.05rem; color: #ccc; margin-bottom: 24px; }
-        .cta-btn { display: inline-block; padding: 14px 36px; background: #b08d57; color: #fff; text-decoration: none; border-radius: 6px; font-size: 1.05rem; font-family: Georgia, serif; transition: background 0.3s; }
-        .cta-btn:hover { background: #96763e; }
+        .cta-btn { display: inline-block; padding: 14px 36px; background: #2E5C4A; color: #D9B48C; text-decoration: none; border-radius: 6px; font-size: 1.05rem; font-family: 'Inter', sans-serif; transition: background 0.3s; }
+        .cta-btn:hover { background: #C4A070; }
         
         /* Footer */
-        footer { text-align: center; padding: 30px; color: #999; font-size: 0.85rem; background: #1a1a1a; }
-        footer a { color: #b08d57; text-decoration: none; }
+        footer { text-align: center; padding: 30px; color: #999; font-size: 0.85rem; background: #1F2A44; }
+        footer a { color: #D9B48C; text-decoration: none; }
         
         @media (max-width: 768px) {
             .comparison, .four-cs { grid-template-columns: 1fr; }
@@ -70,13 +71,19 @@
             .nav-links { gap: 16px; }
         }
     </style>
+
+    <style>
+    h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif !important; }
+    .logo { font-family: 'Playfair Display', Georgia, serif !important; }
+    </style>
+
 </head>
 <body>
     <nav>
         <a href="index.html" class="logo">The Ring Collective</a>
         <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
-            <li><a href="diamond-guide.html" style="color: #b08d57;">Diamond Guide</a></li>
+            <li><a href="diamond-guide.html" style="color: #D9B48C;">Diamond Guide</a></li>
             <li><a href="setting-styles.html">Setting Styles</a></li>
             <li><a href="metal-types.html">Metal Types</a></li>
             <li><a href="quote-builder.html">Get a Quote</a></li>

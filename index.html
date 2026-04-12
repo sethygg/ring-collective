@@ -4,44 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Ring Collective | Custom Engagement Rings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Georgia', serif; color: #2c2c2c; background-color: #faf9f7; }
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #fff; border-bottom: 1px solid #e8e4df; }
-        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #1a1a1a; text-transform: uppercase; }
+        body { font-family: 'Georgia', serif; color: #2A3654; background-color: #FAF7F2; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #fff; border-bottom: 1px solid #F0EDE6; }
+        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #1F2A44; text-transform: uppercase; }
         .nav-links { display: flex; gap: 35px; list-style: none; }
-        .nav-links a { text-decoration: none; color: #555; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
-        .nav-links a:hover { color: #b08d57; }
-        .hero { text-align: center; padding: 100px 20px; background: linear-gradient(135deg, #f5f0eb 0%, #e8e0d5 100%); }
-        .hero h1 { font-size: 48px; font-weight: normal; margin-bottom: 20px; color: #1a1a1a; letter-spacing: 2px; }
+        .nav-links a { text-decoration: none; color: #4A5568; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a:hover { color: #D9B48C; }
+        .hero { text-align: center; padding: 100px 20px; background: linear-gradient(135deg, #FAF7F2 0%, #e8e0d5 100%); }
+        .hero h1 { font-size: 48px; font-weight: normal; margin-bottom: 20px; color: #1F2A44; letter-spacing: 2px; }
         .hero p { font-size: 18px; color: #666; max-width: 600px; margin: 0 auto 40px; line-height: 1.8; }
-        .btn-primary { display: inline-block; padding: 16px 45px; background-color: #b08d57; color: #fff; text-decoration: none; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border: none; cursor: pointer; transition: background-color 0.3s; }
+        .btn-primary { display: inline-block; padding: 16px 45px; background-color: #D9B48C; color: #fff; text-decoration: none; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border: none; cursor: pointer; transition: background-color 0.3s; }
         .btn-primary:hover { background-color: #96753e; }
         .how-it-works { padding: 80px 60px; text-align: center; }
         .how-it-works h2 { font-size: 32px; font-weight: normal; margin-bottom: 15px; letter-spacing: 2px; }
         .how-it-works .subtitle { color: #888; margin-bottom: 60px; font-size: 16px; }
         .steps { display: flex; justify-content: center; gap: 60px; max-width: 1000px; margin: 0 auto; }
         .step { flex: 1; max-width: 280px; }
-        .step-number { width: 60px; height: 60px; border-radius: 50%; background-color: #b08d57; color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
-        .step h3 { font-size: 20px; font-weight: normal; margin-bottom: 12px; color: #1a1a1a; }
+        .step-number { width: 60px; height: 60px; border-radius: 50%; background-color: #D9B48C; color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .step h3 { font-size: 20px; font-weight: normal; margin-bottom: 12px; color: #1F2A44; }
         .step p { color: #777; line-height: 1.7; font-size: 15px; }
         .education { padding: 80px 60px; background-color: #fff; text-align: center; }
         .education h2 { font-size: 32px; font-weight: normal; margin-bottom: 15px; letter-spacing: 2px; }
         .education .subtitle { color: #888; margin-bottom: 60px; font-size: 16px; }
         .cards { display: flex; justify-content: center; gap: 30px; max-width: 1000px; margin: 0 auto; }
-        .card { flex: 1; max-width: 300px; border: 1px solid #e8e4df; padding: 40px 30px; text-align: center; transition: box-shadow 0.3s; }
+        .card { flex: 1; max-width: 300px; border: 1px solid #F0EDE6; padding: 40px 30px; text-align: center; transition: box-shadow 0.3s; }
         .card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
         .card-icon { font-size: 40px; margin-bottom: 20px; }
-        .card h3 { font-size: 20px; font-weight: normal; margin-bottom: 12px; color: #1a1a1a; }
+        .card h3 { font-size: 20px; font-weight: normal; margin-bottom: 12px; color: #1F2A44; }
         .card p { color: #777; line-height: 1.7; font-size: 15px; }
-        .cta { padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #1a1a1a 0%, #333 100%); color: #fff; }
+        .cta { padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #1F2A44 0%, #333 100%); color: #fff; }
         .cta h2 { font-size: 36px; font-weight: normal; margin-bottom: 15px; letter-spacing: 2px; }
         .cta p { color: #aaa; max-width: 500px; margin: 0 auto 40px; font-size: 16px; line-height: 1.7; }
-        .btn-secondary { display: inline-block; padding: 16px 45px; background-color: transparent; color: #b08d57; text-decoration: none; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border: 2px solid #b08d57; cursor: pointer; transition: all 0.3s; }
-        .btn-secondary:hover { background-color: #b08d57; color: #fff; }
-        footer { padding: 40px 60px; text-align: center; background-color: #1a1a1a; color: #777; font-size: 13px; letter-spacing: 1px; }
+        .btn-secondary { display: inline-block; padding: 16px 45px; background-color: transparent; color: #D9B48C; text-decoration: none; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border: 2px solid #D9B48C; cursor: pointer; transition: all 0.3s; }
+        .btn-secondary:hover { background-color: #D9B48C; color: #fff; }
+        footer { padding: 40px 60px; text-align: center; background-color: #1F2A44; color: #777; font-size: 13px; letter-spacing: 1px; }
         @media (max-width: 768px) { nav { flex-direction: column; gap: 15px; padding: 20px; } .hero h1 { font-size: 32px; } .steps, .cards { flex-direction: column; align-items: center; } .how-it-works, .education { padding: 60px 20px; } }
     </style>
+
+    <style>
+    h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif !important; }
+    .logo { font-family: 'Playfair Display', Georgia, serif !important; }
+    </style>
+
 </head>
 <body>
     <nav>
@@ -82,59 +89,59 @@
     <!-- Recent Projects Slider -->
     <div style="background: #fff; padding: 60px 20px; overflow: hidden;">
         <div style="max-width: 900px; margin: 0 auto; text-align: center;">
-            <h2 style="font-size: 1.8rem; color: #1a1a1a; margin-bottom: 8px; font-family: Georgia, serif;">Recent Projects</h2>
-            <p style="font-size: 1.05rem; color: #888; margin-bottom: 40px; font-family: Georgia, serif;">A few of our latest custom builds.</p>
+            <h2 style="font-size: 1.8rem; color: #1F2A44; margin-bottom: 8px; font-family: 'Inter', sans-serif;">Recent Projects</h2>
+            <p style="font-size: 1.05rem; color: #888; margin-bottom: 40px; font-family: 'Inter', sans-serif;">A few of our latest custom builds.</p>
         </div>
         
         <div id="sliderContainer" style="position: relative; max-width: 1100px; margin: 0 auto;">
             <!-- Left Arrow -->
-            <button onclick="slideLeft()" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #e8e4df; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #b08d57; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10094;</button>
+            <button onclick="slideLeft()" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #F0EDE6; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #D9B48C; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10094;</button>
             
             <!-- Slider Track -->
             <div style="overflow: hidden; margin: 0 50px;">
                 <div id="sliderTrack" style="display: flex; gap: 20px; transition: transform 0.5s ease; will-change: transform;">
                     <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
-                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                             <img src="images/project1.jpg" alt="Pear Cut Rose Gold Vine Ring" style="width: 100%; height: 320px; object-fit: cover;">
                             <div style="padding: 16px; background: #fff;">
-                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Pear Cut Vine Setting</div>
-                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Rose Gold &bull; Lab Diamond</div>
+                                <div style="font-family: 'Inter', sans-serif; font-weight: 600; color: #333; font-size: 0.95rem;">Pear Cut Vine Setting</div>
+                                <div style="font-family: 'Inter', sans-serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Rose Gold &bull; Lab Diamond</div>
                             </div>
                         </div>
                     </div>
                     <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
-                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                             <img src="images/project2.jpg" alt="Princess Cut Sapphire Halo Ring" style="width: 100%; height: 320px; object-fit: cover;">
                             <div style="padding: 16px; background: #fff;">
-                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Princess Cut Sapphire Halo</div>
-                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">White Gold &bull; Lab Sapphire</div>
+                                <div style="font-family: 'Inter', sans-serif; font-weight: 600; color: #333; font-size: 0.95rem;">Princess Cut Sapphire Halo</div>
+                                <div style="font-family: 'Inter', sans-serif; color: #999; font-size: 0.85rem; margin-top: 4px;">White Gold &bull; Lab Sapphire</div>
                             </div>
                         </div>
                     </div>
                     <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
-                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                             <img src="images/project3.jpg" alt="Marquise Three-Stone Yellow Gold Ring" style="width: 100%; height: 320px; object-fit: cover;">
                             <div style="padding: 16px; background: #fff;">
-                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Marquise Three-Stone</div>
-                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Yellow Gold &bull; Lab Diamond</div>
+                                <div style="font-family: 'Inter', sans-serif; font-weight: 600; color: #333; font-size: 0.95rem;">Marquise Three-Stone</div>
+                                <div style="font-family: 'Inter', sans-serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Yellow Gold &bull; Lab Diamond</div>
                             </div>
                         </div>
                     </div>
                     <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
-                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                             <img src="images/project4.jpg" alt="Oval Rose Gold Halo Ring" style="width: 100%; height: 320px; object-fit: cover;">
                             <div style="padding: 16px; background: #fff;">
-                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Oval Vintage Halo</div>
-                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Rose Gold &bull; Lab Diamond</div>
+                                <div style="font-family: 'Inter', sans-serif; font-weight: 600; color: #333; font-size: 0.95rem;">Oval Vintage Halo</div>
+                                <div style="font-family: 'Inter', sans-serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Rose Gold &bull; Lab Diamond</div>
                             </div>
                         </div>
                     </div>
                     <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
-                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                             <img src="images/project5.jpg" alt="Round Solitaire Platinum Ring" style="width: 100%; height: 320px; object-fit: cover;">
                             <div style="padding: 16px; background: #fff;">
-                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Round Solitaire Classic</div>
-                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Platinum &bull; Lab Diamond</div>
+                                <div style="font-family: 'Inter', sans-serif; font-weight: 600; color: #333; font-size: 0.95rem;">Round Solitaire Classic</div>
+                                <div style="font-family: 'Inter', sans-serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Platinum &bull; Lab Diamond</div>
                             </div>
                         </div>
                     </div>
@@ -142,12 +149,12 @@
             </div>
             
             <!-- Right Arrow -->
-            <button onclick="slideRight()" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #e8e4df; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #b08d57; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10095;</button>
+            <button onclick="slideRight()" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #F0EDE6; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #D9B48C; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10095;</button>
         </div>
         
         <!-- Dots -->
         <div style="text-align: center; margin-top: 24px;">
-            <span class="dot" onclick="goToSlide(0)" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #b08d57; margin: 0 5px; cursor: pointer; transition: background 0.3s;"></span>
+            <span class="dot" onclick="goToSlide(0)" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #D9B48C; margin: 0 5px; cursor: pointer; transition: background 0.3s;"></span>
             <span class="dot" onclick="goToSlide(1)" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ddd; margin: 0 5px; cursor: pointer; transition: background 0.3s;"></span>
             <span class="dot" onclick="goToSlide(2)" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ddd; margin: 0 5px; cursor: pointer; transition: background 0.3s;"></span>
         </div>
@@ -162,7 +169,7 @@
         const slideWidth = track.children[0].offsetWidth + 20;
         track.style.transform = 'translateX(-' + (currentSlide * slideWidth) + 'px)';
         document.querySelectorAll('.dot').forEach((dot, i) => {
-            dot.style.background = i === currentSlide ? '#b08d57' : '#ddd';
+            dot.style.background = i === currentSlide ? '#D9B48C' : '#ddd';
         });
     }
     
@@ -194,19 +201,19 @@
                 <div class="card-icon">&#x1F48E;</div>
                 <a href="diamond-guide.html" style="text-decoration: none; color: inherit;"><h3><a href="diamond-guide.html" style="text-decoration:none;color:inherit;">Diamond Guide</a></h3>
                 <p>Learn about the 4 Cs — cut, clarity, color, and carat — and how they affect your stone.</p>
-                    <p style="margin-top:12px;"><a href="diamond-guide.html" style="color:#b08d57;font-size:0.95rem;">Learn More &rarr;</a></p></a>
+                    <p style="margin-top:12px;"><a href="diamond-guide.html" style="color:#D9B48C;font-size:0.95rem;">Learn More &rarr;</a></p></a>
             </div>
             <div class="card">
                 <div class="card-icon">&#x1F48D;</div>
                 <h3><a href="setting-styles.html" style="text-decoration:none;color:inherit;">Setting Styles</a></h3>
                 <p>From solitaire to halo to vintage — discover which setting matches your personality.</p>
-                    <p style="margin-top:12px;"><a href="setting-styles.html" style="color:#b08d57;font-size:0.95rem;">Learn More &rarr;</a></p>
+                    <p style="margin-top:12px;"><a href="setting-styles.html" style="color:#D9B48C;font-size:0.95rem;">Learn More &rarr;</a></p>
             </div>
             <div class="card">
                 <div class="card-icon">&#x2728;</div>
                 <h3><a href="metal-types.html" style="text-decoration:none;color:inherit;">Metal Types</a></h3>
                 <p>Platinum, white gold, rose gold, yellow gold — find the one that is right for you.</p>
-                    <p style="margin-top:12px;"><a href="metal-types.html" style="color:#b08d57;font-size:0.95rem;">Learn More &rarr;</a></p>
+                    <p style="margin-top:12px;"><a href="metal-types.html" style="color:#D9B48C;font-size:0.95rem;">Learn More &rarr;</a></p>
             </div>
         </div>
     </section>
@@ -217,56 +224,56 @@
     </section>
     
     <!-- Social Proof: Stats Bar -->
-    <div style="background: #1a1a1a; padding: 40px 20px; text-align: center;">
+    <div style="background: #1F2A44; padding: 40px 20px; text-align: center;">
         <div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
             <div>
-                <div style="font-size: 2.2rem; font-weight: bold; color: #b08d57; font-family: Georgia, serif;">500+</div>
+                <div style="font-size: 2.2rem; font-weight: bold; color: #D9B48C; font-family: 'Inter', sans-serif;">500+</div>
                 <div style="font-size: 0.9rem; color: #999; margin-top: 4px;">Rings Crafted</div>
             </div>
             <div>
-                <div style="font-size: 2.2rem; font-weight: bold; color: #b08d57; font-family: Georgia, serif;">4.9/5</div>
+                <div style="font-size: 2.2rem; font-weight: bold; color: #D9B48C; font-family: 'Inter', sans-serif;">4.9/5</div>
                 <div style="font-size: 0.9rem; color: #999; margin-top: 4px;">Customer Rating</div>
             </div>
             <div>
-                <div style="font-size: 2.2rem; font-weight: bold; color: #b08d57; font-family: Georgia, serif;">60%</div>
+                <div style="font-size: 2.2rem; font-weight: bold; color: #D9B48C; font-family: 'Inter', sans-serif;">60%</div>
                 <div style="font-size: 0.9rem; color: #999; margin-top: 4px;">Avg. Savings vs Retail</div>
             </div>
             <div>
-                <div style="font-size: 2.2rem; font-weight: bold; color: #b08d57; font-family: Georgia, serif;">100%</div>
+                <div style="font-size: 2.2rem; font-weight: bold; color: #D9B48C; font-family: 'Inter', sans-serif;">100%</div>
                 <div style="font-size: 0.9rem; color: #999; margin-top: 4px;">Satisfaction Guarantee</div>
             </div>
         </div>
     </div>
 
     <!-- Social Proof: Testimonials -->
-    <div style="background: #faf9f7; padding: 60px 20px;">
+    <div style="background: #FAF7F2; padding: 60px 20px;">
         <div style="max-width: 900px; margin: 0 auto; text-align: center;">
-            <h2 style="font-size: 1.8rem; color: #1a1a1a; margin-bottom: 8px; font-family: Georgia, serif;">What Our Customers Say</h2>
-            <p style="font-size: 1.05rem; color: #888; margin-bottom: 40px; font-family: Georgia, serif;">Real stories from real proposals.</p>
+            <h2 style="font-size: 1.8rem; color: #1F2A44; margin-bottom: 8px; font-family: 'Inter', sans-serif;">What Our Customers Say</h2>
+            <p style="font-size: 1.05rem; color: #888; margin-bottom: 40px; font-family: 'Inter', sans-serif;">Real stories from real proposals.</p>
             
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
-                <div style="background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #e8e4df; text-align: left;">
-                    <div style="color: #b08d57; font-size: 1.4rem; margin-bottom: 12px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p style="font-size: 0.95rem; color: #555; line-height: 1.7; font-family: Georgia, serif; margin-bottom: 16px;">"I sent them a picture of a ring I saw on Instagram and they recreated it perfectly with a lab diamond for half the price. My fianc&eacute;e was blown away."</p>
-                    <div style="border-top: 1px solid #f0ece7; padding-top: 12px;">
+                <div style="background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #F0EDE6; text-align: left;">
+                    <div style="color: #D9B48C; font-size: 1.4rem; margin-bottom: 12px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p style="font-size: 0.95rem; color: #4A5568; line-height: 1.7; font-family: 'Inter', sans-serif; margin-bottom: 16px;">"I sent them a picture of a ring I saw on Instagram and they recreated it perfectly with a lab diamond for half the price. My fianc&eacute;e was blown away."</p>
+                    <div style="border-top: 1px solid #F0EDE6; padding-top: 12px;">
                         <div style="font-weight: 600; color: #333; font-size: 0.9rem;">James R.</div>
                         <div style="color: #999; font-size: 0.8rem;">2ct Oval Halo, White Gold</div>
                     </div>
                 </div>
                 
-                <div style="background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #e8e4df; text-align: left;">
-                    <div style="color: #b08d57; font-size: 1.4rem; margin-bottom: 12px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p style="font-size: 0.95rem; color: #555; line-height: 1.7; font-family: Georgia, serif; margin-bottom: 16px;">"They walked me through every option and helped me understand why a lab diamond was the way to go. The ring is absolutely stunning and the process was so easy."</p>
-                    <div style="border-top: 1px solid #f0ece7; padding-top: 12px;">
+                <div style="background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #F0EDE6; text-align: left;">
+                    <div style="color: #D9B48C; font-size: 1.4rem; margin-bottom: 12px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p style="font-size: 0.95rem; color: #4A5568; line-height: 1.7; font-family: 'Inter', sans-serif; margin-bottom: 16px;">"They walked me through every option and helped me understand why a lab diamond was the way to go. The ring is absolutely stunning and the process was so easy."</p>
+                    <div style="border-top: 1px solid #F0EDE6; padding-top: 12px;">
                         <div style="font-weight: 600; color: #333; font-size: 0.9rem;">Michael T.</div>
                         <div style="color: #999; font-size: 0.8rem;">1.5ct Round Solitaire, Platinum</div>
                     </div>
                 </div>
                 
-                <div style="background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #e8e4df; text-align: left;">
-                    <div style="color: #b08d57; font-size: 1.4rem; margin-bottom: 12px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p style="font-size: 0.95rem; color: #555; line-height: 1.7; font-family: Georgia, serif; margin-bottom: 16px;">"I had my grandmother's diamond and just needed the setting. They built a beautiful custom ring around it and the quality is incredible. Highly recommend."</p>
-                    <div style="border-top: 1px solid #f0ece7; padding-top: 12px;">
+                <div style="background: #fff; border-radius: 12px; padding: 28px; border: 1px solid #F0EDE6; text-align: left;">
+                    <div style="color: #D9B48C; font-size: 1.4rem; margin-bottom: 12px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p style="font-size: 0.95rem; color: #4A5568; line-height: 1.7; font-family: 'Inter', sans-serif; margin-bottom: 16px;">"I had my grandmother's diamond and just needed the setting. They built a beautiful custom ring around it and the quality is incredible. Highly recommend."</p>
+                    <div style="border-top: 1px solid #F0EDE6; padding-top: 12px;">
                         <div style="font-weight: 600; color: #333; font-size: 0.9rem;">Sarah K.</div>
                         <div style="color: #999; font-size: 0.8rem;">Setting Only, Rose Gold Pav&eacute;</div>
                     </div>
@@ -276,18 +283,18 @@
     </div>
 
     <!-- Trust Badges -->
-    <div style="background: #fff; padding: 40px 20px; text-align: center; border-top: 1px solid #e8e4df; border-bottom: 1px solid #e8e4df;">
+    <div style="background: #fff; padding: 40px 20px; text-align: center; border-top: 1px solid #F0EDE6; border-bottom: 1px solid #F0EDE6;">
         <div style="max-width: 800px; margin: 0 auto; display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 8px; color: #777; font-size: 0.9rem; font-family: Georgia, serif;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #777; font-size: 0.9rem; font-family: 'Inter', sans-serif;">
                 <span style="font-size: 1.3rem;">&#128274;</span> Secure Checkout
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; color: #777; font-size: 0.9rem; font-family: Georgia, serif;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #777; font-size: 0.9rem; font-family: 'Inter', sans-serif;">
                 <span style="font-size: 1.3rem;">&#9830;</span> GIA / IGI Certified Stones
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; color: #777; font-size: 0.9rem; font-family: Georgia, serif;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #777; font-size: 0.9rem; font-family: 'Inter', sans-serif;">
                 <span style="font-size: 1.3rem;">&#128230;</span> Insured Shipping
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; color: #777; font-size: 0.9rem; font-family: Georgia, serif;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #777; font-size: 0.9rem; font-family: 'Inter', sans-serif;">
                 <span style="font-size: 1.3rem;">&#10003;</span> 30-Day Returns
             </div>
         </div>
