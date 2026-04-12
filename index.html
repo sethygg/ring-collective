@@ -56,13 +56,13 @@
         <ul class="nav-links">
             <li><a href="#how-it-works">How It Works</a></li>
             <li><a href="#learn">Learn</a></li>
-            <li><a href="quote-builder.html">Build Your Ring</a></li>
+            <li><a href="quote-builder-b.html">Build Your Ring</a></li>
         </ul>
     </nav>
     <section class="hero">
         <h1>Your Ring. Your Story.</h1>
         <p>Every love story is unique, and your engagement ring should be too. We handcraft custom rings tailored to your style, your stone, and your budget.</p>
-        <a href="quote-builder.html" class="btn-primary">Start Building Your Ring</a>
+        <a href="quote-builder-b.html" class="btn-primary">Start Building Your Ring</a>
     </section>
     <section class="how-it-works" id="how-it-works">
         <h2>How It Works</h2>
@@ -220,7 +220,7 @@
     <section class="cta" id="quote">
         <h2>Ready to Begin?</h2>
         <p>Tell us about your dream ring and we'll craft a custom quote just for you. It's free, easy, and zero pressure.</p>
-        <a href="quote-builder.html" class="btn-secondary">Request a Quote</a>
+        <a href="quote-builder-b.html" class="btn-secondary">Request a Quote</a>
     </section>
     
     <!-- Social Proof: Stats Bar -->
@@ -302,36 +302,7 @@
 
 <footer>&copy; 2026 The Ring Collective. All rights reserved.</footer>
 
-    <script>
-    // A/B Test: Randomly assign visitors to quote builder A or B
-    // Version sticks for the session so they always see the same one
-    function getQuoteVersion() {
-        var v = sessionStorage.getItem('quoteVersion');
-        if (!v) {
-            v = Math.random() < 0.5 ? 'a' : 'b';
-            sessionStorage.setItem('quoteVersion', v);
-        }
-        return v;
-    }
-    function goToQuote() {
-        var version = getQuoteVersion();
-        if (version === 'b') {
-            window.location.href = 'quote-builder-b.html';
-        } else {
-            window.location.href = 'quote-builder.html';
-        }
-    }
-    // Override all quote builder links on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        var links = document.querySelectorAll('a[href="quote-builder.html"]');
-        links.forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                goToQuote();
-            });
-        });
-    });
-    </script>
+    
 
 </body>
 </html>
