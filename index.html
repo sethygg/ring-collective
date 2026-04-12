@@ -78,6 +78,114 @@
             </div>
         </div>
     </section>
+
+    <!-- Recent Projects Slider -->
+    <div style="background: #fff; padding: 60px 20px; overflow: hidden;">
+        <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+            <h2 style="font-size: 1.8rem; color: #1a1a1a; margin-bottom: 8px; font-family: Georgia, serif;">Recent Projects</h2>
+            <p style="font-size: 1.05rem; color: #888; margin-bottom: 40px; font-family: Georgia, serif;">A few of our latest custom builds.</p>
+        </div>
+        
+        <div id="sliderContainer" style="position: relative; max-width: 1100px; margin: 0 auto;">
+            <!-- Left Arrow -->
+            <button onclick="slideLeft()" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #e8e4df; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #b08d57; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10094;</button>
+            
+            <!-- Slider Track -->
+            <div style="overflow: hidden; margin: 0 50px;">
+                <div id="sliderTrack" style="display: flex; gap: 20px; transition: transform 0.5s ease; will-change: transform;">
+                    <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                            <img src="images/project1.jpg" alt="Pear Cut Rose Gold Vine Ring" style="width: 100%; height: 320px; object-fit: cover;">
+                            <div style="padding: 16px; background: #fff;">
+                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Pear Cut Vine Setting</div>
+                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Rose Gold &bull; Lab Diamond</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                            <img src="images/project2.jpg" alt="Princess Cut Sapphire Halo Ring" style="width: 100%; height: 320px; object-fit: cover;">
+                            <div style="padding: 16px; background: #fff;">
+                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Princess Cut Sapphire Halo</div>
+                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">White Gold &bull; Lab Sapphire</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                            <img src="images/project3.jpg" alt="Marquise Three-Stone Yellow Gold Ring" style="width: 100%; height: 320px; object-fit: cover;">
+                            <div style="padding: 16px; background: #fff;">
+                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Marquise Three-Stone</div>
+                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Yellow Gold &bull; Lab Diamond</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                            <img src="images/project4.jpg" alt="Oval Rose Gold Halo Ring" style="width: 100%; height: 320px; object-fit: cover;">
+                            <div style="padding: 16px; background: #fff;">
+                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Oval Vintage Halo</div>
+                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Rose Gold &bull; Lab Diamond</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
+                        <div style="border-radius: 12px; overflow: hidden; border: 1px solid #e8e4df; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                            <img src="images/project5.jpg" alt="Round Solitaire Platinum Ring" style="width: 100%; height: 320px; object-fit: cover;">
+                            <div style="padding: 16px; background: #fff;">
+                                <div style="font-family: Georgia, serif; font-weight: 600; color: #333; font-size: 0.95rem;">Round Solitaire Classic</div>
+                                <div style="font-family: Georgia, serif; color: #999; font-size: 0.85rem; margin-top: 4px;">Platinum &bull; Lab Diamond</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Arrow -->
+            <button onclick="slideRight()" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #e8e4df; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #b08d57; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10095;</button>
+        </div>
+        
+        <!-- Dots -->
+        <div style="text-align: center; margin-top: 24px;">
+            <span class="dot" onclick="goToSlide(0)" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #b08d57; margin: 0 5px; cursor: pointer; transition: background 0.3s;"></span>
+            <span class="dot" onclick="goToSlide(1)" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ddd; margin: 0 5px; cursor: pointer; transition: background 0.3s;"></span>
+            <span class="dot" onclick="goToSlide(2)" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ddd; margin: 0 5px; cursor: pointer; transition: background 0.3s;"></span>
+        </div>
+    </div>
+
+    <script>
+    let currentSlide = 0;
+    const totalSlides = 3;
+    
+    function updateSlider() {
+        const track = document.getElementById('sliderTrack');
+        const slideWidth = track.children[0].offsetWidth + 20;
+        track.style.transform = 'translateX(-' + (currentSlide * slideWidth) + 'px)';
+        document.querySelectorAll('.dot').forEach((dot, i) => {
+            dot.style.background = i === currentSlide ? '#b08d57' : '#ddd';
+        });
+    }
+    
+    function slideRight() {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        updateSlider();
+    }
+    
+    function slideLeft() {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        updateSlider();
+    }
+    
+    function goToSlide(n) {
+        currentSlide = n;
+        updateSlider();
+    }
+    
+    // Auto-slide every 5 seconds
+    setInterval(slideRight, 5000);
+    </script>
+
+
     <section class="education" id="learn">
         <h2>Ring Education</h2>
         <p class="subtitle">Everything you need to know before choosing your ring</p>
