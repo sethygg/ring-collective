@@ -163,7 +163,8 @@
 @media (max-width: 768px) {
     .hamburger { display: flex; }
     nav { padding: 15px 20px !important; }
-    nav a:not(.hamburger):not([style*="background"]) { display: none; }
+    .nav-links { display: none !important; }
+    nav > a:not(.logo) { display: none !important; }
     
     /* Wizard container */
     div[style*="max-width: 700px"], div[style*="max-width: 600px"], div[style*="max-width: 800px"] {

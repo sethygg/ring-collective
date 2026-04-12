@@ -116,7 +116,8 @@
 @media (max-width: 768px) {
     .hamburger { display: flex; }
     nav { padding: 15px 20px !important; }
-    nav a:not(.hamburger):not([style*="background"]) { display: none; }
+    .nav-links { display: none !important; }
+    nav > a:not(.logo) { display: none !important; }
     
     h1 { font-size: 28px !important; }
     h2 { font-size: 22px !important; }
