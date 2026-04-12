@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your Ring | The Ring Collective</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Georgia', serif; color: #2c2c2c; background-color: #faf9f7; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #fff; border-bottom: 1px solid #e8e4df; }
+        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #1a1a1a; text-transform: uppercase; }
+        .logo a { text-decoration: none; color: inherit; }
+        .nav-links { display: flex; gap: 35px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a:hover { color: #b08d57; }
+        .page-header { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #f5f0eb 0%, #e8e0d5 100%); }
+        .page-header h1 { font-size: 40px; font-weight: normal; margin-bottom: 12px; color: #1a1a1a; letter-spacing: 2px; }
+        .page-header p { font-size: 17px; color: #666; max-width: 550px; margin: 0 auto; line-height: 1.7; }
+        .form-container { max-width: 760px; margin: 0 auto; padding: 50px 20px 80px; }
+        .form-section { margin-bottom: 45px; }
+        .form-section-title { font-size: 22px; font-weight: normal; color: #1a1a1a; letter-spacing: 1px; margin-bottom: 8px; }
+        .form-section-subtitle { font-size: 14px; color: #999; margin-bottom: 25px; }
+        .form-section-divider { width: 50px; height: 2px; background-color: #b08d57; margin-bottom: 25px; }
+        .upload-area { border: 2px dashed #d4cfc8; border-radius: 8px; padding: 50px 30px; text-align: center; cursor: pointer; transition: all 0.3s; background-color: #fff; position: relative; }
+        .upload-area:hover { border-color: #b08d57; background-color: #fdfcfa; }
+        .upload-area.has-files { border-color: #b08d57; border-style: solid; }
+        .upload-icon { font-size: 48px; margin-bottom: 15px; }
+        .upload-area h3 { font-size: 18px; font-weight: normal; color: #1a1a1a; margin-bottom: 8px; }
+        .upload-area p { font-size: 14px; color: #999; }
+        .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .file-list { margin-top: 15px; }
+        .file-item { display: flex; align-items: center; justify-content: space-between; background: #f5f0eb; padding: 10px 15px; border-radius: 6px; margin-top: 8px; font-size: 14px; }
+        .file-item button { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 16px; }
+        label { display: block; font-size: 14px; color: #555; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase; }
+        .required::after { content: ' *'; color: #c0392b; }
+        input[type="text"], input[type="email"], input[type="tel"], select, textarea { width: 100%; padding: 14px 16px; border: 1px solid #d4cfc8; border-radius: 4px; font-family: 'Georgia', serif; font-size: 15px; color: #2c2c2c; background-color: #fff; transition: border-color 0.3s; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #b08d57; }
+        textarea { resize: vertical; min-height: 100px; }
+        .field-hint { font-size: 12px; color: #aaa; margin-top: 5px; }
+        .field-row { display: flex; gap: 20px; margin-bottom: 20px; }
+        .field-row .field { flex: 1; }
+        .field { margin-bottom: 20px; }
+        .size-helper { font-size: 13px; color: #b08d57; cursor: pointer; margin-top: 6px; display: inline-block; }
+        .size-helper:hover { text-decoration: underline; }
+        .size-tip { display: none; background: #fff; border: 1px solid #e8e4df; border-radius: 6px; padding: 20px; margin-top: 10px; font-size: 14px; color: #666; line-height: 1.7; }
+        .size-tip.visible { display: block; }
+        .option-cards { display: flex; flex-wrap: wrap; gap: 12px; }
+        .option-card { flex: 1; min-width: 100px; padding: 12px 8px; border: 1px solid #d4cfc8; border-radius: 6px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fff; }
+        .option-card:hover { border-color: #b08d57; }
+        .option-card.selected { border-color: #b08d57; background-color: #faf5ee; box-shadow: 0 0 0 1px #b08d57; }
+        .option-card .card-label { font-size: 13px; color: #1a1a1a; margin-top: 8px; }
+        .option-card .card-emoji { font-size: 24px; }
+        .option-card input[type="radio"] { display: none; }
+        .option-card img { width: 80px; height: 80px; object-fit: contain; border-radius: 4px; }
+        .img-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .img-card { padding: 10px; border: 2px solid #e8e4df; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fff; }
+        .img-card:hover { border-color: #b08d57; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .img-card.selected { border-color: #b08d57; background-color: #faf5ee; box-shadow: 0 0 0 2px #b08d57; }
+        .img-card img { width: 100%; height: 180px; object-fit: contain; border-radius: 4px; }
+        .img-card .card-label { font-size: 13px; color: #1a1a1a; margin-top: 8px; font-weight: normal; }
+        .img-card input[type="radio"] { display: none; }
+        .metal-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .metal-card { padding: 10px; border: 2px solid #e8e4df; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fff; }
+        .metal-card:hover { border-color: #b08d57; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .metal-card.selected { border-color: #b08d57; background-color: #faf5ee; box-shadow: 0 0 0 2px #b08d57; }
+        .metal-card img { width: 100%; height: 200px; object-fit: contain; border-radius: 4px; }
+        .metal-card .card-label { font-size: 13px; color: #1a1a1a; margin-top: 8px; }
+        .metal-card input[type="radio"] { display: none; }
+        .budget-display { text-align: center; font-size: 28px; color: #b08d57; margin-bottom: 15px; letter-spacing: 1px; }
+        input[type="range"] { width: 100%; -webkit-appearance: none; height: 4px; background: #d4cfc8; border-radius: 2px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #b08d57; cursor: pointer; }
+        .budget-labels { display: flex; justify-content: space-between; font-size: 12px; color: #999; margin-top: 8px; }
+        .submit-section { text-align: center; padding-top: 20px; }
+        .btn-submit { display: inline-block; padding: 18px 60px; background-color: #b08d57; color: #fff; font-family: 'Georgia', serif; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; border: none; cursor: pointer; transition: background-color 0.3s; border-radius: 4px; }
+        .btn-submit:hover { background-color: #96753e; }
+        .submit-note { font-size: 13px; color: #999; margin-top: 15px; }
+        .success-message { display: none; text-align: center; padding: 60px 20px; }
+        .success-message h2 { font-size: 32px; font-weight: normal; color: #1a1a1a; margin-bottom: 15px; }
+        .success-message p { font-size: 16px; color: #666; line-height: 1.7; max-width: 450px; margin: 0 auto; }
+        .success-icon { font-size: 60px; margin-bottom: 20px; }
+        footer { padding: 40px 60px; text-align: center; background-color: #1a1a1a; color: #777; font-size: 13px; letter-spacing: 1px; }
+        .info-box { background: #fff; border: 1px solid #e8e4df; border-radius: 8px; padding: 30px; margin-bottom: 25px; line-height: 1.8; }
+        .info-box h3 { font-size: 18px; font-weight: normal; color: #1a1a1a; margin-bottom: 12px; }
+        .info-box p { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .info-box .highlight { color: #b08d57; font-weight: bold; }
+        .info-box ul { list-style: none; padding: 0; margin: 12px 0; }
+        .info-box ul li { padding: 6px 0; font-size: 14px; color: #555; }
+        .info-box ul li::before { content: "\2713  "; color: #b08d57; font-weight: bold; }
+        .setting-only-note { display: none; background: #f5f0eb; border-radius: 8px; padding: 20px; margin-top: 15px; font-size: 14px; color: #555; line-height: 1.7; }
+        .setting-only-note.visible { display: block; }
+        @media (max-width: 768px) { nav { flex-direction: column; gap: 15px; padding: 20px; } .field-row { flex-direction: column; gap: 0; } .img-cards { grid-template-columns: repeat(2, 1fr); } .metal-cards { grid-template-columns: repeat(2, 1fr); } .option-cards { flex-direction: column; } .option-card { min-width: unset; } .form-container { padding: 30px 15px 60px; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo"><a href="index.html">The Ring Collective</a></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#learn">Learn</a></li>
+            <li><a href="quote-builder.html" style="color: #b08d57;">Build Your Ring</a></li>
+        </ul>
+    </nav>
+    <div class="page-header">
+        <h1>Build Your Ring</h1>
+        <p>Upload a photo of a ring you love, tell us your preferences, and we'll send you a custom quote within 24 hours.</p>
+    </div>
+    <div class="form-container" id="quoteForm">
+        <div class="form-section">
+            <h2 class="form-section-title">Reference Image</h2>
+            <p class="form-section-subtitle">Show us what you're looking for</p>
+            <div class="form-section-divider"></div>
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="imageUpload" accept="image/*" multiple>
+                <div class="upload-icon">&#x1F4F7;</div>
+                <h3>Drop your ring photos here</h3>
+                <p>or click to browse — JPG, PNG up to 10MB each</p>
+                <p style="margin-top: 10px; font-size: 13px; color: #b08d57;">Upload photos from the web, screenshots from stores, or your own pictures</p>
+            </div>
+            <div class="file-list" id="fileList"></div>
+        </div>
+        <div class="form-section">
+            <h2 class="form-section-title">Ring Details</h2>
+            <p class="form-section-subtitle">Tell us about your perfect ring</p>
+            <div class="form-section-divider"></div>
+            <div class="field">
+                <label class="required">Ring Size</label>
+                <select id="ringSize"><option value="">Select a ring size</option><option value="3">3</option><option value="3.5">3.5</option><option value="4">4</option><option value="4.5">4.5</option><option value="5">5</option><option value="5.5">5.5</option><option value="6">6</option><option value="6.5">6.5</option><option value="7">7 (most common)</option><option value="7.5">7.5</option><option value="8">8</option><option value="8.5">8.5</option><option value="9">9</option><option value="9.5">9.5</option><option value="10">10</option><option value="10.5">10.5</option><option value="11">11</option><option value="11.5">11.5</option><option value="12">12</option><option value="13">13</option><option value="unsure">I'm not sure</option></select>
+                <span class="size-helper" onclick="toggleSizeTip()">Not sure of your size? Click here for help</span>
+                <div class="size-tip" id="sizeTip"><strong>Quick ways to find your ring size:</strong><br><br><strong>Option 1:</strong> Borrow a ring they already wear on that finger and bring it to any local jeweler for a free measurement.<br><br><strong>Option 2:</strong> Wrap a thin strip of paper around the finger, mark where it overlaps, and measure the length in millimeters. Divide by 3.14 to get the diameter.<br><br><strong>Option 3:</strong> Select "I'm not sure" and we'll help you figure it out!</div>
+            </div>
+            <div class="field">
+                <label class="required">Precious Metal</label>
+                <div class="metal-cards">
+                    <label class="metal-card" onclick="selectCard(this, 'metal')"><input type="radio" name="metal" value="yellow-gold"><img src="images/yellow-gold.jpg" alt="Yellow Gold"><div class="card-label">Yellow Gold</div></label>
+                    <label class="metal-card" onclick="selectCard(this, 'metal')"><input type="radio" name="metal" value="white-gold"><img src="images/white-gold.jpg" alt="White Gold"><div class="card-label">White Gold</div></label>
+                    <label class="metal-card" onclick="selectCard(this, 'metal')"><input type="radio" name="metal" value="rose-gold"><img src="images/rose-gold.jpg" alt="Rose Gold"><div class="card-label">Rose Gold</div></label>
+                    <label class="metal-card" onclick="selectCard(this, 'metal')"><input type="radio" name="metal" value="platinum"><img src="images/platinum.jpg" alt="Platinum"><div class="card-label">Platinum</div></label>
+                </div>
+            </div>
+        </div>
+        <div class="form-section">
+            <h2 class="form-section-title">Center Stone</h2>
+            <p class="form-section-subtitle">Choose your stone — or let us build just the setting</p>
+            <div class="form-section-divider"></div>
+            <div class="info-box">
+                <h3>&#x1F48E; Why We Recommend Lab Diamonds</h3>
+                <p>At The Ring Collective, we specialize in <span class="highlight">lab-grown diamonds</span> — and here's why our customers love them:</p>
+                <ul>
+                    <li>Chemically, physically, and optically identical to mined diamonds</li>
+                    <li>40-60% less expensive — get a bigger, better stone for your budget</li>
+                    <li>Ethically sourced with zero mining impact</li>
+                    <li>Every stone is certified and graded to the same standards</li>
+                </ul>
+                <p>The truth is, even a trained jeweler can't tell the difference without specialized equipment. You get the same fire, brilliance, and forever-quality — at a price that makes sense.</p>
+                <p style="margin-bottom: 0;"><em>We don't source natural mined stones, but we're happy to create your perfect setting if you already have a stone or prefer to source your own.</em></p>
+            </div>
+            <div class="field">
+                <label class="required">What Would You Like?</label>
+                <div class="option-cards" id="stoneOptions">
+                    <label class="option-card" onclick="selectOption(this, 'stone'); toggleSettingNote('lab')"><input type="radio" name="stone" value="lab-diamond"><div class="card-emoji">&#x1F48E;</div><div class="card-label">Lab Diamond</div></label>
+                    <label class="option-card" onclick="selectOption(this, 'stone'); toggleSettingNote('moissanite')"><input type="radio" name="stone" value="moissanite"><div class="card-emoji">&#x2728;</div><div class="card-label">Moissanite</div></label>
+                    <label class="option-card" onclick="selectOption(this, 'stone'); toggleSettingNote('setting-only')"><input type="radio" name="stone" value="setting-only"><div class="card-emoji">&#x1F48D;</div><div class="card-label">Setting Only</div></label>
+                    <label class="option-card" onclick="selectOption(this, 'stone'); toggleSettingNote('other')"><input type="radio" name="stone" value="other"><div class="card-emoji">&#x2753;</div><div class="card-label">Other / Not Sure</div></label>
+                </div>
+                <div class="setting-only-note" id="settingOnlyNote"><strong>&#x1F48D; Setting Only — Great Choice!</strong><br><br>We'll craft your custom ring setting to your exact specifications. Once you receive it, simply take it to any local jeweler to have your stone set. This is a popular option for customers who already have a family stone, want to source their own diamond, or prefer to shop for the perfect stone in person.</div>
+            </div>
+            <div id="stoneDetailsSection">
+                <div class="field">
+                    <label>Stone Shape</label>
+                    <div class="img-cards">
+                        <label class="img-card" onclick="selectCard(this, 'shape')"><input type="radio" name="shape" value="round"><img src="images/round.jpg" alt="Round"><div class="card-label">Round</div></label>
+                        <label class="img-card" onclick="selectCard(this, 'shape')"><input type="radio" name="shape" value="oval"><img src="images/oval.jpg" alt="Oval"><div class="card-label">Oval</div></label>
+                        <label class="img-card" onclick="selectCard(this, 'shape')"><input type="radio" name="shape" value="cushion"><img src="images/cushion.jpg" alt="Cushion"><div class="card-label">Cushion</div></label>
+                        <label class="img-card" onclick="selectCard(this, 'shape')"><input type="radio" name="shape" value="pear"><img src="images/pear.jpg" alt="Pear"><div class="card-label">Pear</div></label>
+                        <label class="img-card" onclick="selectCard(this, 'shape')"><input type="radio" name="shape" value="emerald"><img src="images/emerald.jpg" alt="Emerald"><div class="card-label">Emerald</div></label>
+                        <label class="img-card" onclick="selectCard(this, 'shape')"><input type="radio" name="shape" value="princess"><img src="images/princess.jpg" alt="Princess"><div class="card-label">Princess</div></label>
+                        <label class="img-card" onclick="selectCard(this, 'shape')"><input type="radio" name="shape" value="marquise"><img src="images/marquise.jpg" alt="Marquise"><div class="card-label">Marquise</div></label>
+                        <label class="img-card" onclick="selectCard(this, 'shape')"><input type="radio" name="shape" value="radiant"><img src="images/radiant.jpg" alt="Radiant"><div class="card-label">Radiant</div></label>
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>Approximate Carat Size</label><select id="caratSize"><option value="">Select carat size</option><option value="0.5">0.5 ct</option><option value="0.75">0.75 ct</option><option value="1.0">1.0 ct</option><option value="1.25">1.25 ct</option><option value="1.5">1.5 ct</option><option value="2.0">2.0 ct</option><option value="2.5">2.5 ct</option><option value="3.0">3.0 ct</option><option value="3.0+">3.0+ ct</option><option value="unsure">Not sure yet</option></select></div>
+                    <div class="field"><label>Setting Style</label><select id="settingStyle"><option value="">Select a style</option><option value="solitaire">Solitaire</option><option value="halo">Halo</option><option value="pave">Pave</option><option value="three-stone">Three Stone</option><option value="vintage">Vintage / Antique</option><option value="bezel">Bezel</option><option value="cathedral">Cathedral</option><option value="from-image">Match my reference image</option><option value="unsure">Not sure — help me decide</option></select></div>
+                </div>
+            </div>
+        </div>
+        <div class="form-section">
+            <h2 class="form-section-title">Budget</h2>
+            <p class="form-section-subtitle">Helps us tailor the best options for you</p>
+            <div class="form-section-divider"></div>
+            <div class="budget-display" id="budgetDisplay">$3,000 - $5,000</div>
+            <input type="range" id="budgetSlider" min="0" max="7" value="3" oninput="updateBudget(this.value)">
+            <div class="budget-labels"><span>Under $1K</span><span>$25K+</span></div>
+        </div>
+        <div class="form-section">
+            <h2 class="form-section-title">Timeline</h2>
+            <p class="form-section-subtitle">When do you need the ring?</p>
+            <div class="form-section-divider"></div>
+            <div class="option-cards" id="timelineOptions">
+                <label class="option-card" onclick="selectOption(this, 'timeline')"><input type="radio" name="timeline" value="asap"><div class="card-emoji">&#x26A1;</div><div class="card-label">ASAP</div></label>
+                <label class="option-card" onclick="selectOption(this, 'timeline')"><input type="radio" name="timeline" value="1-2-months"><div class="card-emoji">&#x1F4C5;</div><div class="card-label">1-2 Months</div></label>
+                <label class="option-card" onclick="selectOption(this, 'timeline')"><input type="radio" name="timeline" value="3-6-months"><div class="card-emoji">&#x23F3;</div><div class="card-label">3-6 Months</div></label>
+                <label class="option-card" onclick="selectOption(this, 'timeline')"><input type="radio" name="timeline" value="just-browsing"><div class="card-emoji">&#x1F440;</div><div class="card-label">Just Browsing</div></label>
+            </div>
+        </div>
+        <div class="form-section">
+            <h2 class="form-section-title">Your Information</h2>
+            <p class="form-section-subtitle">So we can send you the quote</p>
+            <div class="form-section-divider"></div>
+            <div class="field-row"><div class="field"><label class="required">First Name</label><input type="text" id="firstName" placeholder="First name"></div><div class="field"><label class="required">Last Name</label><input type="text" id="lastName" placeholder="Last name"></div></div>
+            <div class="field-row"><div class="field"><label class="required">Email</label><input type="email" id="email" placeholder="your@email.com"></div><div class="field"><label>Phone</label><input type="tel" id="phone" placeholder="(555) 123-4567"><p class="field-hint">Optional — for faster communication</p></div></div>
+            <div class="field"><label>Anything Else We Should Know?</label><textarea id="notes" placeholder="Special requests, questions, engraving ideas, or anything else you'd like us to know..."></textarea></div>
+        </div>
+        <div class="submit-section">
+            <button class="btn-submit" onclick="submitQuote()">Submit Quote Request</button>
+            <p class="submit-note">Free quote, no obligations. We typically respond within 24 hours.</p>
+        </div>
+    </div>
+    <div class="success-message" id="successMessage">
+        <div class="success-icon">&#x1F48D;</div>
+        <h2>Quote Request Received!</h2>
+        <p>Thank you! We've received your ring details and will send you a personalized quote within 24 hours. Keep an eye on your inbox.</p>
+        <br><br><a href="index.html" style="color: #b08d57; font-size: 15px;">Back to Home</a>
+    </div>
+    <footer>&copy; 2026 The Ring Collective. All rights reserved.</footer>
+    <script>
+        function selectOption(card, group) { document.querySelectorAll('.option-card').forEach(function(c) { if (c.querySelector('input[name="' + group + '"]')) c.classList.remove('selected'); }); card.classList.add('selected'); }
+        function selectCard(card, group) { document.querySelectorAll('.img-card, .metal-card').forEach(function(c) { if (c.querySelector('input[name="' + group + '"]')) c.classList.remove('selected'); }); card.classList.add('selected'); }
+        function toggleSizeTip() { document.getElementById('sizeTip').classList.toggle('visible'); }
+        function toggleSettingNote(type) { var note=document.getElementById('settingOnlyNote'); var details=document.getElementById('stoneDetailsSection'); if (type==='setting-only') { note.classList.add('visible'); details.style.display='none'; } else { note.classList.remove('visible'); details.style.display='block'; } }
+        var budgetRanges = ['Under $1,000','$1,000 - $2,000','$2,000 - $3,000','$3,000 - $5,000','$5,000 - $7,500','$7,500 - $10,000','$10,000 - $25,000','$25,000+'];
+        function updateBudget(val) { document.getElementById('budgetDisplay').textContent = budgetRanges[val]; }
+        var uploadedFiles = [];
+        document.getElementById('imageUpload').addEventListener('change', function(e) { Array.from(e.target.files).forEach(function(file) { if (file.size > 10*1024*1024) { alert(file.name+' is too large. Max 10MB.'); return; } uploadedFiles.push(file); }); renderFileList(); if (uploadedFiles.length > 0) document.getElementById('uploadArea').classList.add('has-files'); });
+        function removeFile(i) { uploadedFiles.splice(i,1); renderFileList(); if (uploadedFiles.length===0) document.getElementById('uploadArea').classList.remove('has-files'); }
+        function renderFileList() { var l=document.getElementById('fileList'); l.innerHTML=''; uploadedFiles.forEach(function(f,i) { var d=document.createElement('div'); d.className='file-item'; d.innerHTML='<span>'+f.name+' ('+(f.size/1024/1024).toFixed(1)+' MB)</span><button onclick="removeFile('+i+')">&times;</button>'; l.appendChild(d); }); }
+        function submitQuote() { var fn=document.getElementById('firstName').value.trim(), ln=document.getElementById('lastName').value.trim(), em=document.getElementById('email').value.trim(); if (!fn||!ln||!em) { alert('Please fill in your name and email.'); return; } if (!em.includes('@')) { alert('Please enter a valid email.'); return; } document.getElementById('quoteForm').style.display='none'; document.getElementById('successMessage').style.display='block'; window.scrollTo(0,0); }
+    </script>
+</body>
+</html>

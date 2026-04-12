@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ring Collective | Custom Engagement Rings</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Georgia', serif; color: #2c2c2c; background-color: #faf9f7; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #fff; border-bottom: 1px solid #e8e4df; }
+        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #1a1a1a; text-transform: uppercase; }
+        .nav-links { display: flex; gap: 35px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a:hover { color: #b08d57; }
+        .hero { text-align: center; padding: 100px 20px; background: linear-gradient(135deg, #f5f0eb 0%, #e8e0d5 100%); }
+        .hero h1 { font-size: 48px; font-weight: normal; margin-bottom: 20px; color: #1a1a1a; letter-spacing: 2px; }
+        .hero p { font-size: 18px; color: #666; max-width: 600px; margin: 0 auto 40px; line-height: 1.8; }
+        .btn-primary { display: inline-block; padding: 16px 45px; background-color: #b08d57; color: #fff; text-decoration: none; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border: none; cursor: pointer; transition: background-color 0.3s; }
+        .btn-primary:hover { background-color: #96753e; }
+        .how-it-works { padding: 80px 60px; text-align: center; }
+        .how-it-works h2 { font-size: 32px; font-weight: normal; margin-bottom: 15px; letter-spacing: 2px; }
+        .how-it-works .subtitle { color: #888; margin-bottom: 60px; font-size: 16px; }
+        .steps { display: flex; justify-content: center; gap: 60px; max-width: 1000px; margin: 0 auto; }
+        .step { flex: 1; max-width: 280px; }
+        .step-number { width: 60px; height: 60px; border-radius: 50%; background-color: #b08d57; color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .step h3 { font-size: 20px; font-weight: normal; margin-bottom: 12px; color: #1a1a1a; }
+        .step p { color: #777; line-height: 1.7; font-size: 15px; }
+        .education { padding: 80px 60px; background-color: #fff; text-align: center; }
+        .education h2 { font-size: 32px; font-weight: normal; margin-bottom: 15px; letter-spacing: 2px; }
+        .education .subtitle { color: #888; margin-bottom: 60px; font-size: 16px; }
+        .cards { display: flex; justify-content: center; gap: 30px; max-width: 1000px; margin: 0 auto; }
+        .card { flex: 1; max-width: 300px; border: 1px solid #e8e4df; padding: 40px 30px; text-align: center; transition: box-shadow 0.3s; }
+        .card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+        .card-icon { font-size: 40px; margin-bottom: 20px; }
+        .card h3 { font-size: 20px; font-weight: normal; margin-bottom: 12px; color: #1a1a1a; }
+        .card p { color: #777; line-height: 1.7; font-size: 15px; }
+        .cta { padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #1a1a1a 0%, #333 100%); color: #fff; }
+        .cta h2 { font-size: 36px; font-weight: normal; margin-bottom: 15px; letter-spacing: 2px; }
+        .cta p { color: #aaa; max-width: 500px; margin: 0 auto 40px; font-size: 16px; line-height: 1.7; }
+        .btn-secondary { display: inline-block; padding: 16px 45px; background-color: transparent; color: #b08d57; text-decoration: none; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border: 2px solid #b08d57; cursor: pointer; transition: all 0.3s; }
+        .btn-secondary:hover { background-color: #b08d57; color: #fff; }
+        footer { padding: 40px 60px; text-align: center; background-color: #1a1a1a; color: #777; font-size: 13px; letter-spacing: 1px; }
+        @media (max-width: 768px) { nav { flex-direction: column; gap: 15px; padding: 20px; } .hero h1 { font-size: 32px; } .steps, .cards { flex-direction: column; align-items: center; } .how-it-works, .education { padding: 60px 20px; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">The Ring Collective</div>
+        <ul class="nav-links">
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#learn">Learn</a></li>
+            <li><a href="quote-builder.html">Build Your Ring</a></li>
+        </ul>
+    </nav>
+    <section class="hero">
+        <h1>Your Ring. Your Story.</h1>
+        <p>Every love story is unique, and your engagement ring should be too. We handcraft custom rings tailored to your style, your stone, and your budget.</p>
+        <a href="quote-builder.html" class="btn-primary">Start Building Your Ring</a>
+    </section>
+    <section class="how-it-works" id="how-it-works">
+        <h2>How It Works</h2>
+        <p class="subtitle">From inspiration to your perfect ring in three simple steps</p>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Explore</h3>
+                <p>Browse our guides to learn about diamond shapes, settings, and metals. No expertise needed.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Design</h3>
+                <p>Use our ring builder to choose your preferences. Mix and match until it feels right.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Get Your Quote</h3>
+                <p>Submit your design and we'll send you a detailed quote within 24 hours. No pressure.</p>
+            </div>
+        </div>
+    </section>
+    <section class="education" id="learn">
+        <h2>Ring Education</h2>
+        <p class="subtitle">Everything you need to know before choosing your ring</p>
+        <div class="cards">
+            <div class="card">
+                <div class="card-icon">&#x1F48E;</div>
+                <h3>Diamond Guide</h3>
+                <p>Learn about the 4 Cs — cut, clarity, color, and carat — and how they affect your stone.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">&#x1F48D;</div>
+                <h3>Setting Styles</h3>
+                <p>From solitaire to halo to vintage — discover which setting matches your personality.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">&#x2728;</div>
+                <h3>Metal Types</h3>
+                <p>Platinum, white gold, rose gold, yellow gold — find the one that is right for you.</p>
+            </div>
+        </div>
+    </section>
+    <section class="cta" id="quote">
+        <h2>Ready to Begin?</h2>
+        <p>Tell us about your dream ring and we'll craft a custom quote just for you. It's free, easy, and zero pressure.</p>
+        <a href="quote-builder.html" class="btn-secondary">Request a Quote</a>
+    </section>
+    <footer>&copy; 2026 The Ring Collective. All rights reserved.</footer>
+</body>
+</html>
