@@ -282,7 +282,7 @@
     step: 1,
     photos: { front:null, side:null, top:null, detail:null },
     extras: [],
-    answers: { stoneType:null, shape:null, metal:null, karat:null, setting:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'' }
+    answers: { stoneCategory:null, stoneType:null, shape:null, metal:null, karat:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'' }
   };
 
   function toggleMobileMenu(){
@@ -403,17 +403,15 @@
   // flow below just consumes whatever comes back.
   function detectFromPhotos(){
     return {
-      stoneType: 'Lab Diamond',
+      stoneCategory: 'diamond',    // 'diamond' | 'colored'
       shape: 'Round',
-      metalColor: 'White Gold',
-      setting: 'Halo'
+      metalColor: 'White Gold'
     };
   }
 
-  const STONE_OPTIONS = ['Lab Diamond','Moissanite','Natural Diamond','Setting Only'];
   const SHAPE_OPTIONS = ['Round','Oval','Emerald','Cushion','Pear','Princess','Marquise','Radiant'];
   const METAL_OPTIONS = ['White Gold','Yellow Gold','Rose Gold','Platinum'];
-  const SETTING_OPTIONS = ['Solitaire','Halo','Pavé','Three-Stone','Bezel','Cathedral'];
+  const COLORED_STONES = ['Sapphire','Ruby','Emerald','Aquamarine','Morganite','Tanzanite','Topaz','Other'];
 
   let chat2Started = false;
   async function startChat2(){
@@ -421,18 +419,13 @@
     const detected = detectFromPhotos();
     await botSay('chat2', "Looking at your photos now…", 200);
     await botSay('chat2', "Great shots! Here's what I can make out. Confirm each below, or tap <em>No</em> if I got it wrong.", 900);
+
+    await confirmStoneCategory(detected);
     await confirmField({
-      key:'stoneType', value: detected.stoneType, options: STONE_OPTIONS,
-      confirmMsg: `Looks like a <strong>${detected.stoneType.toLowerCase()}</strong> — is that right?`,
-      alternatesMsg: "No worries — which of these is it?"
+      key:'shape', value: detected.shape, options: SHAPE_OPTIONS,
+      confirmMsg: `I see a <strong>${detected.shape.toLowerCase()}</strong> shape — correct?`,
+      alternatesMsg: "Got it — pick the shape:"
     });
-    if (state.answers.stoneType !== 'Setting Only') {
-      await confirmField({
-        key:'shape', value: detected.shape, options: SHAPE_OPTIONS,
-        confirmMsg: `I see a <strong>${detected.shape.toLowerCase()}</strong> shape — correct?`,
-        alternatesMsg: "Got it — pick the shape:"
-      });
-    }
     await confirmField({
       key:'metal', value: detected.metalColor, options: METAL_OPTIONS,
       confirmMsg: `The band looks like <strong>${detected.metalColor.toLowerCase()}</strong> — is that right?`,
@@ -441,13 +434,83 @@
     if (/Gold/.test(state.answers.metal)) {
       await askKarat();
     }
-    await confirmField({
-      key:'setting', value: detected.setting, options: SETTING_OPTIONS,
-      confirmMsg: `Appears to be a <strong>${detected.setting.toLowerCase()}</strong> setting — correct?`,
-      alternatesMsg: "No problem — which setting style?"
-    });
     await askSize();
     await finishChat2();
+  }
+
+  function confirmStoneCategory(detected){
+    return new Promise(async resolve=>{
+      if (detected.stoneCategory === 'diamond') {
+        await botSay('chat2', "Looks like this has a <strong>diamond</strong> center stone — is that right?");
+      } else {
+        await botSay('chat2', "Looks like this has a <strong>colored gemstone</strong> center — is that right?");
+      }
+      showReplies('chat2', [
+        {label:'Yes, diamond', value:'diamond'},
+        {label:"It's a colored stone", value:'colored'}
+      ], async choice=>{
+        if (choice === 'diamond') {
+          await askDiamondType();
+        } else {
+          await askColoredStone();
+        }
+        resolve();
+      });
+    });
+  }
+
+  function askDiamondType(){
+    return new Promise(async resolve=>{
+      await botSay('chat2',
+        "We offer two beautiful options: <strong>Lab Diamonds</strong> — real diamonds grown in a lab, chemically identical to mined ones but 40–60% less — and <strong>Moissanite</strong>, which has even more fire and sparkle than diamond (9.25 on the Mohs scale) and can cost up to 90% less. Which would you like?"
+      );
+      showReplies('chat2', [
+        {label:'Lab Diamond'}, {label:'Moissanite'},
+        {label:'Natural (mined) Diamond'}
+      ], v=>{
+        state.answers.stoneCategory = 'diamond';
+        state.answers.stoneType = v;
+        resolve();
+      });
+    });
+  }
+
+  function askColoredStone(){
+    return new Promise(async resolve=>{
+      await botSay('chat2',
+        "Got it — we love a colored stone. Which are you hoping for? <em>Heads up: we can't always guarantee colored stones are in stock, but we'll do our best to source exactly what you want.</em>"
+      );
+      showReplies('chat2', COLORED_STONES.map(s=>({label:s})), async v=>{
+        state.answers.stoneCategory = 'colored';
+        if (v === 'Other') {
+          await botSay('chat2', "Which stone did you have in mind?");
+          const chat = document.getElementById('chat2');
+          const wrap = document.createElement('div');
+          wrap.className = 'quick-replies user-side';
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = 'e.g. Opal, Alexandrite';
+          input.className = 'qr-select';
+          input.style.minWidth = '180px';
+          const go = document.createElement('button');
+          go.className = 'qr-btn primary'; go.textContent = 'Confirm';
+          go.onclick = ()=>{
+            const val = input.value.trim();
+            if (!val) return;
+            wrap.remove();
+            userSay('chat2', val);
+            state.answers.stoneType = val;
+            resolve();
+          };
+          wrap.appendChild(input); wrap.appendChild(go);
+          chat.appendChild(wrap);
+          chat.scrollTop = chat.scrollHeight;
+        } else {
+          state.answers.stoneType = v;
+          resolve();
+        }
+      });
+    });
   }
 
   function confirmField({key,value,options,confirmMsg,alternatesMsg}){
@@ -473,16 +536,31 @@
 
   function askKarat(){
     return new Promise(async resolve=>{
-      await botSay('chat2', `For the ${state.answers.metal.toLowerCase()}, do you want <strong>14K</strong> or <strong>18K</strong>?`);
+      const metal = state.answers.metal.toLowerCase();
+      await botSay('chat2', `For the ${metal}, do you want <strong>14K</strong> or <strong>18K</strong>?`);
       showReplies('chat2', [
-        {label:'14K'},{label:'18K'},{label:"Not sure — recommend"}
-      ], v=>{ state.answers.karat = v; resolve(); });
+        {label:'14K'},{label:'18K'},{label:"Not sure \u2014 recommend"}
+      ], async v=>{
+        if (v === 'Not sure \u2014 recommend') {
+          await botSay('chat2',
+            "Happy to help. <strong>14K gold</strong> is 58.3% pure — more durable and scratch-resistant, which is why we typically recommend it for engagement rings worn daily. <strong>18K gold</strong> is 75% pure, giving it a richer color and a more luxurious feel, but it's slightly softer. If you're gentle with jewelry or want the deepest color, 18K is a beautiful upgrade. Which sounds right for you?"
+          );
+          showReplies('chat2', [{label:'14K'},{label:'18K'}], v2=>{
+            state.answers.karat = v2; resolve();
+          });
+        } else {
+          state.answers.karat = v; resolve();
+        }
+      });
     });
   }
 
   function askSize(){
     return new Promise(async resolve=>{
-      await botSay('chat2', "Ring size isn\u2019t something we can tell from photos — do you know it?");
+      await botSay('chat2', "Ring size isn\u2019t something we can tell from photos \u2014 do you know it?");
+      await botSay('chat2',
+        "<em>How to find it:</em> (1) get sized for free at any jeweler, (2) measure the inside diameter of a ring that already fits in millimeters, or (3) wrap a strip of paper around the base of the finger, mark where it overlaps, and measure against a ruler. If you're stuck, just pick \u201CNot sure\u201D and we\u2019ll help later."
+      );
       const chat = document.getElementById('chat2');
       const wrap = document.createElement('div');
       wrap.className = 'quick-replies user-side';
@@ -513,11 +591,10 @@
     if (a.shape) parts.push(a.shape.toLowerCase());
     if (a.metal) {
       const m = a.metal.toLowerCase();
-      parts.push(a.karat && a.karat !== 'Not sure — recommend' ? `${a.karat} ${m}` : m);
+      parts.push(a.karat && /^(14K|18K)$/.test(a.karat) ? `${a.karat} ${m}` : m);
     }
-    if (a.setting) parts.push(`${a.setting.toLowerCase()} setting`);
     if (a.ringSize && a.ringSize !== 'Not sure') parts.push('size ' + a.ringSize);
-    await botSay('chat2', `Perfect — <strong>${parts.join(', ')}</strong>. You\u2019re all confirmed.`);
+    await botSay('chat2', `Perfect \u2014 <strong>${parts.join(', ')}</strong>. You\u2019re all confirmed.`);
     document.getElementById('step2Next').disabled = false;
   }
 
