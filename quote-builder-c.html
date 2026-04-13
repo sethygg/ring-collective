@@ -165,7 +165,7 @@
 
   <div class="progress" id="progress">
     <div class="progress-step active" data-step="1"><div class="progress-dot">1</div><div class="progress-label">Photos</div></div>
-    <div class="progress-step" data-step="2"><div class="progress-dot">2</div><div class="progress-label">Details</div></div>
+    <div class="progress-step" data-step="2"><div class="progress-dot">2</div><div class="progress-label">Confirm</div></div>
     <div class="progress-step" data-step="3"><div class="progress-dot">3</div><div class="progress-label">Budget</div></div>
     <div class="progress-step" data-step="4"><div class="progress-dot">4</div><div class="progress-label">You</div></div>
   </div>
@@ -233,8 +233,8 @@
 
   <!-- STEP 2: CHAT CONFIRMATION -->
   <section class="step" id="step2">
-    <h1 class="step-title">A few quick details</h1>
-    <p class="step-sub">While our designer reviews your photos, help us confirm the essentials so we can price your ring accurately.</p>
+    <h1 class="step-title">Confirm what we see</h1>
+    <p class="step-sub">Here's what we picked up from your photos. Just confirm each detail below — or correct us if we're off.</p>
     <div class="chat" id="chat2"></div>
     <div class="actions">
       <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
@@ -282,7 +282,7 @@
     step: 1,
     photos: { front:null, side:null, top:null, detail:null },
     extras: [],
-    answers: { stoneType:null, shape:null, metal:null, setting:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'' }
+    answers: { stoneType:null, shape:null, metal:null, karat:null, setting:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'' }
   };
 
   function toggleMobileMenu(){
@@ -397,79 +397,127 @@
     chat.scrollTop = chat.scrollHeight;
   }
 
-  // ---------- STEP 2 CHAT ----------
+  // ---------- STEP 2: CONFIRMATION ----------
+  // TODO: replace detectFromPhotos() stub with a real AI vision call
+  // (Netlify Function -> Claude / OpenAI Vision API). The rest of the
+  // flow below just consumes whatever comes back.
+  function detectFromPhotos(){
+    return {
+      stoneType: 'Lab Diamond',
+      shape: 'Round',
+      metalColor: 'White Gold',
+      setting: 'Halo'
+    };
+  }
+
+  const STONE_OPTIONS = ['Lab Diamond','Moissanite','Natural Diamond','Setting Only'];
+  const SHAPE_OPTIONS = ['Round','Oval','Emerald','Cushion','Pear','Princess','Marquise','Radiant'];
+  const METAL_OPTIONS = ['White Gold','Yellow Gold','Rose Gold','Platinum'];
+  const SETTING_OPTIONS = ['Solitaire','Halo','Pavé','Three-Stone','Bezel','Cathedral'];
+
   let chat2Started = false;
   async function startChat2(){
     if (chat2Started) return; chat2Started = true;
-    const c = 'chat2';
-    await botSay(c, "Thanks for the photos! I've got a few quick questions to lock in your quote.", 200);
-    await askStoneType();
+    const detected = detectFromPhotos();
+    await botSay('chat2', "Looking at your photos now…", 200);
+    await botSay('chat2', "Great shots! Here's what I can make out. Confirm each below, or tap <em>No</em> if I got it wrong.", 900);
+    await confirmField({
+      key:'stoneType', value: detected.stoneType, options: STONE_OPTIONS,
+      confirmMsg: `Looks like a <strong>${detected.stoneType.toLowerCase()}</strong> — is that right?`,
+      alternatesMsg: "No worries — which of these is it?"
+    });
+    if (state.answers.stoneType !== 'Setting Only') {
+      await confirmField({
+        key:'shape', value: detected.shape, options: SHAPE_OPTIONS,
+        confirmMsg: `I see a <strong>${detected.shape.toLowerCase()}</strong> shape — correct?`,
+        alternatesMsg: "Got it — pick the shape:"
+      });
+    }
+    await confirmField({
+      key:'metal', value: detected.metalColor, options: METAL_OPTIONS,
+      confirmMsg: `The band looks like <strong>${detected.metalColor.toLowerCase()}</strong> — is that right?`,
+      alternatesMsg: "Which metal is it?"
+    });
+    if (/Gold/.test(state.answers.metal)) {
+      await askKarat();
+    }
+    await confirmField({
+      key:'setting', value: detected.setting, options: SETTING_OPTIONS,
+      confirmMsg: `Appears to be a <strong>${detected.setting.toLowerCase()}</strong> setting — correct?`,
+      alternatesMsg: "No problem — which setting style?"
+    });
+    await askSize();
+    await finishChat2();
   }
-  async function askStoneType(){
-    await botSay('chat2', "First — what kind of stone do you want?");
-    showReplies('chat2', [
-      {label:'Lab Diamond'}, {label:'Moissanite'},
-      {label:'Natural Diamond'}, {label:'Setting Only'}
-    ], async v=>{
-      state.answers.stoneType = v;
-      if (v === 'Setting Only') { await askMetal(); }
-      else { await askShape(); }
+
+  function confirmField({key,value,options,confirmMsg,alternatesMsg}){
+    return new Promise(async resolve=>{
+      await botSay('chat2', confirmMsg);
+      showReplies('chat2', [
+        {label:'Yes, that\u2019s right', value:'yes'},
+        {label:'No', value:'no'}
+      ], async ans=>{
+        if (ans === 'yes') {
+          state.answers[key] = value;
+          resolve();
+        } else {
+          await botSay('chat2', alternatesMsg);
+          showReplies('chat2', options.map(o=>({label:o})), v=>{
+            state.answers[key] = v;
+            resolve();
+          });
+        }
+      });
     });
   }
-  async function askShape(){
-    await botSay('chat2', "Great. What shape are you picturing?");
-    showReplies('chat2', [
-      {label:'Round'},{label:'Oval'},{label:'Emerald'},{label:'Cushion'},
-      {label:'Pear'},{label:'Princess'},{label:'Marquise'},{label:'Radiant'},
-      {label:"Not sure yet"}
-    ], async v=>{ state.answers.shape = v; await askMetal(); });
+
+  function askKarat(){
+    return new Promise(async resolve=>{
+      await botSay('chat2', `For the ${state.answers.metal.toLowerCase()}, do you want <strong>14K</strong> or <strong>18K</strong>?`);
+      showReplies('chat2', [
+        {label:'14K'},{label:'18K'},{label:"Not sure — recommend"}
+      ], v=>{ state.answers.karat = v; resolve(); });
+    });
   }
-  async function askMetal(){
-    await botSay('chat2', "Which metal do you prefer for the band?");
-    showReplies('chat2', [
-      {label:'White Gold'},{label:'Yellow Gold'},
-      {label:'Rose Gold'},{label:'Platinum'}
-    ], async v=>{ state.answers.metal = v; await askSetting(); });
+
+  function askSize(){
+    return new Promise(async resolve=>{
+      await botSay('chat2', "Ring size isn\u2019t something we can tell from photos — do you know it?");
+      const chat = document.getElementById('chat2');
+      const wrap = document.createElement('div');
+      wrap.className = 'quick-replies user-side';
+      const sel = document.createElement('select');
+      sel.className = 'qr-select';
+      sel.innerHTML = '<option value="">Select size…</option>' +
+        Array.from({length:15},(_,i)=>{const s=(i*0.5+3).toFixed(1);return `<option value="${s}">${s}</option>`;}).join('') +
+        '<option value="Not sure">Not sure yet</option>';
+      const go = document.createElement('button');
+      go.className = 'qr-btn primary'; go.textContent = 'Confirm';
+      go.onclick = ()=>{
+        if (!sel.value) return;
+        wrap.remove();
+        userSay('chat2', sel.value === 'Not sure' ? 'Not sure yet' : `Size ${sel.value}`);
+        state.answers.ringSize = sel.value;
+        resolve();
+      };
+      wrap.appendChild(sel); wrap.appendChild(go);
+      chat.appendChild(wrap);
+      chat.scrollTop = chat.scrollHeight;
+    });
   }
-  async function askSetting(){
-    await botSay('chat2', "And what setting style are you drawn to?");
-    showReplies('chat2', [
-      {label:'Solitaire'},{label:'Halo'},{label:'Pavé'},
-      {label:'Three-Stone'},{label:'Bezel'},{label:'Cathedral'},
-      {label:"Let the designer suggest"}
-    ], async v=>{ state.answers.setting = v; await askSize(); });
-  }
-  async function askSize(){
-    await botSay('chat2', "Last one — do you know the ring size?");
-    const chat = document.getElementById('chat2');
-    const wrap = document.createElement('div');
-    wrap.className = 'quick-replies user-side';
-    const sel = document.createElement('select');
-    sel.className = 'qr-select';
-    sel.innerHTML = '<option value="">Select size…</option>' +
-      Array.from({length:15},(_,i)=>{const s=(i*0.5+3).toFixed(1);return `<option value="${s}">${s}</option>`;}).join('') +
-      '<option value="Not sure">Not sure yet</option>';
-    const go = document.createElement('button');
-    go.className = 'qr-btn primary'; go.textContent = 'Confirm';
-    go.onclick = async ()=>{
-      if (!sel.value) return;
-      wrap.remove();
-      userSay('chat2', sel.value === 'Not sure' ? 'Not sure yet' : `Size ${sel.value}`);
-      state.answers.ringSize = sel.value;
-      await finishChat2();
-    };
-    wrap.appendChild(sel); wrap.appendChild(go);
-    chat.appendChild(wrap);
-    chat.scrollTop = chat.scrollHeight;
-  }
+
   async function finishChat2(){
     const a = state.answers;
-    const parts = [a.stoneType];
-    if (a.shape && a.shape !== 'Not sure yet') parts.push(a.shape.toLowerCase());
-    if (a.metal) parts.push(a.metal.toLowerCase());
-    if (a.setting && a.setting !== 'Let the designer suggest') parts.push(a.setting.toLowerCase()+' setting');
-    if (a.ringSize && a.ringSize !== 'Not sure') parts.push('size '+a.ringSize);
-    await botSay('chat2', `Got it — <strong>${parts.join(', ')}</strong>. You're all set on details.`);
+    const parts = [];
+    if (a.stoneType) parts.push(a.stoneType.toLowerCase());
+    if (a.shape) parts.push(a.shape.toLowerCase());
+    if (a.metal) {
+      const m = a.metal.toLowerCase();
+      parts.push(a.karat && a.karat !== 'Not sure — recommend' ? `${a.karat} ${m}` : m);
+    }
+    if (a.setting) parts.push(`${a.setting.toLowerCase()} setting`);
+    if (a.ringSize && a.ringSize !== 'Not sure') parts.push('size ' + a.ringSize);
+    await botSay('chat2', `Perfect — <strong>${parts.join(', ')}</strong>. You\u2019re all confirmed.`);
     document.getElementById('step2Next').disabled = false;
   }
 
