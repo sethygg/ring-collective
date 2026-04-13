@@ -1,0 +1,11 @@
+# Netlify configuration
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Slightly longer timeout for vision API calls (default is 10s)
+[functions."detect-ring"]
+  timeout = 26
