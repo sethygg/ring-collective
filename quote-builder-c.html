@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build Your Ring — The Ring Collective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#D9B48C;
+    --green:#2E5C4A;
+    --green-dark:#24483a;
+    --charcoal:#1F2A44;
+    --ivory:#FAF7F2;
+    --blush:#E8C7BE;
+    --gray:#F0EDE6;
+    --border:#E6E1D6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--ivory);color:var(--charcoal);font-family:'Inter',sans-serif;font-weight:300;line-height:1.55;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Playfair Display',serif;font-weight:600;color:var(--charcoal);letter-spacing:-0.01em}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:50;background:rgba(250,247,242,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .nav-inner{max-width:1200px;margin:0 auto;padding:18px 32px;display:flex;justify-content:space-between;align-items:center}
+  .logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--charcoal)}
+  .hamburger{display:flex;flex-direction:column;gap:5px;padding:8px}
+  .hamburger span{width:24px;height:2px;background:var(--charcoal);transition:all .3s}
+  .mobile-menu{position:fixed;inset:0;background:var(--ivory);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+  .mobile-menu.open{display:flex}
+  .mobile-menu a{font-family:'Playfair Display',serif;font-size:24px;color:var(--charcoal)}
+  .mobile-menu .close{position:absolute;top:22px;right:26px;font-size:32px;font-weight:300}
+
+  /* PAGE SHELL */
+  .wrap{max-width:780px;margin:0 auto;padding:40px 24px 80px}
+
+  /* PROGRESS */
+  .progress{display:flex;justify-content:space-between;align-items:center;margin-bottom:44px;position:relative}
+  .progress::before{content:"";position:absolute;top:14px;left:6%;right:6%;height:2px;background:var(--border);z-index:0}
+  .progress-step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;flex:1}
+  .progress-dot{width:28px;height:28px;border-radius:50%;background:var(--ivory);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#999;transition:all .3s}
+  .progress-step.active .progress-dot{background:var(--green);border-color:var(--green);color:#fff}
+  .progress-step.done .progress-dot{background:var(--gold);border-color:var(--gold);color:#fff}
+  .progress-label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;font-weight:500}
+  .progress-step.active .progress-label{color:var(--charcoal)}
+
+  /* STEP */
+  .step{display:none;animation:fade .4s ease}
+  .step.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .step-title{font-size:32px;margin-bottom:10px;line-height:1.15}
+  .step-sub{color:#5a5a5a;font-size:16px;margin-bottom:28px;max-width:560px}
+
+  /* PHOTO STEP */
+  .angles{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .angle-tile{border:2px dashed var(--border);border-radius:14px;background:#fff;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .25s;min-height:180px;text-align:center;position:relative;overflow:hidden}
+  .angle-tile:hover{border-color:var(--gold);background:#fffdf9}
+  .angle-tile.filled{border-style:solid;border-color:var(--green);background:var(--ivory)}
+  .angle-tile input{display:none}
+  .angle-icon{width:42px;height:42px;border-radius:50%;background:var(--gray);display:flex;align-items:center;justify-content:center;color:var(--charcoal);font-size:20px}
+  .angle-tile.filled .angle-icon{background:var(--green);color:#fff}
+  .angle-title{font-weight:500;font-size:15px;color:var(--charcoal)}
+  .angle-desc{font-size:12px;color:#888;line-height:1.4}
+  .angle-preview{position:absolute;inset:0;background-size:cover;background-position:center;display:none}
+  .angle-tile.filled .angle-preview{display:block}
+  .angle-tile.filled .angle-check{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:2}
+  .angle-tile.filled .angle-reset{position:absolute;bottom:10px;right:10px;font-size:11px;color:#fff;background:rgba(31,42,68,0.75);padding:4px 8px;border-radius:6px;z-index:2}
+  .quality-bar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:26px}
+  .quality-meter{flex:1;height:6px;background:var(--gray);border-radius:99px;overflow:hidden}
+  .quality-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));width:0;transition:width .4s}
+  .quality-label{font-size:13px;color:#666;white-space:nowrap}
+  .quality-label strong{color:var(--charcoal);font-weight:500}
+
+  .extra-upload{border:1px dashed var(--border);border-radius:12px;padding:16px;text-align:center;font-size:13px;color:#888;margin-bottom:30px;cursor:pointer}
+  .extra-upload:hover{border-color:var(--gold);color:var(--charcoal)}
+  .extra-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .extra-chip{background:var(--gray);border-radius:8px;padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:6px}
+  .extra-chip button{font-size:14px;color:#999}
+
+  /* CHAT */
+  .chat{background:#fff;border:1px solid var(--border);border-radius:18px;padding:24px;min-height:360px;display:flex;flex-direction:column;gap:14px;margin-bottom:22px}
+  .bubble{display:flex;gap:10px;align-items:flex-end;animation:fade .35s ease}
+  .bubble.user{flex-direction:row-reverse}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:600;font-size:14px;flex-shrink:0}
+  .bubble.user .avatar{background:var(--charcoal)}
+  .bubble-body{max-width:78%;padding:12px 16px;border-radius:16px;font-size:14.5px;line-height:1.5}
+  .bubble.bot .bubble-body{background:var(--gray);border-bottom-left-radius:4px}
+  .bubble.user .bubble-body{background:var(--green);color:#fff;border-bottom-right-radius:4px}
+  .quick-replies{display:flex;flex-wrap:wrap;gap:8px;padding-left:42px;animation:fade .35s ease}
+  .quick-replies.user-side{justify-content:flex-end;padding-left:0;padding-right:42px}
+  .qr-btn{background:#fff;border:1.5px solid var(--border);border-radius:99px;padding:8px 16px;font-size:13.5px;color:var(--charcoal);transition:all .2s}
+  .qr-btn:hover{border-color:var(--green);background:#f5fbf7}
+  .qr-btn.primary{background:var(--green);color:#fff;border-color:var(--green)}
+  .qr-btn.primary:hover{background:var(--green-dark)}
+  .qr-select{padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff}
+  .chat-form{padding-left:42px;display:flex;flex-direction:column;gap:10px;max-width:420px}
+  .chat-form input{padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:16px;font-family:inherit;background:#fff}
+  .chat-form input:focus{outline:none;border-color:var(--green)}
+  .slider-wrap{padding:10px 0 4px;max-width:420px}
+  .slider-wrap input[type=range]{width:100%;accent-color:var(--green)}
+  .slider-value{font-family:'Playfair Display',serif;font-size:20px;color:var(--charcoal);font-weight:600;margin-bottom:6px}
+
+  /* BUTTONS */
+  .actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px}
+  .btn{padding:14px 28px;border-radius:99px;font-size:14px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;transition:all .25s}
+  .btn-primary{background:var(--green);color:#fff}
+  .btn-primary:hover{background:var(--green-dark);transform:translateY(-1px)}
+  .btn-primary:disabled{background:#c8c8c8;cursor:not-allowed;transform:none}
+  .btn-ghost{background:transparent;color:#666}
+  .btn-ghost:hover{color:var(--charcoal)}
+
+  /* SUCCESS */
+  .success{text-align:center;padding:60px 20px}
+  .success-check{width:72px;height:72px;border-radius:50%;background:var(--green);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:22px}
+  .success h2{font-size:34px;margin-bottom:14px}
+  .success p{color:#5a5a5a;max-width:440px;margin:0 auto 24px}
+
+  /* MOBILE */
+  @media (max-width:768px){
+    .wrap{padding:28px 18px 60px}
+    .step-title{font-size:24px}
+    .step-sub{font-size:14px}
+    .angles{grid-template-columns:1fr 1fr;gap:10px}
+    .angle-tile{min-height:150px;padding:14px}
+    .progress-label{font-size:10px}
+    .bubble-body{max-width:82%;font-size:14px}
+    .chat{padding:16px}
+    .quick-replies,.chat-form{padding-left:0}
+    .quick-replies.user-side{padding-right:0}
+    .btn{padding:12px 22px;font-size:13px}
+    .actions{flex-direction:column-reverse}
+    .actions .btn{width:100%}
+  }
+  @media (max-width:480px){
+    .step-title{font-size:22px}
+    .nav-inner{padding:14px 20px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">The Ring Collective</a>
+    <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close" onclick="toggleMobileMenu()" aria-label="Close">&times;</button>
+  <a href="index.html">Home</a>
+  <a href="diamond-guide.html">Diamond Guide</a>
+  <a href="setting-styles.html">Setting Styles</a>
+  <a href="metal-types.html">Metal Types</a>
+  <a href="quote-builder-c.html">Build Your Ring</a>
+</div>
+
+<div class="wrap">
+
+  <div class="progress" id="progress">
+    <div class="progress-step active" data-step="1"><div class="progress-dot">1</div><div class="progress-label">Photos</div></div>
+    <div class="progress-step" data-step="2"><div class="progress-dot">2</div><div class="progress-label">Details</div></div>
+    <div class="progress-step" data-step="3"><div class="progress-dot">3</div><div class="progress-label">Budget</div></div>
+    <div class="progress-step" data-step="4"><div class="progress-dot">4</div><div class="progress-label">You</div></div>
+  </div>
+
+  <!-- STEP 1: PHOTOS -->
+  <section class="step active" id="step1">
+    <h1 class="step-title">Show us the ring you're dreaming of</h1>
+    <p class="step-sub">The best way to get the exact ring you want is to show us. Upload a photo of your inspiration — the more angles, the more precisely we can quote it.</p>
+
+    <div class="angles" id="angles">
+      <label class="angle-tile" data-angle="front">
+        <div class="angle-preview"></div>
+        <div class="angle-check">✓</div>
+        <div class="angle-icon">◐</div>
+        <div class="angle-title">Front view</div>
+        <div class="angle-desc">Camera facing the ring head-on</div>
+        <input type="file" accept="image/*" onchange="handleAngle(this,'front')">
+        <button type="button" class="angle-reset" onclick="resetAngle(event,'front')">Replace</button>
+      </label>
+      <label class="angle-tile" data-angle="side">
+        <div class="angle-preview"></div>
+        <div class="angle-check">✓</div>
+        <div class="angle-icon">◑</div>
+        <div class="angle-title">Side profile</div>
+        <div class="angle-desc">Shows band and stone height</div>
+        <input type="file" accept="image/*" onchange="handleAngle(this,'side')">
+        <button type="button" class="angle-reset" onclick="resetAngle(event,'side')">Replace</button>
+      </label>
+      <label class="angle-tile" data-angle="top">
+        <div class="angle-preview"></div>
+        <div class="angle-check">✓</div>
+        <div class="angle-icon">◉</div>
+        <div class="angle-title">Top-down</div>
+        <div class="angle-desc">Looking straight down at the stone</div>
+        <input type="file" accept="image/*" onchange="handleAngle(this,'top')">
+        <button type="button" class="angle-reset" onclick="resetAngle(event,'top')">Replace</button>
+      </label>
+      <label class="angle-tile" data-angle="detail">
+        <div class="angle-preview"></div>
+        <div class="angle-check">✓</div>
+        <div class="angle-icon">◎</div>
+        <div class="angle-title">Close-up of setting</div>
+        <div class="angle-desc">Zoomed in on prongs / detail</div>
+        <input type="file" accept="image/*" onchange="handleAngle(this,'detail')">
+        <button type="button" class="angle-reset" onclick="resetAngle(event,'detail')">Replace</button>
+      </label>
+    </div>
+
+    <div class="quality-bar">
+      <div class="quality-meter"><div class="quality-fill" id="qualityFill"></div></div>
+      <div class="quality-label" id="qualityLabel"><strong>0 of 4 angles</strong> — Start by uploading a photo</div>
+    </div>
+
+    <label class="extra-upload">
+      + Add extra photos (optional)
+      <input type="file" accept="image/*" multiple style="display:none" onchange="handleExtras(this)">
+    </label>
+    <div class="extra-list" id="extraList"></div>
+
+    <div class="actions">
+      <span></span>
+      <button class="btn btn-primary" id="step1Next" onclick="goStep(2)" disabled>Continue →</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: CHAT CONFIRMATION -->
+  <section class="step" id="step2">
+    <h1 class="step-title">A few quick details</h1>
+    <p class="step-sub">While our designer reviews your photos, help us confirm the essentials so we can price your ring accurately.</p>
+    <div class="chat" id="chat2"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" id="step2Next" onclick="goStep(3)" disabled>Continue →</button>
+    </div>
+  </section>
+
+  <!-- STEP 3: BUDGET -->
+  <section class="step" id="step3">
+    <h1 class="step-title">Budget & timeline</h1>
+    <p class="step-sub">This helps us recommend the right options for you. No commitment — your quote will be free.</p>
+    <div class="chat" id="chat3"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" id="step3Next" onclick="goStep(4)" disabled>Continue →</button>
+    </div>
+  </section>
+
+  <!-- STEP 4: CONTACT -->
+  <section class="step" id="step4">
+    <h1 class="step-title">Where should we send your quote?</h1>
+    <p class="step-sub">We'll reply within one business day with a personalized quote and design mockup.</p>
+    <div class="chat" id="chat4"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="goStep(3)">← Back</button>
+      <button class="btn btn-primary" id="submitBtn" onclick="submitQuote()" disabled>Send My Quote Request</button>
+    </div>
+  </section>
+
+  <!-- STEP 5: SUCCESS -->
+  <section class="step" id="step5">
+    <div class="success">
+      <div class="success-check">✓</div>
+      <h2>Thank you — we've got it.</h2>
+      <p>Our designer is reviewing your photos now. You'll receive a personalized quote and a preliminary design mockup by email within one business day.</p>
+      <a href="index.html" class="btn btn-primary">Back to Home</a>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // ---------- STATE ----------
+  const state = {
+    step: 1,
+    photos: { front:null, side:null, top:null, detail:null },
+    extras: [],
+    answers: { stoneType:null, shape:null, metal:null, setting:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'' }
+  };
+
+  function toggleMobileMenu(){
+    document.getElementById('mobileMenu').classList.toggle('open');
+  }
+
+  // ---------- STEP NAV ----------
+  function goStep(n){
+    state.step = n;
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+    document.getElementById('step'+n).classList.add('active');
+    document.querySelectorAll('.progress-step').forEach(ps=>{
+      const i = parseInt(ps.dataset.step);
+      ps.classList.remove('active','done');
+      if (i < n) ps.classList.add('done');
+      if (i === n) ps.classList.add('active');
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+    if (n===2) startChat2();
+    if (n===3) startChat3();
+    if (n===4) startChat4();
+  }
+
+  // ---------- STEP 1: PHOTOS ----------
+  function handleAngle(input, angle){
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e=>{
+      state.photos[angle] = e.target.result;
+      const tile = document.querySelector(`.angle-tile[data-angle="${angle}"]`);
+      tile.classList.add('filled');
+      tile.querySelector('.angle-preview').style.backgroundImage = `url(${e.target.result})`;
+      updateQuality();
+    };
+    reader.readAsDataURL(file);
+  }
+  function resetAngle(e, angle){
+    e.preventDefault(); e.stopPropagation();
+    state.photos[angle] = null;
+    const tile = document.querySelector(`.angle-tile[data-angle="${angle}"]`);
+    tile.classList.remove('filled');
+    tile.querySelector('.angle-preview').style.backgroundImage = '';
+    tile.querySelector('input').value = '';
+    updateQuality();
+  }
+  function handleExtras(input){
+    Array.from(input.files).forEach(file=>{
+      state.extras.push(file.name);
+    });
+    renderExtras();
+    input.value = '';
+  }
+  function renderExtras(){
+    const list = document.getElementById('extraList');
+    list.innerHTML = state.extras.map((n,i)=>`<div class="extra-chip">${n} <button onclick="removeExtra(${i})">&times;</button></div>`).join('');
+  }
+  function removeExtra(i){ state.extras.splice(i,1); renderExtras(); }
+  function updateQuality(){
+    const count = Object.values(state.photos).filter(Boolean).length;
+    const pct = (count/4)*100;
+    document.getElementById('qualityFill').style.width = pct + '%';
+    const msgs = [
+      '<strong>0 of 4 angles</strong> — Start by uploading a photo',
+      '<strong>Good start</strong> — 1 of 4 angles uploaded',
+      '<strong>Better</strong> — 2 of 4 angles uploaded',
+      '<strong>Great</strong> — 3 of 4 angles uploaded',
+      '<strong>Excellent</strong> — All 4 angles captured. We can give a precise quote.'
+    ];
+    document.getElementById('qualityLabel').innerHTML = msgs[count];
+    document.getElementById('step1Next').disabled = count < 1;
+  }
+
+  // ---------- CHAT HELPERS ----------
+  function botSay(chatId, text, delay=400){
+    return new Promise(res=>{
+      setTimeout(()=>{
+        const chat = document.getElementById(chatId);
+        const el = document.createElement('div');
+        el.className = 'bubble bot';
+        el.innerHTML = `<div class="avatar">R</div><div class="bubble-body">${text}</div>`;
+        chat.appendChild(el);
+        chat.scrollTop = chat.scrollHeight;
+        res();
+      }, delay);
+    });
+  }
+  function userSay(chatId, text){
+    const chat = document.getElementById(chatId);
+    const el = document.createElement('div');
+    el.className = 'bubble user';
+    el.innerHTML = `<div class="avatar">Y</div><div class="bubble-body">${text}</div>`;
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+  }
+  function showReplies(chatId, options, onPick){
+    const chat = document.getElementById(chatId);
+    const wrap = document.createElement('div');
+    wrap.className = 'quick-replies user-side';
+    options.forEach(opt=>{
+      const b = document.createElement('button');
+      b.className = 'qr-btn';
+      b.textContent = opt.label;
+      b.onclick = ()=>{
+        wrap.remove();
+        userSay(chatId, opt.label);
+        onPick(opt.value !== undefined ? opt.value : opt.label);
+      };
+      wrap.appendChild(b);
+    });
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ---------- STEP 2 CHAT ----------
+  let chat2Started = false;
+  async function startChat2(){
+    if (chat2Started) return; chat2Started = true;
+    const c = 'chat2';
+    await botSay(c, "Thanks for the photos! I've got a few quick questions to lock in your quote.", 200);
+    await askStoneType();
+  }
+  async function askStoneType(){
+    await botSay('chat2', "First — what kind of stone do you want?");
+    showReplies('chat2', [
+      {label:'Lab Diamond'}, {label:'Moissanite'},
+      {label:'Natural Diamond'}, {label:'Setting Only'}
+    ], async v=>{
+      state.answers.stoneType = v;
+      if (v === 'Setting Only') { await askMetal(); }
+      else { await askShape(); }
+    });
+  }
+  async function askShape(){
+    await botSay('chat2', "Great. What shape are you picturing?");
+    showReplies('chat2', [
+      {label:'Round'},{label:'Oval'},{label:'Emerald'},{label:'Cushion'},
+      {label:'Pear'},{label:'Princess'},{label:'Marquise'},{label:'Radiant'},
+      {label:"Not sure yet"}
+    ], async v=>{ state.answers.shape = v; await askMetal(); });
+  }
+  async function askMetal(){
+    await botSay('chat2', "Which metal do you prefer for the band?");
+    showReplies('chat2', [
+      {label:'White Gold'},{label:'Yellow Gold'},
+      {label:'Rose Gold'},{label:'Platinum'}
+    ], async v=>{ state.answers.metal = v; await askSetting(); });
+  }
+  async function askSetting(){
+    await botSay('chat2', "And what setting style are you drawn to?");
+    showReplies('chat2', [
+      {label:'Solitaire'},{label:'Halo'},{label:'Pavé'},
+      {label:'Three-Stone'},{label:'Bezel'},{label:'Cathedral'},
+      {label:"Let the designer suggest"}
+    ], async v=>{ state.answers.setting = v; await askSize(); });
+  }
+  async function askSize(){
+    await botSay('chat2', "Last one — do you know the ring size?");
+    const chat = document.getElementById('chat2');
+    const wrap = document.createElement('div');
+    wrap.className = 'quick-replies user-side';
+    const sel = document.createElement('select');
+    sel.className = 'qr-select';
+    sel.innerHTML = '<option value="">Select size…</option>' +
+      Array.from({length:15},(_,i)=>{const s=(i*0.5+3).toFixed(1);return `<option value="${s}">${s}</option>`;}).join('') +
+      '<option value="Not sure">Not sure yet</option>';
+    const go = document.createElement('button');
+    go.className = 'qr-btn primary'; go.textContent = 'Confirm';
+    go.onclick = async ()=>{
+      if (!sel.value) return;
+      wrap.remove();
+      userSay('chat2', sel.value === 'Not sure' ? 'Not sure yet' : `Size ${sel.value}`);
+      state.answers.ringSize = sel.value;
+      await finishChat2();
+    };
+    wrap.appendChild(sel); wrap.appendChild(go);
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+  }
+  async function finishChat2(){
+    const a = state.answers;
+    const parts = [a.stoneType];
+    if (a.shape && a.shape !== 'Not sure yet') parts.push(a.shape.toLowerCase());
+    if (a.metal) parts.push(a.metal.toLowerCase());
+    if (a.setting && a.setting !== 'Let the designer suggest') parts.push(a.setting.toLowerCase()+' setting');
+    if (a.ringSize && a.ringSize !== 'Not sure') parts.push('size '+a.ringSize);
+    await botSay('chat2', `Got it — <strong>${parts.join(', ')}</strong>. You're all set on details.`);
+    document.getElementById('step2Next').disabled = false;
+  }
+
+  // ---------- STEP 3 CHAT ----------
+  let chat3Started = false;
+  async function startChat3(){
+    if (chat3Started) return; chat3Started = true;
+    await botSay('chat3', "What budget range are you comfortable with?", 200);
+    await askBudget();
+  }
+  async function askBudget(){
+    const chat = document.getElementById('chat3');
+    const wrap = document.createElement('div');
+    wrap.className = 'quick-replies user-side';
+    wrap.style.flexDirection = 'column';
+    wrap.style.alignItems = 'stretch';
+    wrap.innerHTML = `
+      <div class="slider-wrap">
+        <div class="slider-value" id="budgetVal">$3,000</div>
+        <input type="range" min="500" max="15000" step="250" value="3000" id="budgetRange">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#888;margin-top:6px"><span>$500</span><span>$15,000+</span></div>
+      </div>
+      <button class="qr-btn primary" id="budgetConfirm" style="margin-top:10px;align-self:flex-end">Confirm</button>
+    `;
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+    const range = document.getElementById('budgetRange');
+    const val = document.getElementById('budgetVal');
+    const fmt = n=>'$'+Number(n).toLocaleString();
+    range.oninput = ()=>{ val.textContent = fmt(range.value); };
+    document.getElementById('budgetConfirm').onclick = async ()=>{
+      state.answers.budget = range.value;
+      wrap.remove();
+      userSay('chat3', fmt(range.value));
+      await askTimeline();
+    };
+  }
+  async function askTimeline(){
+    await botSay('chat3', "When do you need the ring by?");
+    showReplies('chat3', [
+      {label:'Standard (3–4 weeks)', value:'standard'},
+      {label:'I have a specific date', value:'custom'}
+    ], async v=>{
+      state.answers.timeline = v;
+      if (v === 'standard') {
+        await botSay('chat3', "Perfect — standard timeline it is.");
+        document.getElementById('step3Next').disabled = false;
+      } else {
+        await askCustomDate();
+      }
+    });
+  }
+  async function askCustomDate(){
+    await botSay('chat3', "What's your target date?");
+    const chat = document.getElementById('chat3');
+    const wrap = document.createElement('div');
+    wrap.className = 'quick-replies user-side';
+    const input = document.createElement('input');
+    input.type = 'date'; input.className = 'qr-select';
+    const today = new Date(); today.setDate(today.getDate()+14);
+    input.min = today.toISOString().split('T')[0];
+    const go = document.createElement('button');
+    go.className = 'qr-btn primary'; go.textContent = 'Confirm';
+    go.onclick = async ()=>{
+      if (!input.value) return;
+      wrap.remove();
+      state.answers.customDate = input.value;
+      userSay('chat3', new Date(input.value).toLocaleDateString());
+      await botSay('chat3', "Got it. We'll do our best to hit that date.");
+      document.getElementById('step3Next').disabled = false;
+    };
+    wrap.appendChild(input); wrap.appendChild(go);
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ---------- STEP 4 CHAT ----------
+  let chat4Started = false;
+  async function startChat4(){
+    if (chat4Started) return; chat4Started = true;
+    await botSay('chat4', "Last step — how should we reach you with your quote?", 200);
+    const chat = document.getElementById('chat4');
+    const form = document.createElement('div');
+    form.className = 'chat-form';
+    form.innerHTML = `
+      <input type="text" id="fName" placeholder="Your name" autocomplete="name">
+      <input type="email" id="fEmail" placeholder="Email address" autocomplete="email">
+      <input type="tel" id="fPhone" placeholder="Phone (optional)" autocomplete="tel">
+    `;
+    chat.appendChild(form);
+    const check = ()=>{
+      const n = document.getElementById('fName').value.trim();
+      const e = document.getElementById('fEmail').value.trim();
+      const valid = n.length>1 && /.+@.+\..+/.test(e);
+      document.getElementById('submitBtn').disabled = !valid;
+      state.answers.name = n; state.answers.email = e;
+      state.answers.phone = document.getElementById('fPhone').value.trim();
+    };
+    form.querySelectorAll('input').forEach(i=>i.addEventListener('input', check));
+  }
+
+  // ---------- SUBMIT ----------
+  function submitQuote(){
+    // TODO: wire to Netlify Forms / Formspree / serverless function
+    console.log('Quote request:', state);
+    goStep(5);
+  }
+</script>
+</body>
+</html>
