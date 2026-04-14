@@ -242,8 +242,29 @@ async function processLead(lead) {
   return { id: lead.id, touch: touchNumber, subject };
 }
 
+// Fetch a single lead by id (used by the manual test hook below)
+async function fetchLeadById(id) {
+  const rows = await sbFetch(`/rest/v1/quote_requests?select=*&id=eq.${encodeURIComponent(id)}&limit=1`);
+  return Array.isArray(rows) && rows[0] ? rows[0] : null;
+}
+
 exports.handler = async (event) => {
   try {
+    // Manual testing hook:  /.netlify/functions/maya-followup?leadId=<uuid>&key=<ADMIN_PASSWORD>
+    // Bypasses the next_touch_at gate so you can fire a follow-up on demand.
+    const qs = event.queryStringParameters || {};
+    if (qs.leadId) {
+      if (qs.key !== process.env.ADMIN_PASSWORD) {
+        return { statusCode: 401, body: JSON.stringify({ ok: false, error: 'bad key' }) };
+      }
+      const lead = await fetchLeadById(qs.leadId);
+      if (!lead) return { statusCode: 404, body: JSON.stringify({ ok: false, error: 'lead not found' }) };
+      if (!lead.email) return { statusCode: 400, body: JSON.stringify({ ok: false, error: 'lead has no email' }) };
+      if (lead.touch_count >= 3) return { statusCode: 400, body: JSON.stringify({ ok: false, error: 'sequence complete' }) };
+      const r = await processLead(lead);
+      return { statusCode: 200, body: JSON.stringify({ ok: true, manual: true, result: r }) };
+    }
+
     const leads = await findDueLeads();
     if (!leads || leads.length === 0) {
       return { statusCode: 200, body: JSON.stringify({ ok: true, processed: 0 }) };
