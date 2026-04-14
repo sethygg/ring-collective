@@ -21,6 +21,8 @@ const ALLOWED_ORIGINS = [
 
 const SHAPES = ['Round','Oval','Emerald','Cushion','Pear','Princess','Marquise','Radiant'];
 const METALS = ['White Gold','Yellow Gold','Rose Gold','Platinum'];
+const SETTINGS = ['solitaire','halo','pave','three-stone'];
+const WEIGHTS  = ['delicate','standard','substantial'];
 
 function corsHeaders(origin) {
   const allowed = ALLOWED_ORIGINS.some(re => re.test(origin || ''));
@@ -85,12 +87,14 @@ exports.handler = async (event) => {
   const content = [{
     type: 'text',
     text: [
-      'You are analyzing photos of an engagement ring. Identify three things:',
+      'You are analyzing photos of an engagement ring. Identify five things:',
       '1. stoneCategory: exactly "diamond" (clear/colorless center stone) or "colored" (non-white gemstone like sapphire, ruby, emerald, etc.).',
       '2. shape: exactly one of ' + SHAPES.join(', ') + '.',
       '3. metalColor: exactly one of ' + METALS.join(', ') + '. Platinum and white gold look identical in photos, so default to "White Gold" unless obviously different.',
+      '4. settingStyle: exactly one of ' + SETTINGS.join(', ') + '. "solitaire" = single center stone with plain band, "halo" = center stone surrounded by a ring of smaller stones, "pave" = small diamonds set along the band, "three-stone" = one center + two side stones.',
+      '5. weightClass: exactly one of ' + WEIGHTS.join(', ') + ' describing how substantial the band and setting appear. "delicate" = very thin/dainty, "standard" = average heft, "substantial" = chunky/heavy/wide.',
       '',
-      'Return ONLY a minified JSON object with exactly those three string fields. No preamble, no markdown, no code fences. If uncertain, pick the single most likely option.'
+      'Return ONLY a minified JSON object with exactly those five string fields. No preamble, no markdown, no code fences. If uncertain, pick the single most likely option.'
     ].join('\n')
   }];
 
@@ -136,7 +140,9 @@ exports.handler = async (event) => {
     const out = {
       stoneCategory: parsed.stoneCategory === 'colored' ? 'colored' : 'diamond',
       shape: SHAPES.includes(parsed.shape) ? parsed.shape : 'Round',
-      metalColor: METALS.includes(parsed.metalColor) ? parsed.metalColor : 'White Gold'
+      metalColor: METALS.includes(parsed.metalColor) ? parsed.metalColor : 'White Gold',
+      settingStyle: SETTINGS.includes(parsed.settingStyle) ? parsed.settingStyle : 'solitaire',
+      weightClass: WEIGHTS.includes(parsed.weightClass) ? parsed.weightClass : 'standard'
     };
 
     return {

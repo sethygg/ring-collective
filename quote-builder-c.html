@@ -284,7 +284,7 @@
     photos: { front:null, side:null, top:null, detail:null },
     photosSmall: { front:null, side:null, top:null, detail:null }, // downscaled for API upload
     extras: [],
-    answers: { stoneCategory:null, stoneType:null, shape:null, metal:null, karat:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'' }
+    answers: { stoneCategory:null, stoneType:null, diamondCarat:null, diamondCaratLabel:null, settingStyle:null, weightClass:null, shape:null, metal:null, karat:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'' }
   };
 
   function toggleMobileMenu(){
@@ -428,7 +428,7 @@
   // Calls the Netlify Function /.netlify/functions/detect-ring which forwards
   // the photos to Claude Vision. Falls back to safe defaults on any error.
   async function detectFromPhotos(){
-    const DEFAULTS = { stoneCategory:'diamond', shape:'Round', metalColor:'White Gold' };
+    const DEFAULTS = { stoneCategory:'diamond', shape:'Round', metalColor:'White Gold', settingStyle:'solitaire', weightClass:'standard' };
     const photos = Object.entries(state.photosSmall)
       .filter(([, v]) => !!v)
       .map(([angle, dataUrl]) => ({ angle, dataUrl }));
@@ -448,7 +448,9 @@
       return {
         stoneCategory: data.stoneCategory || DEFAULTS.stoneCategory,
         shape: data.shape || DEFAULTS.shape,
-        metalColor: data.metalColor || DEFAULTS.metalColor
+        metalColor: data.metalColor || DEFAULTS.metalColor,
+        settingStyle: data.settingStyle || DEFAULTS.settingStyle,
+        weightClass: data.weightClass || DEFAULTS.weightClass
       };
     } catch (err) {
       console.warn('Vision detection failed, using defaults:', err);
@@ -468,6 +470,10 @@
     const detectPromise = detectFromPhotos();
     const detected = await detectPromise;
     await botSay('chat2', "Great shots! Here's what I can make out. Confirm each below, or tap <em>No</em> if I got it wrong.", 400);
+
+    // Stash AI-detected setting style + weight class for the quote engine.
+    state.answers.settingStyle = detected.settingStyle;
+    state.answers.weightClass  = detected.weightClass;
 
     await confirmStoneCategory(detected);
     await confirmField({
@@ -515,9 +521,29 @@
       );
       showReplies('chat2', [
         {label:'Lab Diamond'}, {label:'Moissanite'}
-      ], v=>{
+      ], async v=>{
         state.answers.stoneCategory = 'diamond';
         state.answers.stoneType = v;
+        await askCarat();
+        resolve();
+      });
+    });
+  }
+
+  function askCarat(){
+    return new Promise(async resolve=>{
+      await botSay('chat2',
+        "About how many <strong>carats</strong> are you hoping for in the center stone? No worries if you're not sure — we can help you decide."
+      );
+      const options = [
+        {label:'0.5 ct'},{label:'0.75 ct'},{label:'1 ct'},{label:'1.25 ct'},
+        {label:'1.5 ct'},{label:'2 ct'},{label:'2+ ct'},{label:'Not sure — help me decide'}
+      ];
+      showReplies('chat2', options, v=>{
+        // Parse numeric value out of "1.25 ct", "2+ ct", etc.
+        const m = v.match(/([\d.]+)/);
+        state.answers.diamondCarat = m ? parseFloat(m[1]) : null;
+        state.answers.diamondCaratLabel = v;
         resolve();
       });
     });
@@ -788,6 +814,9 @@
         stone_category:  a.stoneCategory || null,
         stone_type:      a.stoneType || null,
         stone_type_note: a.stoneTypeNote || null,
+        diamond_carat:   (typeof a.diamondCarat === 'number') ? a.diamondCarat : null,
+        setting_style:   a.settingStyle || null,
+        weight_class:    a.weightClass || null,
         shape:           a.shape || null,
         metal:           a.metal || null,
         karat:           a.karat || null,
