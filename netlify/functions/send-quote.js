@@ -273,10 +273,17 @@ exports.handler = async (event) => {
       replyTo,
     });
 
-    // Persist: round total to whole dollars for the DB column (integer), mark status quoted.
+    // Persist: round total to whole dollars for the DB column (integer), mark status quoted,
+    // and start the Maya follow-up sequence. First touch fires 24 hours from now.
+    const firstTouchAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await updateLead(id, {
       status: 'quoted',
       quote_total: Math.round(totalIn),
+      auto_sequence_enabled: true,
+      touch_count: 0,
+      next_touch_at: firstTouchAt,
+      last_touch_at: new Date().toISOString(),
+      unsubscribed_at: null,
     });
 
     return json(200, headers, { ok: true, id: result && result.id });

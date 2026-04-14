@@ -335,6 +335,44 @@ function estimateWeight(settingStyle, weightClass){
   return +(base + add).toFixed(2);
 }
 
+function renderSequencePanel(lead){
+  const enabled = !!lead.auto_sequence_enabled;
+  const unsubbed = !!lead.unsubscribed_at;
+  const count = lead.touch_count || 0;
+  const log = Array.isArray(lead.sequence_log) ? lead.sequence_log : [];
+  const nextAt = lead.next_touch_at ? new Date(lead.next_touch_at) : null;
+  const nextLabel = nextAt ? nextAt.toLocaleString() : '—';
+
+  let statusPill;
+  if (unsubbed) statusPill = '<span style="background:#f3e3e3;color:#9c2a2a;padding:4px 10px;border-radius:999px;font-size:11px;letter-spacing:.5px;text-transform:uppercase">Unsubscribed</span>';
+  else if (!enabled && count >= 3) statusPill = '<span style="background:#e8eee4;color:#3d5b38;padding:4px 10px;border-radius:999px;font-size:11px;letter-spacing:.5px;text-transform:uppercase">Sequence complete</span>';
+  else if (!enabled) statusPill = '<span style="background:#eee;color:#666;padding:4px 10px;border-radius:999px;font-size:11px;letter-spacing:.5px;text-transform:uppercase">Paused</span>';
+  else statusPill = '<span style="background:#e4ede8;color:#2E5C4A;padding:4px 10px;border-radius:999px;font-size:11px;letter-spacing:.5px;text-transform:uppercase">Active</span>';
+
+  const logHtml = log.length
+    ? log.map(e => `<div style="padding:8px 0;border-top:1px solid #eee"><div style="font-size:13px;color:#1F2A44;font-weight:500">Touch ${e.touch} · ${new Date(e.sent_at).toLocaleString()}</div><div style="font-size:12px;color:#707683;margin-top:2px">${escapeHTML(e.subject || '')}</div></div>`).join('')
+    : '<div style="font-size:13px;color:#888;padding:8px 0">No follow-ups sent yet.</div>';
+
+  const actionBtn = enabled
+    ? '<button class="btn ghost" id="pauseSeqBtn">Pause sequence</button>'
+    : (unsubbed ? '' : '<button class="btn ghost" id="resumeSeqBtn">Resume sequence</button>');
+
+  return `
+    <div class="panel" style="margin-top:20px">
+      <h3 style="display:flex;align-items:center;gap:10px">Maya follow-up sequence ${statusPill}</h3>
+      <div style="font-size:13px;color:#505664;line-height:1.6;margin-bottom:12px">
+        ${count} of 3 touches sent. ${enabled && nextAt ? `Next: <strong>${escapeHTML(nextLabel)}</strong>.` : ''}
+      </div>
+      <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:2px 14px;margin-bottom:14px">
+        ${logHtml}
+      </div>
+      <div class="actions-row" style="margin-top:0">
+        ${actionBtn}
+      </div>
+    </div>
+  `;
+}
+
 async function renderDetail(){
   const el = document.getElementById('detail');
   if (!selectedId) { el.innerHTML = '<div class="empty">Select a lead to view details.</div>'; return; }
@@ -468,6 +506,8 @@ async function renderDetail(){
         <button class="btn ghost" id="copyEmailBtn">Copy plain-text email</button>
       </div>
     </div>
+
+    ${renderSequencePanel(lead)}
   `;
 
   // Wire up status switcher
@@ -569,6 +609,26 @@ async function renderDetail(){
       toast('Send failed: ' + err.message);
       btn.disabled = false; btn.textContent = orig;
     }
+  });
+
+  // Maya sequence pause / resume
+  const pauseBtn = document.getElementById('pauseSeqBtn');
+  if (pauseBtn) pauseBtn.addEventListener('click', async ()=>{
+    pauseBtn.disabled = true; pauseBtn.textContent = 'Pausing…';
+    try {
+      await apiCall({ action:'update_sequence', id: selectedId, auto_sequence_enabled: false });
+      toast('Maya sequence paused');
+      await renderDetail();
+    } catch (err) { toast('Failed: ' + err.message); pauseBtn.disabled = false; pauseBtn.textContent = 'Pause sequence'; }
+  });
+  const resumeBtn = document.getElementById('resumeSeqBtn');
+  if (resumeBtn) resumeBtn.addEventListener('click', async ()=>{
+    resumeBtn.disabled = true; resumeBtn.textContent = 'Resuming…';
+    try {
+      await apiCall({ action:'update_sequence', id: selectedId, auto_sequence_enabled: true });
+      toast('Maya sequence resumed');
+      await renderDetail();
+    } catch (err) { toast('Failed: ' + err.message); resumeBtn.disabled = false; resumeBtn.textContent = 'Resume sequence'; }
   });
 }
 

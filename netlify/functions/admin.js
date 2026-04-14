@@ -214,6 +214,22 @@ exports.handler = async (event) => {
         return json(200, headers, { lead: Array.isArray(out) ? out[0] : out });
       }
 
+      case 'update_sequence': {
+        if (!body.id) return json(400, headers, { error: 'id required' });
+        const patch = {};
+        if (typeof body.auto_sequence_enabled === 'boolean') {
+          patch.auto_sequence_enabled = body.auto_sequence_enabled;
+          // Resuming from paused → schedule next touch for 24h out if none set
+          if (body.auto_sequence_enabled === true) {
+            patch.next_touch_at = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            patch.unsubscribed_at = null;
+          }
+        }
+        if (Object.keys(patch).length === 0) return json(400, headers, { error: 'nothing to update' });
+        const out = await updateLead(body.id, patch);
+        return json(200, headers, { lead: Array.isArray(out) ? out[0] : out });
+      }
+
       case 'metals_prices': {
         const data = await getMetalsPrices(body.force === true);
         return json(200, headers, data);
