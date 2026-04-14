@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --gold:#D9B48C;
@@ -743,11 +744,70 @@
     form.querySelectorAll('input').forEach(i=>i.addEventListener('input', check));
   }
 
+  // ---------- SUPABASE ----------
+  const SUPABASE_URL = 'https://jcsyucadvweiskxfwedq.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_J_r7xY5JY-W0ib2uJB1AHQ_S00q-J1m';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+  function dataUrlToBlob(dataUrl){
+    return fetch(dataUrl).then(r => r.blob());
+  }
+
   // ---------- SUBMIT ----------
-  function submitQuote(){
-    // TODO: wire to Netlify Forms / Formspree / serverless function
-    console.log('Quote request:', state);
-    goStep(5);
+  async function submitQuote(){
+    const btn = document.getElementById('submitBtn');
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    try {
+      // Stable id for this submission; used as storage folder + row id
+      const quoteId = (crypto.randomUUID ? crypto.randomUUID()
+                                         : Date.now().toString(36) + Math.random().toString(36).slice(2));
+
+      // 1. Upload any photos the user provided
+      const photoPaths = [];
+      const angles = Object.entries(state.photos).filter(([_,v]) => !!v);
+      for (const [angle, dataUrl] of angles) {
+        const blob = await dataUrlToBlob(dataUrl);
+        const path = `${quoteId}/${angle}.jpg`;
+        const { error: upErr } = await sb.storage
+          .from('ring-photos')
+          .upload(path, blob, { contentType: blob.type || 'image/jpeg', upsert: false });
+        if (upErr) throw upErr;
+        photoPaths.push(path);
+      }
+
+      // 2. Insert the quote_requests row
+      const a = state.answers;
+      const row = {
+        id: quoteId,
+        name:            a.name,
+        email:           a.email,
+        phone:           a.phone || null,
+        stone_category:  a.stoneCategory || null,
+        stone_type:      a.stoneType || null,
+        stone_type_note: a.stoneTypeNote || null,
+        shape:           a.shape || null,
+        metal:           a.metal || null,
+        karat:           a.karat || null,
+        ring_size:       a.ringSize || null,
+        budget:          a.budget || null,
+        timeline:        a.timeline || null,
+        custom_date:     a.customDate || null,
+        photo_paths:     photoPaths,
+        raw_answers:     a,
+      };
+      const { error: insErr } = await sb.from('quote_requests').insert(row);
+      if (insErr) throw insErr;
+
+      goStep(5);
+    } catch (err) {
+      console.error('Quote submission failed:', err);
+      alert("Sorry — something went wrong sending your request. Please try again, or email us directly and we'll sort it out.");
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
   }
 </script>
 </body>
