@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — The Ring Collective</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#D9B48C;
+    --green:#2E5C4A;
+    --charcoal:#1F2A44;
+    --ivory:#FAF7F2;
+    --border:#E9E4DA;
+    --text:#22252b;
+    --muted:#707683;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:'Inter',sans-serif;background:var(--ivory);color:var(--text);-webkit-font-smoothing:antialiased}
+  a{color:var(--green)}
+  h1,h2,h3{font-family:'Playfair Display',serif;font-weight:500;margin:0}
+  button{font-family:inherit;cursor:pointer}
+
+  /* top bar */
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:#fff;border-bottom:1px solid var(--border)}
+  header .brand{font-family:'Playfair Display',serif;font-size:20px;letter-spacing:1px;color:var(--charcoal)}
+  header .brand span{color:var(--gold);margin-left:6px;font-size:13px;letter-spacing:2px;text-transform:uppercase}
+  header .right{display:flex;gap:14px;align-items:center;color:var(--muted);font-size:13px}
+  header button.logout{background:transparent;border:1px solid var(--border);padding:7px 14px;border-radius:6px;font-size:12px;color:var(--muted)}
+  header button.logout:hover{background:#faf7f2}
+
+  /* login screen */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ivory)}
+  .login{width:340px;background:#fff;padding:36px 32px;border-radius:8px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,.04)}
+  .login h1{font-size:22px;margin-bottom:4px}
+  .login p{color:var(--muted);font-size:13px;margin:4px 0 22px}
+  .login input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;margin-bottom:12px}
+  .login input:focus{outline:none;border-color:var(--gold)}
+  .login button{width:100%;padding:12px;background:var(--charcoal);color:#fff;border:0;border-radius:6px;font-size:14px;letter-spacing:1px;text-transform:uppercase}
+  .login .err{color:#c0392b;font-size:12px;margin-top:6px;min-height:18px}
+
+  /* app layout */
+  .app{display:none;min-height:100vh}
+  .app.active{display:block}
+  .content{display:grid;grid-template-columns:400px 1fr;gap:0;height:calc(100vh - 64px)}
+  .sidebar{border-right:1px solid var(--border);background:#fff;overflow-y:auto}
+  .filters{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+  .filter-chip{padding:6px 12px;border-radius:20px;font-size:12px;background:#f4efe5;color:var(--charcoal);border:1px solid transparent;cursor:pointer;letter-spacing:.4px}
+  .filter-chip.active{background:var(--charcoal);color:#fff}
+  .lead-row{padding:14px 18px;border-bottom:1px solid #f2ece0;cursor:pointer;transition:background .1s}
+  .lead-row:hover{background:#faf7f2}
+  .lead-row.selected{background:#f4efe5}
+  .lead-row .name{font-weight:500;color:var(--charcoal);font-size:14px;display:flex;justify-content:space-between;align-items:center}
+  .lead-row .meta{color:var(--muted);font-size:12px;margin-top:3px}
+  .lead-row .summary{color:#444;font-size:12px;margin-top:6px;line-height:1.4}
+  .pill{font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:3px 8px;border-radius:10px;font-weight:500}
+  .pill.new{background:#e3efe8;color:var(--green)}
+  .pill.quoted{background:#fdf3e0;color:#9e7513}
+  .pill.won{background:#e0f0f9;color:#1f5b8e}
+  .pill.lost{background:#f1e0e0;color:#8e2f2f}
+
+  .detail{overflow-y:auto;padding:28px 36px;background:var(--ivory)}
+  .empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:14px}
+  .detail h2{font-size:24px;margin-bottom:4px}
+  .detail .sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:8px;padding:22px 24px;margin-bottom:18px}
+  .panel h3{font-size:14px;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:14px;font-family:'Inter',sans-serif;font-weight:600}
+  .kv{display:grid;grid-template-columns:140px 1fr;gap:8px 18px;font-size:13px}
+  .kv dt{color:var(--muted)}
+  .kv dd{margin:0;color:var(--text)}
+  .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+  .photos a{display:block;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#fff}
+  .photos img{width:100%;height:140px;object-fit:cover;display:block}
+
+  .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+  .calc-grid label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;letter-spacing:.4px}
+  .calc-grid input, .calc-grid select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:14px}
+  .calc-grid input:focus, .calc-grid select:focus{outline:none;border-color:var(--gold)}
+  .calc-grid .full{grid-column:1 / -1}
+  .margin-row{display:flex;align-items:center;gap:12px}
+  .margin-row input[type=range]{flex:1;accent-color:var(--gold)}
+  .margin-row .val{font-weight:600;font-size:14px;min-width:42px;text-align:right;color:var(--charcoal)}
+  .totals{background:#faf7f2;border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-top:14px;font-size:13px}
+  .totals .row{display:flex;justify-content:space-between;padding:4px 0}
+  .totals .row.total{font-size:18px;font-weight:600;color:var(--charcoal);border-top:1px solid var(--border);padding-top:10px;margin-top:8px;font-family:'Playfair Display',serif}
+  .pricenote{font-size:11px;color:var(--muted);margin-top:10px}
+
+  .actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .btn{padding:10px 18px;border-radius:6px;border:0;font-family:inherit;font-size:13px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer}
+  .btn.primary{background:var(--green);color:#fff}
+  .btn.primary:hover{background:#24483a}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--charcoal)}
+  .btn.ghost:hover{background:#fff}
+  .btn.charcoal{background:var(--charcoal);color:#fff}
+  .status-switcher{display:flex;gap:6px;flex-wrap:wrap}
+  .status-switcher button{font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 11px;border-radius:15px;border:1px solid var(--border);background:#fff;color:var(--charcoal)}
+  .status-switcher button.active{background:var(--charcoal);color:#fff;border-color:var(--charcoal)}
+
+  .toast{position:fixed;bottom:22px;right:22px;background:var(--charcoal);color:#fff;padding:12px 18px;border-radius:6px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+  .toast.on{opacity:1}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ccc;border-top-color:var(--charcoal);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:14px;resize:vertical;min-height:90px}
+  textarea:focus{outline:none;border-color:var(--gold)}
+
+  @media (max-width:900px){
+    .content{grid-template-columns:1fr;height:auto}
+    .sidebar{max-height:40vh}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login">
+    <h1>Admin</h1>
+    <p>The Ring Collective — back office</p>
+    <input type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
+    <button id="pwSubmit">Sign in</button>
+    <div class="err" id="pwErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <header>
+    <div class="brand">The Ring Collective <span>Admin</span></div>
+    <div class="right">
+      <span id="metalsSummary">Loading metals…</span>
+      <button class="logout" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <div class="content">
+    <aside class="sidebar">
+      <div class="filters" id="filters">
+        <div class="filter-chip active" data-status="all">All</div>
+        <div class="filter-chip" data-status="new">New</div>
+        <div class="filter-chip" data-status="quoted">Quoted</div>
+        <div class="filter-chip" data-status="won">Won</div>
+        <div class="filter-chip" data-status="lost">Lost</div>
+      </div>
+      <div id="leadsList"></div>
+    </aside>
+
+    <main class="detail" id="detail">
+      <div class="empty">Select a lead to view details.</div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==================================================================== */
+/*  ADMIN APP                                                            */
+/* ==================================================================== */
+
+const API = '/.netlify/functions/admin';
+let pw = sessionStorage.getItem('rc_admin_pw') || null;
+let metals = null;
+let leads = [];
+let selectedId = null;
+let activeStatus = 'all';
+
+/* ---------- AUTH ---------- */
+async function apiCall(payload){
+  const resp = await fetch(API, {
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body: JSON.stringify({ ...payload, password: pw })
+  });
+  if (resp.status === 401) {
+    sessionStorage.removeItem('rc_admin_pw'); pw = null;
+    showLogin(); throw new Error('auth');
+  }
+  const data = await resp.json().catch(()=>({}));
+  if (!resp.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+  return data;
+}
+
+function showLogin(){
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('app').classList.remove('active');
+}
+function showApp(){
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+}
+
+document.getElementById('pwSubmit').addEventListener('click', tryLogin);
+document.getElementById('pwInput').addEventListener('keydown', e=>{
+  if (e.key === 'Enter') tryLogin();
+});
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  sessionStorage.removeItem('rc_admin_pw'); pw = null;
+  location.reload();
+});
+
+async function tryLogin(){
+  const errEl = document.getElementById('pwErr');
+  errEl.textContent = '';
+  const input = document.getElementById('pwInput').value;
+  if (!input) { errEl.textContent = 'Enter a password.'; return; }
+  pw = input;
+  try {
+    await apiCall({ action:'login' });
+    sessionStorage.setItem('rc_admin_pw', pw);
+    showApp();
+    await bootApp();
+  } catch (err) {
+    pw = null;
+    errEl.textContent = 'Wrong password.';
+  }
+}
+
+/* ---------- BOOT ---------- */
+async function bootApp(){
+  await Promise.all([ loadLeads(), loadMetals() ]);
+}
+
+if (pw) {
+  apiCall({ action:'login' })
+    .then(()=>{ showApp(); bootApp(); })
+    .catch(()=>{ pw=null; sessionStorage.removeItem('rc_admin_pw'); showLogin(); });
+} else {
+  showLogin();
+}
+
+/* ---------- METALS ---------- */
+async function loadMetals(){
+  try {
+    metals = await apiCall({ action:'metals_prices' });
+    const g = metals.gold.perGUSD.toFixed(2);
+    const p = metals.platinum.perGUSD.toFixed(2);
+    document.getElementById('metalsSummary').textContent = `Gold $${g}/g · Platinum $${p}/g`;
+  } catch (err) {
+    document.getElementById('metalsSummary').textContent = 'Metals price unavailable';
+  }
+  // Re-render calculator if already showing a lead
+  if (selectedId) renderDetail();
+}
+
+/* ---------- LEADS LIST ---------- */
+document.querySelectorAll('.filter-chip').forEach(c=>{
+  c.addEventListener('click', async ()=>{
+    document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    activeStatus = c.dataset.status;
+    await loadLeads();
+  });
+});
+
+async function loadLeads(){
+  const list = document.getElementById('leadsList');
+  list.innerHTML = '<div style="padding:18px;color:#888;font-size:13px"><span class="spinner"></span>Loading…</div>';
+  try {
+    const resp = await apiCall({ action:'list', status: activeStatus });
+    leads = resp.leads || [];
+    renderLeadsList();
+  } catch (err) {
+    list.innerHTML = `<div style="padding:18px;color:#c0392b;font-size:13px">Failed: ${escapeHTML(err.message)}</div>`;
+  }
+}
+
+function renderLeadsList(){
+  const list = document.getElementById('leadsList');
+  if (leads.length === 0) {
+    list.innerHTML = '<div style="padding:30px 18px;color:#888;font-size:13px;text-align:center">No leads yet.</div>';
+    return;
+  }
+  list.innerHTML = leads.map(l => leadRowHTML(l)).join('');
+  list.querySelectorAll('.lead-row').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      selectedId = el.dataset.id;
+      list.querySelectorAll('.lead-row').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      renderDetail();
+    });
+  });
+  if (selectedId) {
+    const el = list.querySelector(`[data-id="${selectedId}"]`);
+    if (el) el.classList.add('selected');
+  }
+}
+
+function leadRowHTML(l){
+  const date = new Date(l.created_at).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  const stoneSummary = [
+    l.stone_type || l.stone_category,
+    l.diamond_carat ? `${l.diamond_carat} ct` : null,
+    l.shape,
+    (l.metal ? `${l.karat || ''} ${l.metal}`.trim() : null),
+  ].filter(Boolean).join(' · ');
+  return `
+    <div class="lead-row" data-id="${l.id}">
+      <div class="name">
+        <span>${escapeHTML(l.name || 'Unknown')}</span>
+        <span class="pill ${l.status}">${escapeHTML(l.status)}</span>
+      </div>
+      <div class="meta">${escapeHTML(l.email || '')} · ${date}</div>
+      <div class="summary">${escapeHTML(stoneSummary)}</div>
+    </div>
+  `;
+}
+
+/* ---------- DETAIL + QUOTE CALCULATOR ---------- */
+
+// Weight estimate table: base g by weight_class + additive g by setting_style.
+const WEIGHT_BASE = { delicate:2.5, standard:3.5, substantial:5.0 };
+const SETTING_ADD = { solitaire:0, halo:1.0, pave:1.5, 'three-stone':1.0 };
+const KARAT_PURITY = { '14K':0.583, '18K':0.75 };
+const STONE_PRICE_PER_CT = { 'Lab Diamond':200, 'Moissanite':50 };
+
+function estimateWeight(settingStyle, weightClass){
+  const base = WEIGHT_BASE[weightClass] || 3.5;
+  const add  = SETTING_ADD[settingStyle] || 0;
+  return +(base + add).toFixed(2);
+}
+
+async function renderDetail(){
+  const el = document.getElementById('detail');
+  if (!selectedId) { el.innerHTML = '<div class="empty">Select a lead to view details.</div>'; return; }
+  el.innerHTML = '<div class="empty"><span class="spinner"></span>Loading lead…</div>';
+  let data;
+  try {
+    data = await apiCall({ action:'get', id: selectedId });
+  } catch (err) {
+    el.innerHTML = `<div class="empty" style="color:#c0392b">Failed: ${escapeHTML(err.message)}</div>`;
+    return;
+  }
+  const lead = data.lead;
+  const photos = data.photos || [];
+
+  const created = new Date(lead.created_at).toLocaleString();
+  const isColored = lead.stone_category === 'colored';
+  const isGold = /Gold/i.test(lead.metal || '');
+  const isPlatinum = /Platinum/i.test(lead.metal || '');
+
+  const weightEst = estimateWeight(lead.setting_style, lead.weight_class);
+
+  el.innerHTML = `
+    <h2>${escapeHTML(lead.name || 'Unknown')}</h2>
+    <div class="sub">${escapeHTML(lead.email || '')}${lead.phone ? ' · ' + escapeHTML(lead.phone) : ''} · Submitted ${created}</div>
+
+    <div class="panel">
+      <h3>Status</h3>
+      <div class="status-switcher" id="statusSwitcher">
+        ${['new','quoted','won','lost'].map(s=>`
+          <button data-status="${s}" class="${s === lead.status ? 'active':''}">${s}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Customer answers</h3>
+      <dl class="kv">
+        <dt>Stone category</dt><dd>${escapeHTML(lead.stone_category || '—')}</dd>
+        <dt>Stone type</dt><dd>${escapeHTML(lead.stone_type || '—')}${lead.stone_type_note ? ' ('+escapeHTML(lead.stone_type_note)+')' : ''}</dd>
+        <dt>Carat</dt><dd>${lead.diamond_carat ? lead.diamond_carat + ' ct' : (lead.raw_answers && lead.raw_answers.diamondCaratLabel) || '—'}</dd>
+        <dt>Shape</dt><dd>${escapeHTML(lead.shape || '—')}</dd>
+        <dt>Metal</dt><dd>${escapeHTML([lead.karat, lead.metal].filter(Boolean).join(' ') || '—')}</dd>
+        <dt>Setting (AI)</dt><dd>${escapeHTML(lead.setting_style || '—')}</dd>
+        <dt>Weight class (AI)</dt><dd>${escapeHTML(lead.weight_class || '—')}</dd>
+        <dt>Ring size</dt><dd>${escapeHTML(lead.ring_size || '—')}</dd>
+        <dt>Budget</dt><dd>${escapeHTML(lead.budget || '—')}</dd>
+        <dt>Timeline</dt><dd>${escapeHTML(lead.timeline || (lead.custom_date || '—'))}</dd>
+      </dl>
+    </div>
+
+    <div class="panel">
+      <h3>Photos</h3>
+      ${photos.length ? `
+        <div class="photos">
+          ${photos.map(p => p.url
+            ? `<a href="${p.url}" target="_blank" rel="noopener"><img src="${p.url}" alt=""></a>`
+            : `<div style="padding:20px;color:#c0392b;font-size:12px">Photo unavailable</div>`
+          ).join('')}
+        </div>` : '<div style="color:#888;font-size:13px">No photos uploaded.</div>'}
+    </div>
+
+    <div class="panel">
+      <h3>Quote calculator</h3>
+      ${isColored ? `
+        <div style="background:#fdf3e0;border:1px solid #f0d7a6;padding:14px;border-radius:6px;font-size:13px;color:#8a6b1b">
+          <strong>Manual quote needed.</strong> This lead is a colored stone — the auto-calculator is disabled. Price the stone manually, then enter the final total below.
+        </div>
+        <div style="margin-top:14px" class="calc-grid">
+          <div class="full">
+            <label>Manual quote total (USD)</label>
+            <input type="number" id="manualTotal" value="${lead.quote_total || ''}" placeholder="e.g. 2400">
+          </div>
+        </div>
+      ` : `
+        <div class="calc-grid">
+          <div>
+            <label>Diamond carat (from customer)</label>
+            <input type="number" id="carat" step="0.05" value="${lead.diamond_carat || 1}">
+          </div>
+          <div>
+            <label>Stone type</label>
+            <select id="stoneType">
+              <option value="Lab Diamond" ${lead.stone_type==='Lab Diamond'?'selected':''}>Lab Diamond ($200/ct)</option>
+              <option value="Moissanite" ${lead.stone_type==='Moissanite'?'selected':''}>Moissanite ($50/ct)</option>
+            </select>
+          </div>
+          <div>
+            <label>Metal</label>
+            <select id="metal">
+              <option value="Yellow Gold" ${lead.metal==='Yellow Gold'?'selected':''}>Yellow Gold</option>
+              <option value="White Gold" ${lead.metal==='White Gold'?'selected':''}>White Gold</option>
+              <option value="Rose Gold" ${lead.metal==='Rose Gold'?'selected':''}>Rose Gold</option>
+              <option value="Platinum" ${lead.metal==='Platinum'?'selected':''}>Platinum</option>
+            </select>
+          </div>
+          <div>
+            <label>Karat (gold only)</label>
+            <select id="karat">
+              <option value="14K" ${lead.karat==='14K'?'selected':''}>14K (58.3%)</option>
+              <option value="18K" ${lead.karat==='18K'?'selected':''}>18K (75%)</option>
+            </select>
+          </div>
+          <div>
+            <label>Estimated ring weight (g) — edit as needed</label>
+            <input type="number" id="weight" step="0.1" value="${weightEst}">
+          </div>
+          <div>
+            <label>Labor (flat)</label>
+            <input type="number" id="labor" value="100">
+          </div>
+          <div class="full">
+            <label>Margin (%)</label>
+            <div class="margin-row">
+              <input type="range" id="margin" min="0" max="200" step="5" value="50">
+              <span class="val" id="marginVal">50%</span>
+            </div>
+          </div>
+        </div>
+        <div class="totals" id="totals"></div>
+        <div class="pricenote" id="priceNote"></div>
+      `}
+
+      <div class="panel" style="background:#faf7f2;border-color:#eee3ca;margin-top:14px;padding:16px">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Internal notes</label>
+        <textarea id="notes" placeholder="Anything to remember about this lead…">${escapeHTML(lead.quote_notes || '')}</textarea>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn primary" id="saveQuoteBtn">Save quote</button>
+        <button class="btn ghost" id="copyEmailBtn">Copy quote email</button>
+      </div>
+    </div>
+  `;
+
+  // Wire up status switcher
+  el.querySelectorAll('#statusSwitcher button').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const s = b.dataset.status;
+      try {
+        await apiCall({ action:'update_status', id: selectedId, status: s });
+        toast('Status updated');
+        await loadLeads();
+        await renderDetail();
+      } catch (err) { toast('Failed: ' + err.message); }
+    });
+  });
+
+  // Calculator live updates
+  const recalc = ()=>{
+    if (isColored) return;
+    const out = calculate();
+    document.getElementById('totals').innerHTML = `
+      <div class="row"><span>Metal (${out.metalLabel})</span><span>$${fmt(out.metalCost)}</span></div>
+      <div class="row"><span>Stone (${out.carat} ct ${out.stoneType})</span><span>$${fmt(out.stoneCost)}</span></div>
+      <div class="row"><span>Labor</span><span>$${fmt(out.labor)}</span></div>
+      <div class="row"><span>Subtotal</span><span>$${fmt(out.subtotal)}</span></div>
+      <div class="row"><span>Margin (${out.margin}%)</span><span>$${fmt(out.marginAmt)}</span></div>
+      <div class="row total"><span>Quote total</span><span>$${fmt(out.total)}</span></div>
+    `;
+    document.getElementById('marginVal').textContent = out.margin + '%';
+    document.getElementById('priceNote').textContent = `Metal pricing uses live spot: gold $${metals ? metals.gold.perGUSD.toFixed(2) : '?'}/g · platinum $${metals ? metals.platinum.perGUSD.toFixed(2) : '?'}/g. Estimates only — verify before sending.`;
+    window._lastQuote = out;
+  };
+  if (!isColored) {
+    ['carat','stoneType','metal','karat','weight','labor','margin'].forEach(id=>{
+      const n = document.getElementById(id); if (n) n.addEventListener('input', recalc);
+    });
+    recalc();
+  }
+
+  // Save + copy buttons
+  document.getElementById('saveQuoteBtn').addEventListener('click', async ()=>{
+    const notes = document.getElementById('notes').value;
+    let total;
+    if (isColored) {
+      const m = parseFloat(document.getElementById('manualTotal').value);
+      total = isFinite(m) ? m : null;
+    } else {
+      total = window._lastQuote ? window._lastQuote.total : null;
+    }
+    try {
+      await apiCall({
+        action:'update_quote', id: selectedId,
+        quote_total: total != null ? total : undefined,
+        quote_notes: notes,
+      });
+      toast('Quote saved');
+    } catch (err) { toast('Failed: ' + err.message); }
+  });
+
+  document.getElementById('copyEmailBtn').addEventListener('click', ()=>{
+    const total = isColored
+      ? parseFloat(document.getElementById('manualTotal').value) || 0
+      : (window._lastQuote ? window._lastQuote.total : 0);
+    const text = buildQuoteEmail(lead, total);
+    navigator.clipboard.writeText(text).then(()=>toast('Email copied to clipboard'));
+  });
+}
+
+function calculate(){
+  const carat = parseFloat(document.getElementById('carat').value) || 0;
+  const stoneType = document.getElementById('stoneType').value;
+  const metalName = document.getElementById('metal').value;
+  const karat = document.getElementById('karat').value;
+  const weight = parseFloat(document.getElementById('weight').value) || 0;
+  const labor = parseFloat(document.getElementById('labor').value) || 0;
+  const margin = parseFloat(document.getElementById('margin').value) || 0;
+
+  let metalCost = 0, metalLabel = '';
+  if (metalName === 'Platinum') {
+    const perG = metals ? metals.platinum.perGUSD : 35; // fallback estimate
+    metalCost = perG * weight * 0.95;
+    metalLabel = `Platinum ${weight}g @ $${perG.toFixed(2)}/g`;
+  } else {
+    const purity = KARAT_PURITY[karat] || 0.583;
+    const perG = metals ? metals.gold.perGUSD : 80; // fallback
+    metalCost = perG * weight * purity;
+    metalLabel = `${karat} ${metalName} ${weight}g`;
+  }
+  const stoneCost = (STONE_PRICE_PER_CT[stoneType] || 0) * carat;
+  const subtotal  = metalCost + stoneCost + labor;
+  const marginAmt = subtotal * (margin / 100);
+  const total     = subtotal + marginAmt;
+
+  return { carat, stoneType, metalCost, stoneCost, labor, subtotal, margin, marginAmt, total, metalLabel };
+}
+
+function buildQuoteEmail(lead, total){
+  const first = (lead.name || '').split(' ')[0] || '';
+  const lines = [];
+  lines.push(`Hi ${first},`);
+  lines.push('');
+  lines.push('Thanks so much for sending over your inspiration photos — I love what you have in mind. Here is a personalized estimate based on your details:');
+  lines.push('');
+  if (lead.stone_type) lines.push(`• Center stone: ${lead.diamond_carat || '—'} ct ${lead.stone_type}`);
+  if (lead.shape) lines.push(`• Shape: ${lead.shape}`);
+  if (lead.metal) lines.push(`• Metal: ${[lead.karat, lead.metal].filter(Boolean).join(' ')}`);
+  if (lead.ring_size) lines.push(`• Size: ${lead.ring_size}`);
+  lines.push('');
+  lines.push(`Estimated total: $${fmt(total)} USD`);
+  lines.push('');
+  lines.push('This includes materials, stone, labor, and my design work. If you would like to adjust the stone size, metal, or setting style, I am happy to re-price any option — just reply with what you have in mind.');
+  lines.push('');
+  lines.push('When you are ready, I will confirm final sizing and send a secure deposit link to start the build.');
+  lines.push('');
+  lines.push('Talk soon,');
+  lines.push('Seth — The Ring Collective');
+  return lines.join('\n');
+}
+
+/* ---------- utils ---------- */
+function fmt(n){ return (Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2}); }
+function escapeHTML(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(()=>t.classList.remove('on'), 2200);
+}
+</script>
+</body>
+</html>
