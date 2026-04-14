@@ -540,11 +540,12 @@ async function renderDetail(){
       : (window._lastQuote ? window._lastQuote.total : 0);
     if (!total || total <= 0) { toast('Enter a quote total first'); return; }
     if (!lead.email) { toast('This lead has no email on file'); return; }
-    const deposit = total / 2;
+    const production = total / 2;
     const confirmMsg =
       `Send the quote email to ${lead.email}?\n\n` +
-      `Total: $${fmt(total)}\n` +
-      `Deposit: $${fmt(deposit)} (50%)\n\n` +
+      `Estimated total: $${fmt(total)}\n` +
+      `Next step shown: $100 CAD design deposit (applied to final price)\n` +
+      `Later production deposit: $${fmt(production)} (50% of total)\n\n` +
       `This also marks the lead as Quoted.`;
     if (!confirm(confirmMsg)) return;
 

@@ -89,7 +89,8 @@ async function updateLead(id, patch) {
 
 function buildQuoteEmail(lead, total, replyTo) {
   const first = (lead.name || '').split(' ')[0] || 'there';
-  const deposit = total / 2;
+  const cadDeposit = 100;
+  const productionDeposit = total / 2;
 
   const detailRows = [];
   if (lead.stone_type) {
@@ -145,14 +146,32 @@ function buildQuoteEmail(lead, total, replyTo) {
         <div style="font-size:12px;color:#707683;letter-spacing:1px;margin-top:2px">Founder, The Ring Collective</div>
       </div>
 
-      <p style="font-size:15px;line-height:1.65;color:#303641;margin:0 0 14px">To begin production, we ask for a <strong>50% deposit</strong> — the remaining balance is due when your finished ring ships. Most custom rings are completed within 4–6 weeks of deposit.</p>
+      <p style="font-size:15px;line-height:1.65;color:#303641;margin:0 0 14px">Your next step is a <strong>$100 design deposit</strong>. We'll build a custom 3D CAD rendering of your ring so you can see it from every angle — with up to three free revisions — before a single stone is set. Your $100 applies toward the final price.</p>
 
       <div style="margin:28px 0;border:2px solid #D9B48C;border-radius:10px;padding:26px;text-align:center;background:#FAF7F2">
-        <div style="color:#D9B48C;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:8px">Deposit to Reserve Your Ring</div>
-        <div style="font-family:Georgia,serif;font-size:36px;color:#1F2A44;font-weight:600;margin-bottom:4px">${esc(fmtUSD(deposit))}</div>
-        <div style="color:#707683;font-size:13px;margin-bottom:18px">50% of ${esc(fmtUSD(total))} · Balance due at shipping</div>
-        <a href="mailto:${esc(replyTo)}?subject=${encodeURIComponent('Ready to place my deposit — ' + (lead.name || ''))}" style="display:inline-block;background:#2E5C4A;color:#fff;text-decoration:none;padding:16px 40px;border-radius:6px;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Reply to Arrange Deposit</a>
+        <div style="color:#D9B48C;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:8px">Lock In Your Design</div>
+        <div style="font-family:Georgia,serif;font-size:36px;color:#1F2A44;font-weight:600;margin-bottom:4px">${esc(fmtUSD(cadDeposit))}</div>
+        <div style="color:#707683;font-size:13px;margin-bottom:18px">Custom 3D CAD + 3 free revisions · Applied to your final price</div>
+        <a href="mailto:${esc(replyTo)}?subject=${encodeURIComponent('Ready to start my CAD design — ' + (lead.name || ''))}" style="display:inline-block;background:#2E5C4A;color:#fff;text-decoration:none;padding:16px 40px;border-radius:6px;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Reply to Start Your Design</a>
         <div style="color:#9098a5;font-size:11px;margin-top:14px;letter-spacing:.5px">Secure payment link coming soon · In the meantime, reply and we'll send instructions</div>
+      </div>
+
+      <div style="margin:28px 0;padding:22px 24px;background:#fff;border:1px solid #E9E4DA;border-radius:10px">
+        <div style="color:#2E5C4A;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 14px;font-weight:600;text-align:center">Your full timeline</div>
+        <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse">
+          <tr>
+            <td style="vertical-align:top;padding:8px 0;width:36px"><div style="width:26px;height:26px;border-radius:50%;background:#D9B48C;color:#fff;font-size:13px;font-weight:600;text-align:center;line-height:26px">1</div></td>
+            <td style="padding:8px 0 8px 12px"><div style="font-size:14px;color:#1F2A44;font-weight:600;margin-bottom:2px">Lock in your design — ${esc(fmtUSD(cadDeposit))}</div><div style="font-size:13px;color:#707683;line-height:1.5">Custom CAD with 3 free revisions until it's exactly right.</div></td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;padding:8px 0"><div style="width:26px;height:26px;border-radius:50%;background:#D9B48C;color:#fff;font-size:13px;font-weight:600;text-align:center;line-height:26px">2</div></td>
+            <td style="padding:8px 0 8px 12px"><div style="font-size:14px;color:#1F2A44;font-weight:600;margin-bottom:2px">Approve CAD → begin production — 50%</div><div style="font-size:13px;color:#707683;line-height:1.5">${esc(fmtUSD(productionDeposit))} deposit starts your ring. Balance due at shipping.</div></td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;padding:8px 0"><div style="width:26px;height:26px;border-radius:50%;background:#D9B48C;color:#fff;font-size:13px;font-weight:600;text-align:center;line-height:26px">3</div></td>
+            <td style="padding:8px 0 8px 12px"><div style="font-size:14px;color:#1F2A44;font-weight:600;margin-bottom:2px">Ring at your door — 3–4 weeks</div><div style="font-size:13px;color:#707683;line-height:1.5">Shipped directly to your home, fully insured via Parcel Pro.</div></td>
+          </tr>
+        </table>
       </div>
 
       <p style="text-align:center;color:#707683;font-size:13px">Prefer to talk first? Just reply to this email — it comes straight to Kelsey.</p>
@@ -179,9 +198,14 @@ function buildQuoteEmail(lead, total, replyTo) {
     'A note from Kelsey G., Founder:',
     'We know a ring is not just jewelry — it is a symbol of one of the most important moments of your life. Over the years we have had the honor of making more than 10,000 rings for couples who found their "yes," and we would be so grateful for the chance to make yours next.',
     '',
-    `Deposit to reserve your ring: ${fmtUSD(deposit)} (50% of ${fmtUSD(total)}). Balance due at shipping. Most rings complete within 4–6 weeks of deposit.`,
+    `Next step — Lock in your design: ${fmtUSD(cadDeposit)}. We build a custom 3D CAD of your ring with up to 3 free revisions. The $100 applies toward your final price.`,
     '',
-    `Reply to this email to arrange your deposit or ask any questions — it goes straight to Kelsey.`,
+    'Your full timeline:',
+    `  1. Lock in your design — ${fmtUSD(cadDeposit)} (CAD + 3 free revisions)`,
+    `  2. Approve CAD → begin production — 50% (${fmtUSD(productionDeposit)}); balance due at shipping`,
+    `  3. Ring at your door — 3–4 weeks, shipped insured via Parcel Pro`,
+    '',
+    `Reply to this email to start your CAD design or ask any questions — it goes straight to Kelsey.`,
     '',
     'With gratitude,',
     'Kelsey G.',
