@@ -132,6 +132,7 @@
     <div class="brand">The Ring Collective <span>Admin</span></div>
     <div class="right">
       <span id="metalsSummary">Loading metals…</span>
+      <button class="logout" id="refreshMetalsBtn" title="Fetch the latest spot prices from goldapi.io">↻ Refresh</button>
       <button class="logout" id="logoutBtn">Log out</button>
     </div>
   </header>
@@ -233,18 +234,29 @@ if (pw) {
 }
 
 /* ---------- METALS ---------- */
-async function loadMetals(){
+async function loadMetals(force = false){
+  const summary = document.getElementById('metalsSummary');
+  summary.textContent = 'Loading metals…';
   try {
-    metals = await apiCall({ action:'metals_prices' });
+    metals = await apiCall({ action:'metals_prices', force });
     const g = metals.gold.perGUSD.toFixed(2);
     const p = metals.platinum.perGUSD.toFixed(2);
-    document.getElementById('metalsSummary').textContent = `Gold $${g}/g · Platinum $${p}/g`;
+    const when = metals.fetchedAt ? new Date(metals.fetchedAt).toLocaleString() : '';
+    const tag = metals.cached ? ' (cached)' : ' (live)';
+    summary.textContent = `Gold $${g}/g · Platinum $${p}/g${tag}`;
+    summary.title = `Last fetched: ${when}`;
   } catch (err) {
-    document.getElementById('metalsSummary').textContent = 'Metals price unavailable';
+    summary.textContent = 'Metals price unavailable';
+    summary.title = '';
   }
   // Re-render calculator if already showing a lead
   if (selectedId) renderDetail();
 }
+
+document.getElementById('refreshMetalsBtn').addEventListener('click', async ()=>{
+  await loadMetals(true);
+  toast('Metals refreshed');
+});
 
 /* ---------- LEADS LIST ---------- */
 document.querySelectorAll('.filter-chip').forEach(c=>{

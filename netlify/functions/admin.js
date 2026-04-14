@@ -12,7 +12,7 @@
 //   GOLDAPI_KEY                   — from goldapi.io (free tier)
 
 const TROY_OZ_G = 31.1034768;
-const METALS_CACHE_MS = 60 * 60 * 1000; // 1 hour
+const METALS_CACHE_MS = 24 * 60 * 60 * 1000; // 24 hours
 let metalsCache = null;
 
 const ALLOWED_ORIGINS = [
@@ -132,9 +132,9 @@ async function fetchMetalPricePerG(symbol) {
   return { perOz, perG: perOz / TROY_OZ_G };
 }
 
-async function getMetalsPrices() {
-  if (metalsCache && Date.now() - metalsCache.fetchedAt < METALS_CACHE_MS) {
-    return metalsCache.data;
+async function getMetalsPrices(force = false) {
+  if (!force && metalsCache && Date.now() - metalsCache.fetchedAt < METALS_CACHE_MS) {
+    return { ...metalsCache.data, cached: true };
   }
   const [gold, platinum] = await Promise.all([
     fetchMetalPricePerG('XAU'),
@@ -215,7 +215,7 @@ exports.handler = async (event) => {
       }
 
       case 'metals_prices': {
-        const data = await getMetalsPrices();
+        const data = await getMetalsPrices(body.force === true);
         return json(200, headers, data);
       }
 
