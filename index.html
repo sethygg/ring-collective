@@ -32,7 +32,9 @@
         .cards { display: flex; justify-content: center; gap: 30px; max-width: 1000px; margin: 0 auto; }
         .card { flex: 1; max-width: 300px; border: 1px solid #F0EDE6; padding: 40px 30px; text-align: center; transition: box-shadow 0.3s; }
         .card:hover { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
-        .card-icon { font-size: 40px; margin-bottom: 20px; }
+        .card-icon { margin-bottom: 24px; display: flex; justify-content: center; align-items: center; height: 64px; }
+        .card-icon svg { width: 56px; height: 56px; stroke: #D9B48C; fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; transition: transform .4s ease, stroke .3s ease; }
+        .card:hover .card-icon svg { transform: translateY(-2px); stroke: #2E5C4A; }
         .card h3 { font-size: 20px; font-weight: normal; margin-bottom: 12px; color: #1F2A44; }
         .card p { color: #777; line-height: 1.7; font-size: 15px; }
         .cta { padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #1F2A44 0%, #333 100%); color: #fff; }
@@ -313,19 +315,39 @@
         <p class="subtitle">Everything you need to know before choosing your ring</p>
         <div class="cards">
             <div class="card">
-                <div class="card-icon">&#x1F48E;</div>
+                <div class="card-icon">
+                    <svg viewBox="0 0 64 64" aria-hidden="true">
+                        <path d="M12 24 L22 12 L42 12 L52 24 L32 54 Z"/>
+                        <path d="M12 24 L52 24"/>
+                        <path d="M22 12 L32 24 L42 12"/>
+                        <path d="M22 12 L32 54 L42 12"/>
+                    </svg>
+                </div>
                 <a href="diamond-guide.html" style="text-decoration: none; color: inherit;"><h3><a href="diamond-guide.html" style="text-decoration:none;color:inherit;">Diamond Guide</a></h3>
                 <p>Learn about the 4 Cs — cut, clarity, color, and carat — and how they affect your stone.</p>
                     <p style="margin-top:12px;"><a href="diamond-guide.html" style="color:#D9B48C;font-size:0.95rem;">Learn More &rarr;</a></p></a>
             </div>
             <div class="card">
-                <div class="card-icon">&#x1F48D;</div>
+                <div class="card-icon">
+                    <svg viewBox="0 0 64 64" aria-hidden="true">
+                        <circle cx="32" cy="42" r="16"/>
+                        <path d="M24 28 L26 20 L38 20 L40 28"/>
+                        <path d="M28 22 L32 14 L36 22 Z"/>
+                        <path d="M28 22 L32 18 L36 22"/>
+                    </svg>
+                </div>
                 <h3><a href="setting-styles.html" style="text-decoration:none;color:inherit;">Setting Styles</a></h3>
                 <p>From solitaire to halo to vintage — discover which setting matches your personality.</p>
                     <p style="margin-top:12px;"><a href="setting-styles.html" style="color:#D9B48C;font-size:0.95rem;">Learn More &rarr;</a></p>
             </div>
             <div class="card">
-                <div class="card-icon">&#x2728;</div>
+                <div class="card-icon">
+                    <svg viewBox="0 0 64 64" aria-hidden="true">
+                        <circle cx="22" cy="32" r="14"/>
+                        <circle cx="42" cy="32" r="14"/>
+                        <circle cx="32" cy="44" r="14"/>
+                    </svg>
+                </div>
                 <h3><a href="metal-types.html" style="text-decoration:none;color:inherit;">Metal Types</a></h3>
                 <p>Platinum, white gold, rose gold, yellow gold — find the one that is right for you.</p>
                     <p style="margin-top:12px;"><a href="metal-types.html" style="color:#D9B48C;font-size:0.95rem;">Learn More &rarr;</a></p>
