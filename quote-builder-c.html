@@ -830,6 +830,13 @@
       const { error: insErr } = await sb.from('quote_requests').insert(row);
       if (insErr) throw insErr;
 
+      // Fire-and-forget team notification — never block the user if email fails.
+      fetch('/.netlify/functions/notify-lead', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: quoteId })
+      }).catch(e => console.warn('notify-lead failed (non-blocking):', e));
+
       goStep(5);
     } catch (err) {
       console.error('Quote submission failed:', err);
