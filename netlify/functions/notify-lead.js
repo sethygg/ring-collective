@@ -16,6 +16,8 @@
 
 const ALLOWED_ORIGINS = [
   /^https?:\/\/theringcollective\.netlify\.app$/i,
+  /^https?:\/\/theringcollective\.co$/i,
+  /^https?:\/\/www\.theringcollective\.co$/i,
   /^https?:\/\/localhost(:\d+)?$/i,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/i,
 ];
