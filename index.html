@@ -27,6 +27,17 @@
         .step h3 { font-size: 20px; font-weight: normal; margin-bottom: 12px; color: #1F2A44; }
         .step p { color: #777; line-height: 1.7; font-size: 15px; }
         .step-detail { display: inline-block; margin-top: 14px; padding: 6px 12px; border-radius: 999px; background: #FAF7F2; color: #2E5C4A; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 500; }
+        .why-us { padding: 90px 40px; background: #FAF7F2; border-top: 1px solid #EFE9DE; border-bottom: 1px solid #EFE9DE; }
+        .why-inner { max-width: 820px; margin: 0 auto; text-align: center; }
+        .why-eyebrow { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #D9B48C; font-weight: 600; margin-bottom: 14px; }
+        .why-us h2 { font-size: 34px; font-weight: normal; letter-spacing: 1.5px; color: #1F2A44; margin-bottom: 28px; font-family: 'Playfair Display', Georgia, serif; }
+        .why-lede p { color: #3d4452; line-height: 1.8; font-size: 17px; margin-bottom: 18px; font-family: 'Inter', sans-serif; }
+        .why-lede p:last-child { margin-bottom: 0; }
+        .why-stats { display: flex; justify-content: center; gap: 48px; margin-top: 44px; padding-top: 36px; border-top: 1px solid #EFE9DE; flex-wrap: wrap; }
+        .why-stat { text-align: center; }
+        .why-stat-num { font-family: 'Playfair Display', Georgia, serif; font-size: 30px; color: #2E5C4A; font-weight: 600; margin-bottom: 4px; }
+        .why-stat-label { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #777; }
+        @media (max-width: 640px) { .why-us { padding: 60px 22px; } .why-us h2 { font-size: 26px; } .why-lede p { font-size: 16px; } .why-stats { gap: 28px; } .why-stat-num { font-size: 24px; } }
         .education { padding: 80px 60px; background-color: #fff; text-align: center; }
         .education h2 { font-size: 32px; font-weight: normal; margin-bottom: 15px; letter-spacing: 2px; }
         .education .subtitle { color: #888; margin-bottom: 60px; font-size: 16px; }
@@ -207,6 +218,24 @@
         </div>
     </section>
 
+    <!-- Why We Started -->
+    <section class="why-us" id="why-us">
+        <div class="why-inner">
+            <div class="why-eyebrow">Our Story</div>
+            <h2>Why We Started The Ring Collective</h2>
+            <div class="why-lede">
+                <p>For the last decade, we've been the jeweler behind the jeweler — crafting custom pieces for retail stores across the country. Thirty-plus years of master bench experience sat behind every ring that left our workshop, only to be marked up 3× or more by the time it reached a display case.</p>
+                <p>We saw the receipts. And we knew it didn't have to be that way.</p>
+                <p>The Ring Collective is our answer: the exact same hands, the exact same quality, at the exact same price the jewelry store pays. No storefront. No markup. Just couples, straight to the bench.</p>
+            </div>
+            <div class="why-stats">
+                <div class="why-stat"><div class="why-stat-num">10+</div><div class="why-stat-label">Years in the trade</div></div>
+                <div class="why-stat"><div class="why-stat-num">30+</div><div class="why-stat-label">Years of bench expertise</div></div>
+                <div class="why-stat"><div class="why-stat-num">Wholesale</div><div class="why-stat-label">Direct-to-you pricing</div></div>
+            </div>
+        </div>
+    </section>
+
     <!-- Recent Projects Slider -->
     <div style="background: #fff; padding: 60px 20px; overflow: hidden;">
         <div style="max-width: 900px; margin: 0 auto; text-align: center;">
@@ -368,7 +397,7 @@
     <div style="background: #1F2A44; padding: 40px 20px; text-align: center;">
         <div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
             <div>
-                <div style="font-size: 2.2rem; font-weight: bold; color: #D9B48C; font-family: 'Inter', sans-serif;">500+</div>
+                <div style="font-size: 2.2rem; font-weight: bold; color: #D9B48C; font-family: 'Inter', sans-serif;">10,000+</div>
                 <div style="font-size: 0.9rem; color: #999; margin-top: 4px;">Rings Crafted</div>
             </div>
             <div>
