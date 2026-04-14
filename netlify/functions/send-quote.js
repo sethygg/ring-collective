@@ -146,7 +146,14 @@ function buildQuoteEmail(lead, total, replyTo) {
         <div style="font-size:12px;color:#707683;letter-spacing:1px;margin-top:2px">Founder, The Ring Collective</div>
       </div>
 
-      <p style="font-size:15px;line-height:1.65;color:#303641;margin:0 0 14px">Your next step is a <strong>$100 design deposit</strong>. We'll build a custom 3D CAD rendering of your ring so you can see it from every angle — with up to three free revisions — before a single stone is set. Your $100 applies toward the final price.</p>
+      <div style="margin:26px 0;padding:20px 22px;background:#fff;border:1px solid #E9E4DA;border-radius:8px">
+        <div style="color:#2E5C4A;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 10px;font-weight:600">How payment works</div>
+        <p style="font-size:14px;line-height:1.65;color:#303641;margin:0 0 8px"><strong style="color:#1F2A44">Payment 1 — $100 design deposit.</strong> This starts your custom 3D CAD rendering, which you can adjust up to three times free. The full $100 applies toward your final price.</p>
+        <p style="font-size:14px;line-height:1.65;color:#303641;margin:0 0 8px"><strong style="color:#1F2A44">Payment 2 — 50% production deposit (${esc(fmtUSD(productionDeposit))}).</strong> Once you approve the CAD, this deposit starts production of your finished ring.</p>
+        <p style="font-size:14px;line-height:1.65;color:#303641;margin:0"><strong style="color:#1F2A44">Payment 3 — Remaining balance.</strong> Due when your ring ships (3–4 weeks after production deposit), fully insured via Parcel Pro.</p>
+      </div>
+
+      <p style="font-size:15px;line-height:1.65;color:#303641;margin:0 0 14px">Ready to get started? Your next step is the <strong>$100 design deposit</strong> below.</p>
 
       <div style="margin:28px 0;border:2px solid #D9B48C;border-radius:10px;padding:26px;text-align:center;background:#FAF7F2">
         <div style="color:#D9B48C;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:8px">Lock In Your Design</div>
