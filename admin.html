@@ -464,7 +464,8 @@ async function renderDetail(){
 
       <div class="actions-row">
         <button class="btn primary" id="saveQuoteBtn">Save quote</button>
-        <button class="btn ghost" id="copyEmailBtn">Copy quote email</button>
+        <button class="btn charcoal" id="sendQuoteBtn">✉ Send quote to customer</button>
+        <button class="btn ghost" id="copyEmailBtn">Copy plain-text email</button>
       </div>
     </div>
   `;
@@ -531,6 +532,42 @@ async function renderDetail(){
       : (window._lastQuote ? window._lastQuote.total : 0);
     const text = buildQuoteEmail(lead, total);
     navigator.clipboard.writeText(text).then(()=>toast('Email copied to clipboard'));
+  });
+
+  document.getElementById('sendQuoteBtn').addEventListener('click', async ()=>{
+    const total = isColored
+      ? parseFloat(document.getElementById('manualTotal').value) || 0
+      : (window._lastQuote ? window._lastQuote.total : 0);
+    if (!total || total <= 0) { toast('Enter a quote total first'); return; }
+    if (!lead.email) { toast('This lead has no email on file'); return; }
+    const deposit = total / 2;
+    const confirmMsg =
+      `Send the quote email to ${lead.email}?\n\n` +
+      `Total: $${fmt(total)}\n` +
+      `Deposit: $${fmt(deposit)} (50%)\n\n` +
+      `This also marks the lead as Quoted.`;
+    if (!confirm(confirmMsg)) return;
+
+    const btn = document.getElementById('sendQuoteBtn');
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      await fetch('/.netlify/functions/send-quote', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ password: pw, id: selectedId, total })
+      }).then(async r => {
+        const data = await r.json().catch(()=>({}));
+        if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+        return data;
+      });
+      toast('Quote email sent · Lead marked Quoted');
+      await loadLeads();
+      await renderDetail();
+    } catch (err) {
+      toast('Send failed: ' + err.message);
+      btn.disabled = false; btn.textContent = orig;
+    }
   });
 }
 

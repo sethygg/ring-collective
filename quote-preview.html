@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Customer Quote Email — Preview</title>
+<style>
+  body{margin:0;background:#e9e4da;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;padding:40px 20px;color:#22252b}
+  .wrap{max-width:620px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+
+  /* Header band */
+  .header{background:#1F2A44;padding:36px 40px;text-align:center;color:#fff}
+  .header .brand{font-family:'Playfair Display',Georgia,serif;font-size:26px;letter-spacing:2px;margin:0}
+  .header .tag{color:#D9B48C;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-top:6px}
+
+  /* Greeting */
+  .body{padding:36px 40px}
+  h1{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#1F2A44;margin:0 0 18px;font-weight:500}
+  p{font-size:15px;line-height:1.65;color:#303641;margin:0 0 14px}
+
+  /* Quote card */
+  .quote-card{margin:26px 0;border:1px solid #E9E4DA;border-radius:8px;padding:22px 24px;background:#FAF7F2}
+  .quote-card .label{color:#D9B48C;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 10px;font-weight:600}
+  .quote-card table{width:100%;border-collapse:collapse}
+  .quote-card td{padding:6px 0;font-size:14px;vertical-align:top}
+  .quote-card td.k{color:#707683;width:40%}
+  .quote-card td.v{color:#22252b;font-weight:500}
+  .total{border-top:1px solid #E9E4DA;margin-top:14px;padding-top:14px;display:flex;justify-content:space-between;align-items:baseline}
+  .total .lbl{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#707683}
+  .total .val{font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#1F2A44;font-weight:600}
+
+  /* CEO block */
+  .ceo{background:#F4EFE5;border-radius:8px;padding:24px 26px;margin:26px 0}
+  .ceo .intro{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#D9B48C;margin-bottom:12px;font-weight:600}
+  .ceo p{font-size:15px;line-height:1.7;color:#303641;margin:0 0 12px}
+  .signoff{font-family:'Playfair Display',Georgia,serif;font-size:20px;color:#2E5C4A;margin-top:18px;font-style:italic}
+  .ceo .title{font-size:12px;color:#707683;letter-spacing:1px;margin-top:2px}
+
+  /* CTA */
+  .cta{text-align:center;margin:30px 0 8px}
+  .cta a{display:inline-block;background:#2E5C4A;color:#fff;text-decoration:none;padding:14px 32px;border-radius:6px;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500}
+
+  /* Deposit card */
+  .deposit-card{margin:28px 0;border:2px solid #D9B48C;border-radius:10px;padding:26px;text-align:center;background:linear-gradient(180deg,#FAF7F2 0%,#fff 100%)}
+  .deposit-card .lbl{color:#D9B48C;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:8px}
+  .deposit-card .amt{font-family:'Playfair Display',Georgia,serif;font-size:36px;color:#1F2A44;font-weight:600;margin-bottom:4px}
+  .deposit-card .sub{color:#707683;font-size:13px;margin-bottom:18px}
+  .deposit-card .pay-btn{display:inline-block;background:#2E5C4A;color:#fff;text-decoration:none;padding:16px 40px;border-radius:6px;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500}
+  .deposit-card .secure{color:#9098a5;font-size:11px;margin-top:14px;letter-spacing:.5px}
+
+  /* Footer */
+  .footer{padding:22px 40px;background:#FAF7F2;color:#707683;font-size:12px;text-align:center;border-top:1px solid #E9E4DA}
+  .footer a{color:#2E5C4A;text-decoration:none}
+  .disclaimer{font-size:11px;color:#9098a5;font-style:italic;margin-top:20px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="header">
+    <div class="brand">The Ring Collective</div>
+    <div class="tag">Your Personalized Estimate</div>
+  </div>
+
+  <div class="body">
+    <h1>Hi Sarah,</h1>
+    <p>Thank you for sending your inspiration over — we've put together a personalized estimate based on the design you shared. Everything below is fully adjustable, so please treat this as a starting point for our conversation.</p>
+
+    <div class="quote-card">
+      <div class="label">Your Ring</div>
+      <table>
+        <tr><td class="k">Center stone</td><td class="v">1 ct Lab Diamond</td></tr>
+        <tr><td class="k">Shape</td><td class="v">Round</td></tr>
+        <tr><td class="k">Metal</td><td class="v">14K White Gold</td></tr>
+        <tr><td class="k">Setting</td><td class="v">Solitaire</td></tr>
+        <tr><td class="k">Size</td><td class="v">6</td></tr>
+      </table>
+      <div class="total">
+        <span class="lbl">Estimated Total</span>
+        <span class="val">$2,450</span>
+      </div>
+    </div>
+
+    <p>This includes materials, the center stone, expert labor, and all of our design work. If you'd like to explore a different carat, metal, or setting style, just reply and we'll reprice any option at no cost.</p>
+
+    <div class="ceo">
+      <div class="intro">A note from our founder</div>
+      <p>We know a ring isn't just jewelry — it's a symbol of one of the most important moments of your life. That's a tremendous amount of trust to place in someone, and we take it seriously with every piece we craft.</p>
+      <p>Over the years we've had the honor of making more than <strong>10,000 rings</strong> for couples who found their "yes," and we'd be so grateful for the chance to make yours next. Every ring we create is handcrafted to your exact specifications and quality-checked personally before it ever leaves our hands.</p>
+      <p>If you have any questions at all — about the stone, the metal, timing, or anything in between — just reply to this email. It comes straight to me.</p>
+      <div class="signoff">With gratitude,<br>Kelsey G.</div>
+      <div class="title">Founder, The Ring Collective</div>
+    </div>
+
+    <p>To begin production, we ask for a <strong>50% deposit</strong> — the remaining balance is due when your finished ring ships. Most custom rings are completed within 4–6 weeks of deposit.</p>
+
+    <div class="deposit-card">
+      <div class="lbl">Deposit to Reserve Your Ring</div>
+      <div class="amt">$1,225.00</div>
+      <div class="sub">50% of $2,450.00 · Balance due at shipping</div>
+      <a class="pay-btn" href="#">Pay Deposit Securely &rarr;</a>
+      <div class="secure">Secure checkout powered by Stripe · Visa, Mastercard, Amex, ACH</div>
+    </div>
+
+    <p style="text-align:center;color:#707683;font-size:13px">Prefer to talk first? Just reply to this email — it comes straight to Kelsey.</p>
+
+    <div class="disclaimer">This estimate is valid for 14 days and reflects current precious-metal market prices at time of quoting. Final invoice may vary slightly if metal markets shift significantly before production begins.</div>
+  </div>
+
+  <div class="footer">
+    The Ring Collective · Custom engagement rings, handcrafted with care<br>
+    <a href="mailto:sales@theringcollective.net">sales@theringcollective.net</a>
+  </div>
+
+</div>
+
+</body>
+</html>
