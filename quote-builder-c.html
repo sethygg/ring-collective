@@ -313,7 +313,7 @@
     photos: { front:null, side:null, top:null, detail:null },
     photosSmall: { front:null, side:null, top:null, detail:null }, // downscaled for API upload
     extras: [],
-    answers: { stoneCategory:null, stoneType:null, diamondCarat:null, diamondCaratLabel:null, settingStyle:null, weightClass:null, shape:null, metal:null, karat:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'' }
+    answers: { stoneCategory:null, stoneType:null, diamondCarat:null, diamondCaratLabel:null, settingStyle:null, weightClass:null, shape:null, metal:null, karat:null, ringSize:null, budget:null, timeline:null, customDate:null, name:'', email:'', phone:'', accentPattern:null, accentMeleeSize:null, hiddenHalo:false, estimatedAccentCount:0, estimatedAccentTcw:0 }
   };
 
   function toggleMobileMenu(){
@@ -457,7 +457,12 @@
   // Calls the Netlify Function /.netlify/functions/detect-ring which forwards
   // the photos to Claude Vision. Falls back to safe defaults on any error.
   async function detectFromPhotos(){
-    const DEFAULTS = { stoneCategory:'diamond', shape:'Round', metalColor:'White Gold', settingStyle:'solitaire', weightClass:'standard' };
+    const DEFAULTS = {
+      stoneCategory:'diamond', shape:'Round', metalColor:'White Gold',
+      settingStyle:'solitaire', weightClass:'standard',
+      accentPattern:'none', accentMeleeSize:'none', hiddenHalo:false,
+      estimatedAccentCount:0, estimatedAccentTcw:0
+    };
     const photos = Object.entries(state.photosSmall)
       .filter(([, v]) => !!v)
       .map(([angle, dataUrl]) => ({ angle, dataUrl }));
@@ -479,7 +484,12 @@
         shape: data.shape || DEFAULTS.shape,
         metalColor: data.metalColor || DEFAULTS.metalColor,
         settingStyle: data.settingStyle || DEFAULTS.settingStyle,
-        weightClass: data.weightClass || DEFAULTS.weightClass
+        weightClass: data.weightClass || DEFAULTS.weightClass,
+        accentPattern: data.accentPattern || DEFAULTS.accentPattern,
+        accentMeleeSize: data.accentMeleeSize || DEFAULTS.accentMeleeSize,
+        hiddenHalo: !!data.hiddenHalo,
+        estimatedAccentCount: Number.isFinite(data.estimatedAccentCount) ? data.estimatedAccentCount : 0,
+        estimatedAccentTcw: Number.isFinite(data.estimatedAccentTcw) ? data.estimatedAccentTcw : 0
       };
     } catch (err) {
       console.warn('Vision detection failed, using defaults:', err);
@@ -503,6 +513,12 @@
     // Stash AI-detected setting style + weight class for the quote engine.
     state.answers.settingStyle = detected.settingStyle;
     state.answers.weightClass  = detected.weightClass;
+    // Stash AI-detected accent/melee diamond info for the pricing engine.
+    state.answers.accentPattern        = detected.accentPattern;
+    state.answers.accentMeleeSize      = detected.accentMeleeSize;
+    state.answers.hiddenHalo           = detected.hiddenHalo;
+    state.answers.estimatedAccentCount = detected.estimatedAccentCount;
+    state.answers.estimatedAccentTcw   = detected.estimatedAccentTcw;
 
     await confirmStoneCategory(detected);
     await confirmField({
@@ -853,6 +869,11 @@
         budget:          a.budget || null,
         timeline:        a.timeline || null,
         custom_date:     a.customDate || null,
+        accent_pattern:           a.accentPattern || null,
+        accent_melee_size:        a.accentMeleeSize || null,
+        hidden_halo:              !!a.hiddenHalo,
+        estimated_accent_count:   (typeof a.estimatedAccentCount === 'number') ? a.estimatedAccentCount : null,
+        estimated_accent_tcw:     (typeof a.estimatedAccentTcw === 'number') ? a.estimatedAccentTcw : null,
         photo_paths:     photoPaths,
         raw_answers:     a,
       };

@@ -328,11 +328,42 @@ const WEIGHT_BASE = { delicate:2.5, standard:3.5, substantial:5.0 };
 const SETTING_ADD = { solitaire:0, halo:1.0, pave:1.5, 'three-stone':1.0 };
 const KARAT_PURITY = { '14K':0.583, '18K':0.75 };
 const STONE_PRICE_PER_CT = { 'Lab Diamond':200, 'Moissanite':50 };
+// Accent melee prices per carat — lab-grown diamond melee runs ~$150/ct,
+// moissanite melee ~$30/ct. Defaults; admin can override per lead.
+const ACCENT_PRICE_PER_CT = { 'Lab Diamond':150, 'Moissanite':30 };
 
 function estimateWeight(settingStyle, weightClass){
   const base = WEIGHT_BASE[weightClass] || 3.5;
   const add  = SETTING_ADD[settingStyle] || 0;
   return +(base + add).toFixed(2);
+}
+
+// Mirror of detect-ring.js accent math — kept in sync so changing pattern/size
+// in the admin UI recomputes TCW without a round-trip.
+const ACCENT_COUNTS = {
+  'none':                    { small: 0,  medium: 0,  large: 0  },
+  'shoulders':               { small: 14, medium: 12, large: 10 },
+  'half-eternity':           { small: 18, medium: 14, large: 11 },
+  'three-quarter-eternity':  { small: 28, medium: 22, large: 17 },
+  'full-eternity':           { small: 36, medium: 28, large: 22 },
+};
+const ACCENT_CT_PER_STONE = { small: 0.012, medium: 0.022, large: 0.040 };
+const ACCENT_HIDDEN_HALO_COUNT = 18;
+const ACCENT_HIDDEN_HALO_CT_EACH = 0.008;
+
+function estimateAccents(pattern, size, hiddenHalo){
+  const p = pattern || 'none';
+  const s = size || 'none';
+  let count = 0, tcw = 0;
+  if (p !== 'none' && s !== 'none' && ACCENT_COUNTS[p] && ACCENT_CT_PER_STONE[s]) {
+    count = ACCENT_COUNTS[p][s] || 0;
+    tcw   = count * ACCENT_CT_PER_STONE[s];
+  }
+  if (hiddenHalo) {
+    count += ACCENT_HIDDEN_HALO_COUNT;
+    tcw   += ACCENT_HIDDEN_HALO_COUNT * ACCENT_HIDDEN_HALO_CT_EACH;
+  }
+  return { count, tcw: +tcw.toFixed(3) };
 }
 
 function renderSequencePanel(lead){
@@ -417,6 +448,11 @@ async function renderDetail(){
         <dt>Metal</dt><dd>${escapeHTML([lead.karat, lead.metal].filter(Boolean).join(' ') || '—')}</dd>
         <dt>Setting (AI)</dt><dd>${escapeHTML(lead.setting_style || '—')}</dd>
         <dt>Weight class (AI)</dt><dd>${escapeHTML(lead.weight_class || '—')}</dd>
+        <dt>Band accents (AI)</dt><dd>${
+          lead.accent_pattern && lead.accent_pattern !== 'none'
+            ? escapeHTML(`${lead.accent_pattern.replace(/-/g,' ')} · ${lead.accent_melee_size || 'n/a'} melee${lead.hidden_halo ? ' + hidden halo' : ''} · ~${Number(lead.estimated_accent_tcw || 0).toFixed(2)} ct`)
+            : (lead.hidden_halo ? 'Hidden halo only · ~' + (Number(lead.estimated_accent_tcw || 0).toFixed(2)) + ' ct' : 'None')
+        }</dd>
         <dt>Ring size</dt><dd>${escapeHTML(lead.ring_size || '—')}</dd>
         <dt>Budget</dt><dd>${escapeHTML(lead.budget || '—')}</dd>
         <dt>Timeline</dt><dd>${escapeHTML(lead.timeline || (lead.custom_date || '—'))}</dd>
@@ -483,6 +519,50 @@ async function renderDetail(){
             <label>Labor (flat)</label>
             <input type="number" id="labor" value="100">
           </div>
+          <div class="full" style="background:#faf7f2;border:1px solid #eee3ca;border-radius:6px;padding:12px 14px;margin-top:4px">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;letter-spacing:.3px;text-transform:uppercase">
+              Accent diamonds ${lead.accent_pattern && lead.accent_pattern !== 'none' ? '<span style="color:#2E5C4A;text-transform:none;font-weight:600">· AI-detected</span>' : ''}
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div>
+                <label style="font-size:11px">Pattern</label>
+                <select id="accentPattern">
+                  <option value="none" ${(lead.accent_pattern||'none')==='none'?'selected':''}>None</option>
+                  <option value="shoulders" ${lead.accent_pattern==='shoulders'?'selected':''}>Shoulders only</option>
+                  <option value="half-eternity" ${lead.accent_pattern==='half-eternity'?'selected':''}>Half eternity</option>
+                  <option value="three-quarter-eternity" ${lead.accent_pattern==='three-quarter-eternity'?'selected':''}>3/4 eternity</option>
+                  <option value="full-eternity" ${lead.accent_pattern==='full-eternity'?'selected':''}>Full eternity</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:11px">Melee size</label>
+                <select id="accentMeleeSize">
+                  <option value="none" ${(lead.accent_melee_size||'none')==='none'?'selected':''}>None</option>
+                  <option value="small" ${lead.accent_melee_size==='small'?'selected':''}>Small (1.2-1.5mm)</option>
+                  <option value="medium" ${lead.accent_melee_size==='medium'?'selected':''}>Medium (1.6-2.0mm)</option>
+                  <option value="large" ${lead.accent_melee_size==='large'?'selected':''}>Large (2.0mm+)</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:11px">
+                  <input type="checkbox" id="accentHiddenHalo" ${lead.hidden_halo ? 'checked' : ''} style="margin-right:4px;vertical-align:middle"> Hidden halo
+                </label>
+                <div style="font-size:11px;color:var(--muted);margin-top:6px">Adds ~18 tiny stones</div>
+              </div>
+              <div>
+                <label style="font-size:11px">Accent TCW (ct)</label>
+                <input type="number" id="accentTcw" step="0.01" value="${(lead.estimated_accent_tcw != null ? Number(lead.estimated_accent_tcw) : 0).toFixed(3)}">
+              </div>
+              <div>
+                <label style="font-size:11px">Price per ct ($)</label>
+                <input type="number" id="accentPpc" step="5" value="${ACCENT_PRICE_PER_CT[lead.stone_type] || ACCENT_PRICE_PER_CT['Lab Diamond']}">
+              </div>
+              <div>
+                <label style="font-size:11px">Est. count</label>
+                <input type="number" id="accentCount" step="1" value="${lead.estimated_accent_count || 0}" readonly style="background:#f5f2ea">
+              </div>
+            </div>
+          </div>
           <div class="full">
             <label>Margin (%)</label>
             <div class="margin-row">
@@ -527,22 +607,56 @@ async function renderDetail(){
   const recalc = ()=>{
     if (isColored) return;
     const out = calculate();
+    const accentRow = out.accentCost > 0
+      ? `<div class="row"><span>Accent diamonds (${out.accentLabel})</span><span>$${fmt(out.accentCost)}</span></div>`
+      : '';
     document.getElementById('totals').innerHTML = `
       <div class="row"><span>Metal (${out.metalLabel})</span><span>$${fmt(out.metalCost)}</span></div>
-      <div class="row"><span>Stone (${out.carat} ct ${out.stoneType})</span><span>$${fmt(out.stoneCost)}</span></div>
+      <div class="row"><span>Center stone (${out.carat} ct ${out.stoneType})</span><span>$${fmt(out.stoneCost)}</span></div>
+      ${accentRow}
       <div class="row"><span>Labor</span><span>$${fmt(out.labor)}</span></div>
       <div class="row"><span>Subtotal</span><span>$${fmt(out.subtotal)}</span></div>
       <div class="row"><span>Margin (${out.margin}%)</span><span>$${fmt(out.marginAmt)}</span></div>
       <div class="row total"><span>Quote total</span><span>$${fmt(out.total)}</span></div>
     `;
     document.getElementById('marginVal').textContent = out.margin + '%';
-    document.getElementById('priceNote').textContent = `Metal pricing uses live spot: gold $${metals ? metals.gold.perGUSD.toFixed(2) : '?'}/g · platinum $${metals ? metals.platinum.perGUSD.toFixed(2) : '?'}/g. Estimates only — verify before sending.`;
+    document.getElementById('priceNote').textContent = `Metal pricing uses live spot: gold $${metals ? metals.gold.perGUSD.toFixed(2) : '?'}/g · platinum $${metals ? metals.platinum.perGUSD.toFixed(2) : '?'}/g. Accents estimated from AI photo analysis — override TCW or price/ct as needed.`;
     window._lastQuote = out;
   };
+
+  // When pattern/size/hidden-halo changes, auto-recompute TCW + count so the
+  // admin sees fresh numbers. Direct edits to the TCW input bypass this and
+  // flow through recalc untouched.
+  const autoAccentRecalc = ()=>{
+    const pattern = document.getElementById('accentPattern').value;
+    const size    = document.getElementById('accentMeleeSize').value;
+    const hidden  = document.getElementById('accentHiddenHalo').checked;
+    const est = estimateAccents(pattern, size, hidden);
+    document.getElementById('accentTcw').value   = est.tcw.toFixed(3);
+    document.getElementById('accentCount').value = est.count;
+    // When pattern/size says "none", also clear hidden halo contribution display.
+    recalc();
+  };
+
+  // Also re-derive default price per ct when the stone type changes.
+  const autoAccentPpc = ()=>{
+    const st = document.getElementById('stoneType').value;
+    const def = ACCENT_PRICE_PER_CT[st];
+    if (def != null) document.getElementById('accentPpc').value = def;
+    recalc();
+  };
+
   if (!isColored) {
-    ['carat','stoneType','metal','karat','weight','labor','margin'].forEach(id=>{
+    ['carat','metal','karat','weight','labor','margin','accentTcw','accentPpc'].forEach(id=>{
       const n = document.getElementById(id); if (n) n.addEventListener('input', recalc);
     });
+    ['accentPattern','accentMeleeSize'].forEach(id=>{
+      const n = document.getElementById(id); if (n) n.addEventListener('change', autoAccentRecalc);
+    });
+    const hh = document.getElementById('accentHiddenHalo');
+    if (hh) hh.addEventListener('change', autoAccentRecalc);
+    const st = document.getElementById('stoneType');
+    if (st) st.addEventListener('change', autoAccentPpc);
     recalc();
   }
 
@@ -641,6 +755,19 @@ function calculate(){
   const labor = parseFloat(document.getElementById('labor').value) || 0;
   const margin = parseFloat(document.getElementById('margin').value) || 0;
 
+  // Accent diamonds — pattern+size auto-compute TCW, but TCW field is editable
+  // (manual entry wins). Count re-derives when pattern/size changes.
+  const accentPattern   = document.getElementById('accentPattern').value;
+  const accentMeleeSize = document.getElementById('accentMeleeSize').value;
+  const accentHidden    = document.getElementById('accentHiddenHalo').checked;
+  let accentTcw         = parseFloat(document.getElementById('accentTcw').value);
+  if (!isFinite(accentTcw)) accentTcw = 0;
+  const accentPpc       = parseFloat(document.getElementById('accentPpc').value) || 0;
+  const accentCost      = accentTcw * accentPpc;
+  const accentLabel     = accentPattern !== 'none' && accentTcw > 0
+    ? `${accentTcw.toFixed(2)} ct ${accentPattern.replace(/-/g,' ')}${accentHidden ? ' + hidden halo' : ''}`
+    : 'None';
+
   let metalCost = 0, metalLabel = '';
   if (metalName === 'Platinum') {
     const perG = metals ? metals.platinum.perGUSD : 35; // fallback estimate
@@ -653,11 +780,11 @@ function calculate(){
     metalLabel = `${karat} ${metalName} ${weight}g`;
   }
   const stoneCost = (STONE_PRICE_PER_CT[stoneType] || 0) * carat;
-  const subtotal  = metalCost + stoneCost + labor;
+  const subtotal  = metalCost + stoneCost + accentCost + labor;
   const marginAmt = subtotal * (margin / 100);
   const total     = subtotal + marginAmt;
 
-  return { carat, stoneType, metalCost, stoneCost, labor, subtotal, margin, marginAmt, total, metalLabel };
+  return { carat, stoneType, metalCost, stoneCost, accentCost, accentLabel, accentTcw, labor, subtotal, margin, marginAmt, total, metalLabel };
 }
 
 function buildQuoteEmail(lead, total){

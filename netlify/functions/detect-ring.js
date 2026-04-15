@@ -24,6 +24,41 @@ const SHAPES = ['Round','Oval','Emerald','Cushion','Pear','Princess','Marquise',
 const METALS = ['White Gold','Yellow Gold','Rose Gold','Platinum'];
 const SETTINGS = ['solitaire','halo','pave','three-stone'];
 const WEIGHTS  = ['delicate','standard','substantial'];
+const ACCENT_PATTERNS = ['none','shoulders','half-eternity','three-quarter-eternity','full-eternity'];
+const MELEE_SIZES = ['none','small','medium','large'];
+
+// Estimated stone count by (pattern × melee size) on a ~size 6.5 band.
+// Counts are approximations — close enough for pricing, but the admin
+// can always override. Hidden halo adds extra stones on top.
+const COUNTS_BY_PATTERN = {
+  'none':                    { small: 0,  medium: 0,  large: 0  },
+  'shoulders':               { small: 14, medium: 12, large: 10 },
+  'half-eternity':           { small: 18, medium: 14, large: 11 },
+  'three-quarter-eternity':  { small: 28, medium: 22, large: 17 },
+  'full-eternity':           { small: 36, medium: 28, large: 22 },
+};
+// Average ct per stone by size class (1.2-1.5mm / 1.6-2.0mm / 2.0mm+).
+const CT_PER_STONE = { small: 0.012, medium: 0.022, large: 0.040 };
+// Hidden halo: small circle of ~18 tiny stones (~1.2mm, ~0.008 ct each).
+const HIDDEN_HALO_COUNT = 18;
+const HIDDEN_HALO_CT_EACH = 0.008;
+
+function estimateAccents({ accentPattern, accentMeleeSize, hiddenHalo }) {
+  const pattern = ACCENT_PATTERNS.includes(accentPattern) ? accentPattern : 'none';
+  const size = MELEE_SIZES.includes(accentMeleeSize) ? accentMeleeSize : 'none';
+
+  let count = 0;
+  let tcw  = 0;
+  if (pattern !== 'none' && size !== 'none') {
+    count = COUNTS_BY_PATTERN[pattern][size] || 0;
+    tcw   = count * (CT_PER_STONE[size] || 0);
+  }
+  if (hiddenHalo) {
+    count += HIDDEN_HALO_COUNT;
+    tcw   += HIDDEN_HALO_COUNT * HIDDEN_HALO_CT_EACH;
+  }
+  return { count, tcw: +tcw.toFixed(3) };
+}
 
 function corsHeaders(origin) {
   const allowed = ALLOWED_ORIGINS.some(re => re.test(origin || ''));
@@ -88,14 +123,28 @@ exports.handler = async (event) => {
   const content = [{
     type: 'text',
     text: [
-      'You are analyzing photos of an engagement ring. Identify five things:',
+      'You are analyzing photos of an engagement ring. Identify eight things:',
       '1. stoneCategory: exactly "diamond" (clear/colorless center stone) or "colored" (non-white gemstone like sapphire, ruby, emerald, etc.).',
       '2. shape: exactly one of ' + SHAPES.join(', ') + '.',
       '3. metalColor: exactly one of ' + METALS.join(', ') + '. Platinum and white gold look identical in photos, so default to "White Gold" unless obviously different.',
       '4. settingStyle: exactly one of ' + SETTINGS.join(', ') + '. "solitaire" = single center stone with plain band, "halo" = center stone surrounded by a ring of smaller stones, "pave" = small diamonds set along the band, "three-stone" = one center + two side stones.',
       '5. weightClass: exactly one of ' + WEIGHTS.join(', ') + ' describing how substantial the band and setting appear. "delicate" = very thin/dainty, "standard" = average heft, "substantial" = chunky/heavy/wide.',
       '',
-      'Return ONLY a minified JSON object with exactly those five string fields. No preamble, no markdown, no code fences. If uncertain, pick the single most likely option.'
+      'Accent / melee diamonds on the BAND (small stones set into the band itself, NOT the halo around the center stone):',
+      '6. accentPattern: exactly one of ' + ACCENT_PATTERNS.join(', ') + '.',
+      '   - "none" = plain band, no accent stones on it.',
+      '   - "shoulders" = accents only near the center stone head, stopping partway down each side (roughly the top 25-30% of the band).',
+      '   - "half-eternity" = accents span the top half of the ring, visible from the front but stop before the bottom.',
+      '   - "three-quarter-eternity" = accents cover the top 3/4 of the ring, stopping only at the bottom inch.',
+      '   - "full-eternity" = accents go all the way around the entire ring.',
+      '7. accentMeleeSize: exactly one of ' + MELEE_SIZES.join(', ') + ' describing how large each individual band accent stone is.',
+      '   - "none" = no band accents (accentPattern is "none").',
+      '   - "small" = very tiny stones, pave-like (~1.2-1.5mm), many stones close together.',
+      '   - "medium" = visibly distinct small stones (~1.6-2.0mm), typical for channel or shared-prong bands.',
+      '   - "large" = chunky band stones (~2.0mm+), fewer and more substantial.',
+      '8. hiddenHalo: boolean true/false. A "hidden halo" is a small ring of tiny stones set on the side profile of the basket, UNDER the center stone — only visible from the side, not from above. Return false if no hidden halo is visible, or if you cannot see the side profile.',
+      '',
+      'Return ONLY a minified JSON object with exactly these fields: stoneCategory, shape, metalColor, settingStyle, weightClass, accentPattern, accentMeleeSize, hiddenHalo. No preamble, no markdown, no code fences. If uncertain, pick the single most likely option. If the band clearly has no accents, return accentPattern:"none", accentMeleeSize:"none".'
     ].join('\n')
   }];
 
@@ -122,7 +171,7 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 200,
+        max_tokens: 300,
         messages: [{ role: 'user', content }]
       })
     });
@@ -138,12 +187,23 @@ exports.handler = async (event) => {
     try { parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text); } catch (_) {}
 
     // Validate + normalize
+    const accentPattern = ACCENT_PATTERNS.includes(parsed.accentPattern) ? parsed.accentPattern : 'none';
+    const accentMeleeSize = MELEE_SIZES.includes(parsed.accentMeleeSize) ? parsed.accentMeleeSize : 'none';
+    const hiddenHalo = parsed.hiddenHalo === true;
+    const { count: estimatedAccentCount, tcw: estimatedAccentTcw } =
+      estimateAccents({ accentPattern, accentMeleeSize, hiddenHalo });
+
     const out = {
       stoneCategory: parsed.stoneCategory === 'colored' ? 'colored' : 'diamond',
       shape: SHAPES.includes(parsed.shape) ? parsed.shape : 'Round',
       metalColor: METALS.includes(parsed.metalColor) ? parsed.metalColor : 'White Gold',
       settingStyle: SETTINGS.includes(parsed.settingStyle) ? parsed.settingStyle : 'solitaire',
-      weightClass: WEIGHTS.includes(parsed.weightClass) ? parsed.weightClass : 'standard'
+      weightClass: WEIGHTS.includes(parsed.weightClass) ? parsed.weightClass : 'standard',
+      accentPattern,
+      accentMeleeSize,
+      hiddenHalo,
+      estimatedAccentCount,
+      estimatedAccentTcw,
     };
 
     return {
