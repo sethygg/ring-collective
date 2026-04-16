@@ -181,6 +181,91 @@ function splitMetal(lead) {
   };
 }
 
+// -------------------------------------------------------------------------
+// CT → MM converter for center stones.
+//
+// The factory quotes stones in millimeters, but customers pick a carat weight.
+// For each shape we keep a short anchor table of (ct → mm) derived from the
+// industry-standard faceted-diamond size charts (GIA/Blue Nile). For fancy
+// shapes the mm value is a [length, width] pair reflecting a typical ratio.
+// We linearly interpolate between the two nearest anchors; out-of-range carats
+// clamp to the end anchors.
+//
+// Moissanite and CZ suppliers generally quote in diamond-equivalent weight
+// (DEW), so the diamond table works for them too; colored-stone densities
+// vary, so we label the MM row "approx" for non-diamond stones.
+// -------------------------------------------------------------------------
+
+// Round: single diameter (mm).
+const MM_TABLE_ROUND = [
+  [0.25, 4.1], [0.33, 4.4], [0.50, 5.2], [0.75, 5.8],
+  [1.00, 6.5], [1.25, 6.9], [1.50, 7.4], [1.75, 7.8],
+  [2.00, 8.1], [2.50, 8.8], [3.00, 9.3], [4.00, 10.2],
+];
+
+// Fancy shapes: [length, width] in mm at a typical ratio.
+const MM_TABLE_FANCY = {
+  Oval:     [[0.50,[6.0,4.0]],[0.75,[6.5,4.5]],[1.00,[7.0,5.0]],[1.25,[7.7,5.5]],[1.50,[8.0,6.0]],[2.00,[9.0,7.0]],[3.00,[10.5,8.0]]],
+  Emerald:  [[0.50,[5.5,3.5]],[0.75,[6.0,4.0]],[1.00,[7.0,5.0]],[1.25,[7.3,5.3]],[1.50,[7.5,5.5]],[2.00,[8.5,6.5]],[3.00,[9.3,7.5]]],
+  Cushion:  [[0.50,[5.0,5.0]],[0.75,[5.5,5.5]],[1.00,[5.8,5.8]],[1.25,[6.0,6.0]],[1.50,[6.5,6.5]],[2.00,[7.3,7.3]],[3.00,[8.4,8.4]]],
+  Pear:     [[0.50,[6.0,4.0]],[0.75,[7.0,5.0]],[1.00,[7.7,5.4]],[1.25,[8.0,5.5]],[1.50,[8.5,6.0]],[2.00,[10.0,6.5]],[3.00,[11.0,7.5]]],
+  Princess: [[0.50,[4.5,4.5]],[0.75,[5.0,5.0]],[1.00,[5.5,5.5]],[1.25,[6.0,6.0]],[1.50,[6.5,6.5]],[2.00,[7.0,7.0]],[3.00,[8.0,8.0]]],
+  Marquise: [[0.50,[8.0,4.0]],[0.75,[9.0,4.5]],[1.00,[10.0,5.0]],[1.25,[11.0,5.5]],[1.50,[12.0,6.0]],[2.00,[13.0,6.5]],[3.00,[14.5,7.5]]],
+  Radiant:  [[0.50,[5.0,4.0]],[0.75,[5.5,4.5]],[1.00,[6.0,5.0]],[1.25,[6.5,5.5]],[1.50,[7.0,5.5]],[2.00,[8.0,6.5]],[3.00,[9.0,7.5]]],
+};
+
+function normalizeShape(shape) {
+  const s = String(shape || '').trim().toLowerCase();
+  if (!s) return null;
+  if (s.startsWith('round')) return 'Round';
+  if (s.startsWith('oval')) return 'Oval';
+  if (s.startsWith('emerald')) return 'Emerald';
+  if (s.startsWith('cushion')) return 'Cushion';
+  if (s.startsWith('pear')) return 'Pear';
+  if (s.startsWith('princess')) return 'Princess';
+  if (s.startsWith('marquise')) return 'Marquise';
+  if (s.startsWith('radiant')) return 'Radiant';
+  if (s.startsWith('asscher')) return 'Princess';  // square step-cut, close enough
+  if (s.startsWith('heart'))   return 'Cushion';   // square-ish fallback
+  return null;
+}
+
+// Linear interpolate between two (ct, value) anchors. `value` may be a scalar
+// (Round) or a [length, width] array (fancy shapes).
+function interpolateMm(table, ct) {
+  if (ct <= table[0][0]) return table[0][1];
+  if (ct >= table[table.length - 1][0]) return table[table.length - 1][1];
+  for (let i = 0; i < table.length - 1; i++) {
+    const [a, av] = table[i];
+    const [b, bv] = table[i + 1];
+    if (ct >= a && ct <= b) {
+      const t = (ct - a) / (b - a);
+      if (Array.isArray(av)) {
+        return [av[0] + (bv[0] - av[0]) * t, av[1] + (bv[1] - av[1]) * t];
+      }
+      return av + (bv - av) * t;
+    }
+  }
+  return table[table.length - 1][1];
+}
+
+// Returns a factory-friendly mm string, or null if we can't estimate.
+// e.g. "6.5 mm" for Round, "7.0 \u00d7 5.0 mm" for fancy shapes.
+function caratToMm(shape, caratRaw) {
+  const ct = Number(caratRaw);
+  if (!Number.isFinite(ct) || ct <= 0) return null;
+  const norm = normalizeShape(shape);
+  if (!norm) return null;
+  if (norm === 'Round') {
+    const mm = interpolateMm(MM_TABLE_ROUND, ct);
+    return `${mm.toFixed(1)} mm`;
+  }
+  const table = MM_TABLE_FANCY[norm];
+  if (!table) return null;
+  const [l, w] = interpolateMm(table, ct);
+  return `${l.toFixed(1)} \u00d7 ${w.toFixed(1)} mm`;
+}
+
 // Lab diamond / Moissanite / CZ / colored — normalize + flag grading-relevant rows.
 function classifyStone(lead) {
   const raw = String(lead.stone_type || lead.stone_category || '').trim();
@@ -247,11 +332,18 @@ async function buildFactoryPacket(lead, overrideNotes) {
   // Compose the structured rows the packet will render.
   const referenceId = `RC-${String(lead.id || '').slice(0, 8).toUpperCase()}`;
 
+  const mmSize = caratToMm(lead.shape, lead.diamond_carat);
+  const mmLabel = stone.isLabDiamond || stone.isMoissanite
+    ? 'Size (mm)'
+    : 'Size (mm, approx)';
   const stoneRows = [
     ['Material',  stone.raw],
     ['Size',      lead.diamond_carat ? `${lead.diamond_carat} ct` : '\u2014'],
     ['Shape',     lead.shape || '\u2014'],
   ];
+  if (mmSize) {
+    stoneRows.push([mmLabel, mmSize]);
+  }
   if (stone.isLabDiamond && grade) {
     stoneRows.push(['Color',   grade.color]);
     stoneRows.push(['Clarity', grade.clarity]);
