@@ -547,15 +547,30 @@
       }
       showReplies('chat2', [
         {label:'Yes, diamond', value:'diamond'},
-        {label:"It's a colored stone", value:'colored'}
+        {label:"It's a colored stone", value:'colored'},
+        {label:"I'll provide my own stone", value:'customer'}
       ], async choice=>{
         if (choice === 'diamond') {
           await askDiamondType();
-        } else {
+        } else if (choice === 'colored') {
           await askColoredStone();
+        } else {
+          await askCustomerStone();
         }
         resolve();
       });
+    });
+  }
+
+  function askCustomerStone(){
+    return new Promise(async resolve=>{
+      await botSay('chat2',
+        "Perfect \u2014 we'll build the setting to fit your stone. You'll ship it to our workshop once the design is approved. We just need a couple specs so we size the setting correctly."
+      );
+      state.answers.stoneCategory = 'customer_supplied';
+      state.answers.stoneType = 'Customer-supplied stone';
+      await askCarat();
+      resolve();
     });
   }
 

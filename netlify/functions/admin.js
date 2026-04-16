@@ -266,15 +266,17 @@ function caratToMm(shape, caratRaw) {
   return `${l.toFixed(1)} \u00d7 ${w.toFixed(1)} mm`;
 }
 
-// Lab diamond / Moissanite / CZ / colored — normalize + flag grading-relevant rows.
+// Lab diamond / Moissanite / CZ / colored / customer-supplied — normalize + flag grading-relevant rows.
 function classifyStone(lead) {
   const raw = String(lead.stone_type || lead.stone_category || '').trim();
   const lower = raw.toLowerCase();
-  const isLabDiamond = /lab.*diamond/.test(lower) || lower === 'diamond';
-  const isMoissanite = /moissanite/.test(lower);
-  const isCZ         = /\bcz\b|cubic zirconia/.test(lower);
-  const isColored    = lead.stone_category === 'colored' || (!isLabDiamond && !isMoissanite && !isCZ && raw !== '');
-  return { raw: raw || 'Unknown', isLabDiamond, isMoissanite, isCZ, isColored };
+  const isCustomerSupplied = lead.stone_category === 'customer_supplied'
+    || /customer.?supplied/i.test(raw);
+  const isLabDiamond = !isCustomerSupplied && (/lab.*diamond/.test(lower) || lower === 'diamond');
+  const isMoissanite = !isCustomerSupplied && /moissanite/.test(lower);
+  const isCZ         = !isCustomerSupplied && /\bcz\b|cubic zirconia/.test(lower);
+  const isColored    = !isCustomerSupplied && (lead.stone_category === 'colored' || (!isLabDiamond && !isMoissanite && !isCZ && raw !== ''));
+  return { raw: raw || 'Unknown', isLabDiamond, isMoissanite, isCZ, isColored, isCustomerSupplied };
 }
 
 function buildAccentSummary(lead) {
@@ -336,15 +338,26 @@ async function buildFactoryPacket(lead, overrideNotes) {
   const mmLabel = stone.isLabDiamond || stone.isMoissanite
     ? 'Size (mm)'
     : 'Size (mm, approx)';
+
+  // Material label reflects sourcing path so the factory knows whether
+  // to pull a stone from inventory or wait for the customer to ship theirs.
+  const materialLabel = stone.isCustomerSupplied
+    ? 'Customer-supplied stone (customer ships to factory)'
+    : stone.raw;
+
   const stoneRows = [
-    ['Material',  stone.raw],
+    ['Material',  materialLabel],
     ['Size',      lead.diamond_carat ? `${lead.diamond_carat} ct` : '\u2014'],
     ['Shape',     lead.shape || '\u2014'],
   ];
   if (mmSize) {
     stoneRows.push([mmLabel, mmSize]);
   }
-  if (stone.isLabDiamond && grade) {
+  if (stone.isCustomerSupplied) {
+    // No grading or sourcing — verify dimensions against stone on arrival.
+    stoneRows.push(['Cert',  'Customer to provide with stone']);
+    stoneRows.push(['Notes', 'Confirm shape + mm measurements against physical stone before finalizing head/prongs.']);
+  } else if (stone.isLabDiamond && grade) {
     stoneRows.push(['Color',   grade.color]);
     stoneRows.push(['Clarity', grade.clarity]);
     stoneRows.push(['Cert',    'Yes (IGI)']);
