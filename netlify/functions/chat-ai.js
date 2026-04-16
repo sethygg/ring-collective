@@ -52,6 +52,21 @@ function esc(s) {
     { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
   ));
 }
+
+// Scan the conversation history (most recent first) for an email address.
+// Used as a safety net when Claude calls escalate_to_kelsey without passing
+// customer_email — the customer almost certainly typed one in a recent turn.
+const EMAIL_REGEX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+function findEmailInMessages(messages) {
+  if (!Array.isArray(messages)) return null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (!m || m.role !== 'user' || typeof m.content !== 'string') continue;
+    const match = m.content.match(EMAIL_REGEX);
+    if (match) return match[0];
+  }
+  return null;
+}
 function requireEnv(name) {
   const v = process.env[name];
   if (!v) throw new Error(`Server misconfigured: ${name} missing.`);
@@ -113,7 +128,13 @@ Escalate when the question requires human judgment or a commitment only Kelsey c
 - Requests outside standard process (engraving, mixed metals, unusual shapes, special deadlines)
 - Any question where you're not confident in your answer
 
-Before calling the tool, if you don't already have the customer's email address in this conversation, ask for it in a normal message first. DO NOT call the tool without an email — we can't reply without one.
+Before calling the tool, if you don't already have the customer's email address anywhere in this conversation, ask for it in a normal message first. DO NOT call the tool without an email — we can't reply without one.
+
+CRITICAL — how to fill in customer_email when you call the tool:
+- Scan the WHOLE conversation, not just the last message. The customer may have given their email several turns ago.
+- If any user message contains a string matching name@domain.tld, that IS the customer's email — pass it verbatim as customer_email.
+- If the user's most recent message is just an email address (e.g. "sethkgilbert@gmail.com"), that is them answering your request for their email — use it directly.
+- NEVER call escalate_to_kelsey with customer_email missing, empty, or a placeholder like "unknown" or "n/a". If no email exists anywhere in the transcript, do not call the tool — ask for the email in plain text instead.
 
 When you DO call the tool, ALSO write a short text message to the customer (in the same turn) acknowledging that you're pulling Kelsey in and that she'll reply by email shortly.
 
@@ -307,9 +328,29 @@ exports.handler = async (event) => {
 
     if (toolUse) {
       const input = toolUse.input || {};
-      // Safety: never send the escalation without an email. If Claude misfired,
-      // downgrade to a regular reply and tell the customer we need their email.
-      if (!input.customer_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.customer_email)) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      // Claude sometimes forgets to pass customer_email even when the customer
+      // has clearly given it. If the tool input is missing or malformed, fall
+      // back to scanning the transcript ourselves.
+      let customerEmail = typeof input.customer_email === 'string'
+        ? input.customer_email.trim()
+        : '';
+      if (!emailRegex.test(customerEmail)) {
+        const extracted = findEmailInMessages(messages);
+        console.log('chat-ai: tool called without valid customer_email', {
+          tool_input: input,
+          extracted_from_transcript: extracted,
+        });
+        if (extracted) {
+          customerEmail = extracted;
+        }
+      }
+
+      // If even the transcript doesn't have an email, downgrade to a polite
+      // ask instead of silently dropping the escalation.
+      if (!emailRegex.test(customerEmail)) {
+        console.log('chat-ai: escalation downgraded — no email found anywhere');
         return {
           statusCode: 200,
           headers: { ...headers, 'content-type': 'application/json' },
@@ -324,7 +365,7 @@ exports.handler = async (event) => {
         await emailEscalation({
           reason: input.reason || 'Customer question needs human review.',
           summary: input.summary || 'See transcript.',
-          customer_email: input.customer_email,
+          customer_email: customerEmail,
           customer_name: input.customer_name,
           urgency: input.urgency || 'normal',
           messages,
@@ -342,7 +383,7 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           type: 'escalated',
           message: replyText,
-          email: input.customer_email,
+          email: customerEmail,
         }),
       };
     }
