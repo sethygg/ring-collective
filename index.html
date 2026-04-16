@@ -657,12 +657,15 @@
         document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
     }
 
-    // ===== Chat widget =====
-    // Two-step capture: (1) user asks question, (2) bot asks for email so Seth can reply.
-    // POSTs final payload to /.netlify/functions/chat-message which emails Seth via Resend.
-    // Future: replace with an AI agent that answers tier-1 questions in-chat and only
-    // escalates tier-2 questions (pricing, sourcing, exceptions) to Seth.
-    var chatState = { stage: 'question', question: '', email: '' };
+    // ===== Chat widget (AI-powered) =====
+    // Multi-turn chat backed by /.netlify/functions/chat-ai which calls
+    // Claude Haiku with a concierge system prompt. Claude answers tier-1
+    // questions directly and escalates tier-2 (specific sourcing, heirloom,
+    // existing orders, firm pricing, complaints) to Kelsey by emailing her
+    // with reply-to set to the customer.
+    var chatHistory = [];      // [{ role: 'user'|'assistant', content: string }]
+    var chatEscalated = false; // once true, follow-ups are forwarded to Kelsey directly
+    var chatBusy = false;
 
     function openChat() {
         document.getElementById('chatPopup').classList.add('open');
@@ -673,65 +676,100 @@
         document.getElementById('chatPopup').classList.remove('open');
         document.getElementById('chatLauncher').style.display = 'flex';
     }
-    function appendChatMsg(html, who) {
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+            return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+        });
+    }
+    // Allow a narrow set of safe HTML from the model (links, bold, italic, line breaks).
+    // Anything else is escaped. Hrefs must be relative or https.
+    function sanitizeBotHtml(s) {
+        var safe = escapeHtml(s);
+        safe = safe.replace(/&lt;a\s+href=&quot;([^&]+)&quot;(?:\s+target=&quot;([^&]+)&quot;)?&gt;/g, function(_, href, target) {
+            if (!/^(https?:\/\/|\/|#|[a-z0-9_-]+\.html)/i.test(href)) return '';
+            var t = target === '_blank' ? ' target="_blank" rel="noopener"' : '';
+            return '<a href="' + href + '"' + t + ' style="color:#2E5C4A;font-weight:600;">';
+        });
+        safe = safe.replace(/&lt;\/a&gt;/g, '</a>');
+        safe = safe.replace(/\n\n+/g, '<br><br>').replace(/\n/g, '<br>');
+        safe = safe.replace(/&lt;(\/?)(strong|em|b|i)&gt;/g, '<$1$2>');
+        return safe;
+    }
+    function appendChatMsg(html, who, isAlreadySafe) {
         var body = document.getElementById('chatBody');
         var div = document.createElement('div');
         div.className = 'chat-msg ' + (who === 'user' ? 'chat-msg-user' : who === 'system' ? 'chat-msg-system' : 'chat-msg-bot');
-        div.innerHTML = html;
+        div.innerHTML = isAlreadySafe ? html : sanitizeBotHtml(html);
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+        return div;
+    }
+    function showTyping() {
+        var body = document.getElementById('chatBody');
+        var div = document.createElement('div');
+        div.className = 'chat-msg chat-msg-bot';
+        div.id = 'chatTyping';
+        div.innerHTML = '<span style="display:inline-block;opacity:0.6">Typing<span class="ct-dot">.</span><span class="ct-dot">.</span><span class="ct-dot">.</span></span>';
         body.appendChild(div);
         body.scrollTop = body.scrollHeight;
     }
-    function isValidEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
-
-    function postChat(payload) {
-        try {
-            return fetch('/.netlify/functions/chat-message', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(Object.assign({ source: 'chat-widget', page: location.pathname }, payload))
-            });
-        } catch (_) { return Promise.resolve(); }
+    function hideTyping() {
+        var el = document.getElementById('chatTyping');
+        if (el) el.remove();
     }
 
     function sendChatMsg(e) {
         e.preventDefault();
+        if (chatBusy) return;
         var input = document.getElementById('chatInput');
         var value = (input.value || '').trim();
         if (!value) return;
-        appendChatMsg(value.replace(/</g,'&lt;').replace(/>/g,'&gt;'), 'user');
+
+        appendChatMsg(value, 'user');
+        chatHistory.push({ role: 'user', content: value });
         input.value = '';
 
-        if (chatState.stage === 'question') {
-            chatState.question = value;
-            chatState.stage = 'email';
-            input.type = 'email';
-            input.placeholder = 'your@email.com';
-            setTimeout(function() {
-                appendChatMsg("Thanks! What's the best email for Kelsey to reply to? She personally reads and answers every message &mdash; usually within an hour.", 'bot');
-            }, 400);
+        if (chatEscalated) {
+            // Kelsey already pinged. Forward follow-ups as loose messages to keep context.
+            appendChatMsg('Got it, I\u2019ll add that to the thread for Kelsey.', 'system', false);
+            try {
+                fetch('/.netlify/functions/chat-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source: 'chat-widget-followup', message: value, page: location.pathname })
+                });
+            } catch (_) {}
             return;
         }
 
-        if (chatState.stage === 'email') {
-            if (!isValidEmail(value)) {
-                appendChatMsg('Hmm, that doesn\u2019t look like a valid email. Try again?', 'bot');
-                return;
+        chatBusy = true;
+        showTyping();
+
+        fetch('/.netlify/functions/chat-ai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: chatHistory, page: location.pathname })
+        })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(res) {
+            hideTyping();
+            chatBusy = false;
+            var data = res.data || {};
+            var msg = data.message || 'Sorry, I blanked for a second. Try me again?';
+            appendChatMsg(msg, 'bot');
+            if (data.type === 'escalated') {
+                chatEscalated = true;
+                appendChatMsg('Kelsey has been notified. Expect a reply at <strong>' + escapeHtml(data.email || 'your email') + '</strong> within the hour.', 'system', true);
+            } else if (data.type === 'reply') {
+                chatHistory.push({ role: 'assistant', content: msg });
             }
-            chatState.email = value;
-            chatState.stage = 'done';
-            input.type = 'text';
-            input.placeholder = 'Anything else to add?';
-            postChat({ message: chatState.question, email: chatState.email });
-            setTimeout(function() {
-                appendChatMsg("Got it. Kelsey just got a ping with your question &mdash; expect a reply at <strong>" + chatState.email.replace(/</g,'&lt;') + "</strong> shortly. In the meantime, if you want a full quote the fastest path is to <a href='quote-builder-c.html' style='color:#2E5C4A;font-weight:600;'>start the ring builder &rarr;</a>", 'bot');
-                appendChatMsg('Message delivered.', 'system');
-            }, 400);
-            return;
-        }
-
-        // Follow-up messages after email captured — send them straight through.
-        postChat({ message: value, email: chatState.email });
-        setTimeout(function() { appendChatMsg('Got it, forwarded to Kelsey.', 'system'); }, 300);
+        })
+        .catch(function(err) {
+            hideTyping();
+            chatBusy = false;
+            appendChatMsg("I hit a snag on my end. Mind trying that again? Or reach us directly and we\u2019ll sort it out.", 'bot');
+            console.error('chat-ai failed:', err);
+        });
     }
 
     // ===== Exit intent =====
