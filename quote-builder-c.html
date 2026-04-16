@@ -498,7 +498,7 @@
   }
 
   const SHAPE_OPTIONS = ['Round','Oval','Emerald','Cushion','Pear','Princess','Marquise','Radiant'];
-  const METAL_OPTIONS = ['White Gold','Yellow Gold','Rose Gold','Platinum'];
+  const METAL_OPTIONS = ['White Gold','Yellow Gold','Rose Gold','Platinum','Silver (925)'];
   const COLORED_STONES = ['Sapphire','Ruby','Emerald','Aquamarine','Morganite','Tanzanite','Topaz','Other'];
 
   let chat2Started = false;
@@ -562,11 +562,25 @@
   function askDiamondType(){
     return new Promise(async resolve=>{
       await botSay('chat2',
-        "We offer two beautiful options: <strong>Lab Diamonds</strong> — real diamonds grown in a lab, chemically identical to mined ones but 40–60% less — and <strong>Moissanite</strong>, which has even more fire and sparkle than diamond (9.25 on the Mohs scale) and can cost up to 90% less. Which would you like?"
+        "We offer three options: <strong>Lab Diamond</strong> \u2014 a real diamond grown in a lab, chemically identical to a mined one but 40\u201360% less. <strong>Moissanite</strong> \u2014 even more fire and sparkle than diamond (9.25 on the Mohs scale) and up to 90% less. <strong>CZ</strong> (cubic zirconia) \u2014 a lab-created stone that looks similar to a diamond at the lowest price point. Which would you like?"
       );
       showReplies('chat2', [
-        {label:'Lab Diamond'}, {label:'Moissanite'}
+        {label:'Lab Diamond'}, {label:'Moissanite'}, {label:'CZ'}, {label:"Tell me more about CZ"}
       ], async v=>{
+        if (v === 'Tell me more about CZ') {
+          await botSay('chat2',
+            "<strong>CZ (cubic zirconia)</strong> is a lab-created stone that looks similar to a diamond for a fraction of the price. It's softer than diamond or moissanite (8.5 vs. 10 on the Mohs scale), so it can scratch or cloud over years of daily wear. It's a great pick for a placeholder ring, travel ring, or a budget-first build. Which would you like?"
+          );
+          showReplies('chat2', [
+            {label:'Lab Diamond'}, {label:'Moissanite'}, {label:'CZ'}
+          ], async v2=>{
+            state.answers.stoneCategory = 'diamond';
+            state.answers.stoneType = v2;
+            await askCarat();
+            resolve();
+          });
+          return;
+        }
         state.answers.stoneCategory = 'diamond';
         state.answers.stoneType = v;
         await askCarat();
@@ -656,15 +670,15 @@
   function askKarat(){
     return new Promise(async resolve=>{
       const metal = state.answers.metal.toLowerCase();
-      await botSay('chat2', `For the ${metal}, do you want <strong>14K</strong> or <strong>18K</strong>?`);
+      await botSay('chat2', `For the ${metal}, do you want <strong>10K</strong>, <strong>14K</strong>, or <strong>18K</strong>?`);
       showReplies('chat2', [
-        {label:'14K'},{label:'18K'},{label:"Not sure \u2014 recommend"}
+        {label:'10K'},{label:'14K'},{label:'18K'},{label:"Not sure \u2014 recommend"}
       ], async v=>{
         if (v === 'Not sure \u2014 recommend') {
           await botSay('chat2',
-            "Happy to help. <strong>14K gold</strong> is 58.3% pure — more durable and scratch-resistant, which is why we typically recommend it for engagement rings worn daily. <strong>18K gold</strong> is 75% pure, giving it a richer color and a more luxurious feel, but it's slightly softer. If you're gentle with jewelry or want the deepest color, 18K is a beautiful upgrade. Which sounds right for you?"
+            "Happy to help. <strong>10K gold</strong> is 41.7% pure \u2014 the most durable and the most affordable, but with a paler color. <strong>14K</strong> is 58.3% pure and our most popular choice: durable enough for daily wear with a richer color. <strong>18K</strong> is 75% pure \u2014 the deepest, most luxurious color, slightly softer, and a nice upgrade if you're gentle with jewelry. Which sounds right?"
           );
-          showReplies('chat2', [{label:'14K'},{label:'18K'}], v2=>{
+          showReplies('chat2', [{label:'10K'},{label:'14K'},{label:'18K'}], v2=>{
             state.answers.karat = v2; resolve();
           });
         } else {
@@ -710,7 +724,7 @@
     if (a.shape) parts.push(a.shape.toLowerCase());
     if (a.metal) {
       const m = a.metal.toLowerCase();
-      parts.push(a.karat && /^(14K|18K)$/.test(a.karat) ? `${a.karat} ${m}` : m);
+      parts.push(a.karat && /^(10K|14K|18K)$/.test(a.karat) ? `${a.karat} ${m}` : m);
     }
     if (a.ringSize && a.ringSize !== 'Not sure') parts.push('size ' + a.ringSize);
     await botSay('chat2', `Perfect \u2014 <strong>${parts.join(', ')}</strong>. You\u2019re all confirmed.`);

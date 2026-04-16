@@ -60,7 +60,26 @@
   .pill.new{background:#e3efe8;color:var(--green)}
   .pill.quoted{background:#fdf3e0;color:#9e7513}
   .pill.won{background:#e0f0f9;color:#1f5b8e}
+  .pill.in_production{background:#ede3f3;color:#513a7a}
   .pill.lost{background:#f1e0e0;color:#8e2f2f}
+
+  /* Factory-packet modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(20,28,48,.55);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 20px;overflow-y:auto}
+  .modal-bg.on{display:flex}
+  .modal{background:#fff;border-radius:10px;max-width:720px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+  .modal-head{padding:20px 26px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .modal-head h3{font-size:17px;font-family:'Playfair Display',serif;color:var(--charcoal)}
+  .modal-head .close{background:transparent;border:0;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
+  .modal-body{padding:22px 26px;max-height:65vh;overflow-y:auto;font-size:13px;color:var(--text)}
+  .modal-body .pkt-section{margin-bottom:16px}
+  .modal-body .pkt-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px}
+  .modal-body .pkt-rows{display:grid;grid-template-columns:140px 1fr;gap:5px 14px}
+  .modal-body .pkt-rows .k{color:var(--muted);font-size:12px}
+  .modal-body .pkt-rows .v{color:var(--text);font-size:13px}
+  .modal-body .pkt-photos a{color:var(--green);text-decoration:underline}
+  .modal-foot{padding:16px 26px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fafaf7}
+  .modal-foot .recipient{font-size:12px;color:var(--muted)}
+  .modal-foot .recipient strong{color:var(--charcoal)}
 
   .detail{overflow-y:auto;padding:28px 36px;background:var(--ivory)}
   .empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:14px}
@@ -144,6 +163,7 @@
         <div class="filter-chip" data-status="new">New</div>
         <div class="filter-chip" data-status="quoted">Quoted</div>
         <div class="filter-chip" data-status="won">Won</div>
+        <div class="filter-chip" data-status="in_production">In Production</div>
         <div class="filter-chip" data-status="lost">Lost</div>
       </div>
       <div id="leadsList"></div>
@@ -156,6 +176,26 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- FACTORY PACKET PREVIEW MODAL -->
+<div class="modal-bg" id="factoryModalBg">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h3>Factory production packet</h3>
+      <button class="close" id="factoryModalClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body" id="factoryModalBody">
+      <div style="color:#888;font-size:13px">Loading&hellip;</div>
+    </div>
+    <div class="modal-foot">
+      <div class="recipient" id="factoryModalRecipient"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn ghost" id="factoryModalCancel">Cancel</button>
+        <button class="btn primary" id="factoryModalSend">Send packet</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ==================================================================== */
@@ -432,10 +472,30 @@ async function renderDetail(){
     <div class="panel">
       <h3>Status</h3>
       <div class="status-switcher" id="statusSwitcher">
-        ${['new','quoted','won','lost'].map(s=>`
-          <button data-status="${s}" class="${s === lead.status ? 'active':''}">${s}</button>
+        ${['new','quoted','won','in_production','lost'].map(s=>`
+          <button data-status="${s}" class="${s === lead.status ? 'active':''}">${s.replace('_',' ')}</button>
         `).join('')}
       </div>
+    </div>
+
+    <div class="panel">
+      <h3>Factory</h3>
+      ${lead.factory_sent_at ? `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="font-size:13px;color:#505664;line-height:1.5">
+            <strong style="color:var(--charcoal)">Packet sent</strong>
+            &middot; ${escapeHTML(new Date(lead.factory_sent_at).toLocaleString())}
+          </div>
+          <button class="btn ghost" id="factoryBtn">Preview &amp; resend</button>
+        </div>
+      ` : `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="font-size:13px;color:#505664;line-height:1.5">
+            Deposit received? Send the build spec to the factory.
+          </div>
+          <button class="btn primary" id="factoryBtn">Send to factory</button>
+        </div>
+      `}
     </div>
 
     <div class="panel">
@@ -602,6 +662,12 @@ async function renderDetail(){
       } catch (err) { toast('Failed: ' + err.message); }
     });
   });
+
+  // Wire up Send to factory button
+  const factoryBtn = document.getElementById('factoryBtn');
+  if (factoryBtn) {
+    factoryBtn.addEventListener('click', ()=> openFactoryModal(selectedId));
+  }
 
   // Calculator live updates
   const recalc = ()=>{
@@ -819,6 +885,128 @@ function toast(msg){
   clearTimeout(window._toastT);
   window._toastT = setTimeout(()=>t.classList.remove('on'), 2200);
 }
+
+/* ---------- FACTORY PACKET MODAL ---------- */
+
+let factoryState = { id: null, packet: null, sending: false };
+
+function renderFactoryPacket(packet){
+  const rowBlock = (rows) => `
+    <div class="pkt-rows">
+      ${rows.map(([k,v])=>`<div class="k">${escapeHTML(k)}</div><div class="v">${escapeHTML(v)}</div>`).join('')}
+    </div>`;
+  const section = (label, body) => `
+    <div class="pkt-section">
+      <div class="pkt-label">${escapeHTML(label)}</div>
+      ${body}
+    </div>`;
+
+  const photos = (packet.photos || []).length
+    ? `<div class="pkt-photos" style="line-height:1.9">
+        ${packet.photos.map((p,i)=> p.url
+          ? `${i+1}. <strong>${escapeHTML(p.label)}</strong> — <a href="${escapeHTML(p.url)}" target="_blank" rel="noopener">view photo</a><br>`
+          : `${i+1}. <strong>${escapeHTML(p.label)}</strong> — (unavailable)<br>`
+        ).join('')}
+      </div>
+      <div style="color:#999;font-size:11px;margin-top:4px">Photo links expire in 30 days.</div>`
+    : '<div style="color:#888;font-size:13px">No photos uploaded.</div>';
+
+  return [
+    section('Customer', rowBlock([
+      ['Name',  packet.customer.name],
+      ['Email', packet.customer.email],
+      ['Ref',   packet.reference_id],
+    ])),
+    section('Metal', rowBlock([
+      ['Type',   packet.metal.type],
+      ['Purity', packet.metal.purity],
+      ['Color',  packet.metal.color],
+    ])),
+    section('Ring', rowBlock([
+      ['Finger size', packet.ring.finger_size],
+    ])),
+    section('Center stone', rowBlock(packet.stone.rows)),
+    section('Accent / melee diamonds', rowBlock([
+      ['Pattern',      packet.accents.pattern],
+      ['Melee size',   packet.accents.size],
+      ['Approx count', packet.accents.count],
+      ['Approx TCW',   packet.accents.tcw],
+      ['Hidden halo',  packet.accents.hiddenHalo],
+    ])),
+    section('Notes', rowBlock([
+      ['Setting style',   packet.notes.setting_style],
+      ['Build weight',    packet.notes.build_weight],
+      ['Customer budget', packet.notes.budget],
+      ['Timeline',        packet.notes.timeline],
+    ])),
+    section('Photos', photos),
+  ].join('');
+}
+
+async function openFactoryModal(id){
+  factoryState = { id, packet: null, sending: false };
+  const bg   = document.getElementById('factoryModalBg');
+  const body = document.getElementById('factoryModalBody');
+  const rec  = document.getElementById('factoryModalRecipient');
+  const send = document.getElementById('factoryModalSend');
+
+  body.innerHTML = '<div style="color:#888;font-size:13px"><span class="spinner"></span> Loading packet&hellip;</div>';
+  rec.innerHTML = '';
+  send.disabled = true;
+  send.textContent = 'Send packet';
+  bg.classList.add('on');
+
+  try {
+    const data = await apiCall({ action: 'preview_factory_packet', id });
+    factoryState.packet = data.packet;
+    body.innerHTML = renderFactoryPacket(data.packet);
+    const already = data.already_sent_at
+      ? ` &middot; already sent ${new Date(data.already_sent_at).toLocaleString()}`
+      : '';
+    rec.innerHTML = `Will send to <strong>${escapeHTML(data.factory_email)}</strong>${already}`;
+    send.disabled = false;
+    send.textContent = data.already_sent_at ? 'Resend packet' : 'Send packet';
+  } catch (err) {
+    body.innerHTML = `<div style="color:#c0392b;font-size:13px">Failed to load packet: ${escapeHTML(err.message || String(err))}</div>`;
+  }
+}
+
+function closeFactoryModal(){
+  if (factoryState.sending) return;
+  document.getElementById('factoryModalBg').classList.remove('on');
+  factoryState = { id: null, packet: null, sending: false };
+}
+
+async function sendFactoryPacket(){
+  if (!factoryState.id || factoryState.sending) return;
+  const send = document.getElementById('factoryModalSend');
+  factoryState.sending = true;
+  send.disabled = true;
+  const orig = send.textContent;
+  send.innerHTML = '<span class="spinner"></span> Sending&hellip;';
+  try {
+    const data = await apiCall({ action: 'send_to_factory', id: factoryState.id });
+    toast('Packet sent to ' + (data.factory_email || 'factory'));
+    factoryState.sending = false;
+    document.getElementById('factoryModalBg').classList.remove('on');
+    factoryState = { id: null, packet: null, sending: false };
+    await loadLeads();
+    await renderDetail();
+  } catch (err) {
+    toast('Send failed: ' + (err.message || err));
+    factoryState.sending = false;
+    send.disabled = false;
+    send.textContent = orig;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const bg = document.getElementById('factoryModalBg');
+  document.getElementById('factoryModalClose').addEventListener('click', closeFactoryModal);
+  document.getElementById('factoryModalCancel').addEventListener('click', closeFactoryModal);
+  document.getElementById('factoryModalSend').addEventListener('click', sendFactoryPacket);
+  bg.addEventListener('click', (e)=>{ if (e.target === bg) closeFactoryModal(); });
+});
 </script>
 </body>
 </html>

@@ -117,6 +117,310 @@ async function signedPhotoUrl(path, expiresIn = 3600) {
   return `${url}/storage/v1${data.signedURL || data.signedUrl}`;
 }
 
+// --- Factory packet ------------------------------------------------------
+//
+// Transforms a quote_requests row into the structured info the factory
+// needs (metal / purity / color / size / center stone / accents / photos).
+// Used by `preview_factory_packet` (admin modal) and `send_to_factory`
+// (email it out).
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
+}
+
+function parseBudgetUsd(budget) {
+  if (budget == null) return null;
+  const n = Number(String(budget).replace(/[^0-9.]/g, ''));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+// Lab-diamond grade auto-rule based on budget.
+// Every Ring Collective lab diamond is IGI certified; grade auto-standardizes.
+function diamondGradeForBudget(budgetUsd) {
+  if (budgetUsd == null) {
+    return { color: 'D\u2013F', clarity: 'VVS1 (standard)', notes: '' };
+  }
+  if (budgetUsd < 3000) {
+    return { color: 'D\u2013F', clarity: 'VVS2', notes: '' };
+  }
+  if (budgetUsd <= 6000) {
+    return { color: 'D\u2013F', clarity: 'VVS1', notes: '' };
+  }
+  return { color: 'D\u2013F', clarity: 'VVS1', notes: 'Upgrade to IF if available in stock.' };
+}
+
+// Break `metal` + `karat` into the three fields the factory wants:
+//   type    — Silver | Gold | Platinum | Other
+//   purity  — 925 | 10K | 14K | 18K | — | (free text)
+//   color   — Yellow | White | Rose | — (gold only)
+function splitMetal(lead) {
+  const metal = String(lead.metal || '').trim();
+  const karat = String(lead.karat || '').trim();
+
+  if (/^silver/i.test(metal)) {
+    return { type: 'Silver', purity: '925', color: '\u2014' };
+  }
+  if (/platinum/i.test(metal)) {
+    return { type: 'Platinum', purity: '\u2014', color: '\u2014' };
+  }
+  const goldColor = (metal.match(/^(Yellow|White|Rose)/i) || [])[1] || '';
+  if (goldColor) {
+    return {
+      type: 'Gold',
+      purity: karat || '14K',
+      color: goldColor.charAt(0).toUpperCase() + goldColor.slice(1).toLowerCase(),
+    };
+  }
+  // Fallback — unknown metal string; dump what we have.
+  return {
+    type: metal || '\u2014',
+    purity: karat || '\u2014',
+    color: '\u2014',
+  };
+}
+
+// Lab diamond / Moissanite / CZ / colored — normalize + flag grading-relevant rows.
+function classifyStone(lead) {
+  const raw = String(lead.stone_type || lead.stone_category || '').trim();
+  const lower = raw.toLowerCase();
+  const isLabDiamond = /lab.*diamond/.test(lower) || lower === 'diamond';
+  const isMoissanite = /moissanite/.test(lower);
+  const isCZ         = /\bcz\b|cubic zirconia/.test(lower);
+  const isColored    = lead.stone_category === 'colored' || (!isLabDiamond && !isMoissanite && !isCZ && raw !== '');
+  return { raw: raw || 'Unknown', isLabDiamond, isMoissanite, isCZ, isColored };
+}
+
+function buildAccentSummary(lead) {
+  const pattern = lead.accent_pattern;
+  const size    = lead.accent_melee_size;
+  const tcw     = lead.estimated_accent_tcw;
+  const count   = lead.estimated_accent_count;
+  const hiddenHalo = !!lead.hidden_halo;
+
+  if ((!pattern || pattern === 'none') && !hiddenHalo) {
+    return { summary: 'None', pattern: 'None', size: '\u2014', count: '\u2014', tcw: '\u2014', hiddenHalo: 'No' };
+  }
+  const prettyPattern = pattern && pattern !== 'none'
+    ? pattern.replace(/-/g, ' ')
+    : 'None';
+  return {
+    summary: [
+      prettyPattern !== 'None' ? prettyPattern : null,
+      size && size !== 'none' ? `${size} melee` : null,
+      count ? `~${count} stones` : null,
+      tcw ? `~${Number(tcw).toFixed(2)} ct tcw` : null,
+      hiddenHalo ? 'hidden halo' : null,
+    ].filter(Boolean).join(' \u00b7 '),
+    pattern: prettyPattern,
+    size: size && size !== 'none' ? size : '\u2014',
+    count: count ? String(count) : '\u2014',
+    tcw: tcw ? `${Number(tcw).toFixed(2)} ct` : '\u2014',
+    hiddenHalo: hiddenHalo ? 'Yes' : 'No',
+  };
+}
+
+// Build a fully hydrated packet object. Includes signed photo URLs with a
+// 30-day expiry so the factory can pull the images from the email.
+async function buildFactoryPacket(lead) {
+  const metal = splitMetal(lead);
+  const stone = classifyStone(lead);
+  const budget = parseBudgetUsd(lead.budget);
+  const grade = stone.isLabDiamond ? diamondGradeForBudget(budget) : null;
+  const accents = buildAccentSummary(lead);
+
+  // Sign photo URLs — 30 days for factory convenience.
+  const photos = [];
+  for (const path of (lead.photo_paths || [])) {
+    try {
+      const url = await signedPhotoUrl(path, 30 * 24 * 3600);
+      const label = (path.split('/').pop() || '').replace(/\.[^.]+$/, '');
+      photos.push({ path, url, label: label || 'photo' });
+    } catch (e) {
+      photos.push({ path, url: null, label: 'photo', error: String(e.message || e) });
+    }
+  }
+
+  // Compose the structured rows the packet will render.
+  const referenceId = `RC-${String(lead.id || '').slice(0, 8).toUpperCase()}`;
+
+  const stoneRows = [
+    ['Material',  stone.raw],
+    ['Size',      lead.diamond_carat ? `${lead.diamond_carat} ct` : '\u2014'],
+    ['Shape',     lead.shape || '\u2014'],
+  ];
+  if (stone.isLabDiamond && grade) {
+    stoneRows.push(['Color',   grade.color]);
+    stoneRows.push(['Clarity', grade.clarity]);
+    stoneRows.push(['Cert',    'Yes (IGI)']);
+    if (grade.notes) stoneRows.push(['Notes', grade.notes]);
+  } else if (stone.isMoissanite) {
+    stoneRows.push(['Color',   '\u2014 (moissanite, n/a)']);
+    stoneRows.push(['Clarity', '\u2014 (moissanite, n/a)']);
+    stoneRows.push(['Cert',    '\u2014 (moissanite, n/a)']);
+  } else if (stone.isCZ) {
+    stoneRows.push(['Color',   '\u2014 (CZ, n/a)']);
+    stoneRows.push(['Clarity', '\u2014 (CZ, n/a)']);
+    stoneRows.push(['Cert',    '\u2014 (CZ, n/a)']);
+  } else if (stone.isColored) {
+    stoneRows.push(['Color',   lead.stone_type_note || '\u2014']);
+    stoneRows.push(['Cert',    'Confirm sourcing before build']);
+  }
+
+  return {
+    reference_id: referenceId,
+    submitted_at: lead.created_at,
+    customer: {
+      name:  lead.name || '\u2014',
+      email: lead.email || '\u2014',
+    },
+    metal,
+    ring: {
+      finger_size: lead.ring_size || '\u2014',
+    },
+    stone: {
+      raw: stone.raw,
+      is_lab_diamond: stone.isLabDiamond,
+      rows: stoneRows,
+    },
+    accents,
+    notes: {
+      setting_style: lead.setting_style || '\u2014',
+      build_weight:  lead.weight_class || '\u2014',
+      budget:        budget ? `$${budget.toLocaleString()}` : (lead.budget || '\u2014'),
+      timeline:      lead.timeline || (lead.custom_date || '\u2014'),
+    },
+    photos,
+  };
+}
+
+function renderFactoryEmail(packet) {
+  const rows = (arr) => arr.map(([k, v]) => `
+    <tr>
+      <td style="padding:5px 14px 5px 0;color:#707683;font-size:12px;vertical-align:top;width:130px">${esc(k)}</td>
+      <td style="padding:5px 0;color:#22252b;font-size:13px">${esc(v)}</td>
+    </tr>`).join('');
+
+  const section = (title, body) => `
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#D9B48C;font-weight:600;margin-bottom:6px">${esc(title)}</div>
+      ${body}
+    </div>`;
+
+  const metalRows = rows([
+    ['Type',   packet.metal.type],
+    ['Purity', packet.metal.purity],
+    ['Color',  packet.metal.color],
+  ]);
+  const ringRows = rows([
+    ['Finger size', packet.ring.finger_size],
+  ]);
+  const stoneRows = rows(packet.stone.rows);
+  const accentRows = rows([
+    ['Pattern',     packet.accents.pattern],
+    ['Melee size',  packet.accents.size],
+    ['Approx count', packet.accents.count],
+    ['Approx TCW',  packet.accents.tcw],
+    ['Hidden halo', packet.accents.hiddenHalo],
+  ]);
+  const notesRows = rows([
+    ['Setting style', packet.notes.setting_style],
+    ['Build weight',  packet.notes.build_weight],
+    ['Customer budget', packet.notes.budget],
+    ['Timeline',      packet.notes.timeline],
+  ]);
+
+  const photosHtml = packet.photos.length
+    ? `<ul style="padding-left:20px;margin:6px 0;color:#22252b;font-size:13px;line-height:1.7">
+        ${packet.photos.map(p => p.url
+          ? `<li><strong>${esc(p.label)}</strong> &mdash; <a href="${esc(p.url)}" style="color:#2E5C4A">view photo</a></li>`
+          : `<li><strong>${esc(p.label)}</strong> &mdash; (unavailable)</li>`
+        ).join('')}
+      </ul>
+      <div style="color:#888;font-size:11px;margin-top:4px">Photo links expire in 30 days.</div>`
+    : `<div style="color:#888;font-size:13px">No photos uploaded.</div>`;
+
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',Arial,sans-serif;background:#FAF7F2;padding:28px 20px">
+      <div style="max-width:640px;margin:0 auto;background:#fff;border:1px solid #E9E4DA;border-radius:8px;overflow:hidden">
+        <div style="padding:22px 28px;border-bottom:1px solid #E9E4DA;background:#1F2A44;color:#fff">
+          <div style="font-family:'Playfair Display',Georgia,serif;font-size:20px">The Ring Collective</div>
+          <div style="color:#D9B48C;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-top:2px">Production packet &middot; ${esc(packet.reference_id)}</div>
+        </div>
+        <div style="padding:24px 28px">
+          ${section('Customer', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${rows([['Name', packet.customer.name], ['Email', packet.customer.email], ['Ref', packet.reference_id]])}</table>`)}
+          ${section('Metal', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${metalRows}</table>`)}
+          ${section('Ring', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${ringRows}</table>`)}
+          ${section('Center stone', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${stoneRows}</table>`)}
+          ${section('Accent / melee diamonds', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${accentRows}</table>`)}
+          ${section('Notes', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${notesRows}</table>`)}
+          ${section('Photos', photosHtml)}
+        </div>
+      </div>
+    </div>`;
+
+  // Plain-text equivalent so any non-HTML email client still gets it.
+  const line = (k, v) => `  ${k.padEnd(14)} ${v}`;
+  const text = [
+    `Production packet — ${packet.reference_id}`,
+    `Submitted: ${packet.submitted_at}`,
+    '',
+    'CUSTOMER',
+    line('Name', packet.customer.name),
+    line('Email', packet.customer.email),
+    '',
+    'METAL',
+    line('Type', packet.metal.type),
+    line('Purity', packet.metal.purity),
+    line('Color', packet.metal.color),
+    '',
+    'RING',
+    line('Finger size', packet.ring.finger_size),
+    '',
+    'CENTER STONE',
+    ...packet.stone.rows.map(([k, v]) => line(k, v)),
+    '',
+    'ACCENT / MELEE DIAMONDS',
+    line('Pattern', packet.accents.pattern),
+    line('Melee size', packet.accents.size),
+    line('Approx count', packet.accents.count),
+    line('Approx TCW', packet.accents.tcw),
+    line('Hidden halo', packet.accents.hiddenHalo),
+    '',
+    'NOTES',
+    line('Setting style', packet.notes.setting_style),
+    line('Build weight', packet.notes.build_weight),
+    line('Customer budget', packet.notes.budget),
+    line('Timeline', packet.notes.timeline),
+    '',
+    'PHOTOS',
+    ...packet.photos.map((p, i) => `  ${i + 1}. ${p.label} — ${p.url || '(unavailable)'}`),
+    '',
+    '— The Ring Collective',
+  ].join('\n');
+
+  return { html, text };
+}
+
+async function sendFactoryEmail(packet) {
+  const key = requireEnv('RESEND_API_KEY');
+  const to   = process.env.FACTORY_EMAIL || 'sethkgilbert@gmail.com';
+  const from = process.env.NOTIFY_FROM || 'Ring Collective <onboarding@resend.dev>';
+
+  const { html, text } = renderFactoryEmail(packet);
+  const subject = `Production packet ${packet.reference_id} — ${packet.stone.raw || 'ring'}, ${packet.metal.type}${packet.metal.purity && packet.metal.purity !== '\u2014' ? ' ' + packet.metal.purity : ''}`;
+
+  const resp = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ from, to, subject, text, html }),
+  });
+  const body = await resp.text();
+  if (!resp.ok) throw new Error(`Resend ${resp.status}: ${body}`);
+  return { to, response: body ? JSON.parse(body) : null };
+}
+
 // --- Metals price (goldapi.io) ------------------------------------------
 
 async function fetchMetalPricePerG(symbol) {
@@ -235,6 +539,39 @@ exports.handler = async (event) => {
       case 'metals_prices': {
         const data = await getMetalsPrices(body.force === true);
         return json(200, headers, data);
+      }
+
+      case 'preview_factory_packet': {
+        if (!body.id) return json(400, headers, { error: 'id required' });
+        const lead = await getLead(body.id);
+        if (!lead) return json(404, headers, { error: 'not found' });
+        const packet = await buildFactoryPacket(lead);
+        const to = process.env.FACTORY_EMAIL || 'sethkgilbert@gmail.com';
+        return json(200, headers, {
+          packet,
+          factory_email: to,
+          already_sent_at: lead.factory_sent_at || null,
+          current_status: lead.status,
+        });
+      }
+
+      case 'send_to_factory': {
+        if (!body.id) return json(400, headers, { error: 'id required' });
+        const lead = await getLead(body.id);
+        if (!lead) return json(404, headers, { error: 'not found' });
+        const packet = await buildFactoryPacket(lead);
+        const result = await sendFactoryEmail(packet);
+        const now = new Date().toISOString();
+        const updated = await updateLead(body.id, {
+          status: 'in_production',
+          factory_sent_at: now,
+        });
+        return json(200, headers, {
+          ok: true,
+          factory_email: result.to,
+          sent_at: now,
+          lead: Array.isArray(updated) ? updated[0] : updated,
+        });
       }
 
       default:
