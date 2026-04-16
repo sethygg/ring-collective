@@ -699,8 +699,14 @@
       wrap.className = 'quick-replies user-side';
       const sel = document.createElement('select');
       sel.className = 'qr-select';
+      // Sizes 3 – 10 in quarter increments (29 options).
+      // Display: "3", "3.25", "3.5", "3.75", "4", ... — strip trailing zeros
+      // so whole + half sizes render cleanly.
       sel.innerHTML = '<option value="">Select size…</option>' +
-        Array.from({length:15},(_,i)=>{const s=(i*0.5+3).toFixed(1);return `<option value="${s}">${s}</option>`;}).join('') +
+        Array.from({length:29},(_,i)=>{
+          const s=(3+i*0.25).toFixed(2).replace(/\.?0+$/, '');
+          return `<option value="${s}">${s}</option>`;
+        }).join('') +
         '<option value="Not sure">Not sure yet</option>';
       const go = document.createElement('button');
       go.className = 'qr-btn primary'; go.textContent = 'Confirm';
