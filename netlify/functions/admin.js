@@ -223,7 +223,9 @@ function buildAccentSummary(lead) {
 
 // Build a fully hydrated packet object. Includes signed photo URLs with a
 // 30-day expiry so the factory can pull the images from the email.
-async function buildFactoryPacket(lead) {
+// `overrideNotes` lets the admin modal pass the latest textarea value
+// without needing to re-save to DB first; falls back to the stored value.
+async function buildFactoryPacket(lead, overrideNotes) {
   const metal = splitMetal(lead);
   const stone = classifyStone(lead);
   const budget = parseBudgetUsd(lead.budget);
@@ -268,6 +270,13 @@ async function buildFactoryPacket(lead) {
     stoneRows.push(['Cert',    'Confirm sourcing before build']);
   }
 
+  // Prefer the live override (textarea content) — falls back to the
+  // stored column so preview loads whatever was sent last time.
+  const factoryNotes = (typeof overrideNotes === 'string'
+    ? overrideNotes
+    : (lead.factory_notes || '')
+  ).trim();
+
   return {
     reference_id: referenceId,
     submitted_at: lead.created_at,
@@ -291,6 +300,7 @@ async function buildFactoryPacket(lead) {
       budget:        budget ? `$${budget.toLocaleString()}` : (lead.budget || '\u2014'),
       timeline:      lead.timeline || (lead.custom_date || '\u2014'),
     },
+    factory_notes: factoryNotes,
     photos,
   };
 }
@@ -317,19 +327,6 @@ function renderFactoryEmail(packet) {
     ['Finger size', packet.ring.finger_size],
   ]);
   const stoneRows = rows(packet.stone.rows);
-  const accentRows = rows([
-    ['Pattern',     packet.accents.pattern],
-    ['Melee size',  packet.accents.size],
-    ['Approx count', packet.accents.count],
-    ['Approx TCW',  packet.accents.tcw],
-    ['Hidden halo', packet.accents.hiddenHalo],
-  ]);
-  const notesRows = rows([
-    ['Setting style', packet.notes.setting_style],
-    ['Build weight',  packet.notes.build_weight],
-    ['Customer budget', packet.notes.budget],
-    ['Timeline',      packet.notes.timeline],
-  ]);
 
   const photosHtml = packet.photos.length
     ? `<ul style="padding-left:20px;margin:6px 0;color:#22252b;font-size:13px;line-height:1.7">
@@ -341,6 +338,10 @@ function renderFactoryEmail(packet) {
       <div style="color:#888;font-size:11px;margin-top:4px">Photo links expire in 30 days.</div>`
     : `<div style="color:#888;font-size:13px">No photos uploaded.</div>`;
 
+  const notesHtml = packet.factory_notes
+    ? `<div style="background:#faf7f2;border-left:3px solid #D9B48C;padding:12px 14px;font-size:13px;color:#2A3654;line-height:1.6;white-space:pre-wrap">${esc(packet.factory_notes)}</div>`
+    : '';
+
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',Arial,sans-serif;background:#FAF7F2;padding:28px 20px">
       <div style="max-width:640px;margin:0 auto;background:#fff;border:1px solid #E9E4DA;border-radius:8px;overflow:hidden">
@@ -349,12 +350,11 @@ function renderFactoryEmail(packet) {
           <div style="color:#D9B48C;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-top:2px">Production packet &middot; ${esc(packet.reference_id)}</div>
         </div>
         <div style="padding:24px 28px">
-          ${section('Customer', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${rows([['Name', packet.customer.name], ['Email', packet.customer.email], ['Ref', packet.reference_id]])}</table>`)}
+          ${section('Reference', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${rows([['Name', packet.customer.name], ['Ref', packet.reference_id]])}</table>`)}
           ${section('Metal', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${metalRows}</table>`)}
           ${section('Ring', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${ringRows}</table>`)}
           ${section('Center stone', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${stoneRows}</table>`)}
-          ${section('Accent / melee diamonds', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${accentRows}</table>`)}
-          ${section('Notes', `<table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${notesRows}</table>`)}
+          ${packet.factory_notes ? section('Custom notes', notesHtml) : ''}
           ${section('Photos', photosHtml)}
         </div>
       </div>
@@ -366,9 +366,9 @@ function renderFactoryEmail(packet) {
     `Production packet — ${packet.reference_id}`,
     `Submitted: ${packet.submitted_at}`,
     '',
-    'CUSTOMER',
+    'REFERENCE',
     line('Name', packet.customer.name),
-    line('Email', packet.customer.email),
+    line('Ref',  packet.reference_id),
     '',
     'METAL',
     line('Type', packet.metal.type),
@@ -381,19 +381,7 @@ function renderFactoryEmail(packet) {
     'CENTER STONE',
     ...packet.stone.rows.map(([k, v]) => line(k, v)),
     '',
-    'ACCENT / MELEE DIAMONDS',
-    line('Pattern', packet.accents.pattern),
-    line('Melee size', packet.accents.size),
-    line('Approx count', packet.accents.count),
-    line('Approx TCW', packet.accents.tcw),
-    line('Hidden halo', packet.accents.hiddenHalo),
-    '',
-    'NOTES',
-    line('Setting style', packet.notes.setting_style),
-    line('Build weight', packet.notes.build_weight),
-    line('Customer budget', packet.notes.budget),
-    line('Timeline', packet.notes.timeline),
-    '',
+    ...(packet.factory_notes ? ['CUSTOM NOTES', packet.factory_notes, ''] : []),
     'PHOTOS',
     ...packet.photos.map((p, i) => `  ${i + 1}. ${p.label} — ${p.url || '(unavailable)'}`),
     '',
@@ -545,13 +533,19 @@ exports.handler = async (event) => {
         if (!body.id) return json(400, headers, { error: 'id required' });
         const lead = await getLead(body.id);
         if (!lead) return json(404, headers, { error: 'not found' });
-        const packet = await buildFactoryPacket(lead);
+        // If the caller passes `notes`, re-render with them (useful for
+        // live-preview updates); otherwise use the stored value.
+        const packet = await buildFactoryPacket(
+          lead,
+          typeof body.notes === 'string' ? body.notes : undefined
+        );
         const to = process.env.FACTORY_EMAIL || 'sethkgilbert@gmail.com';
         return json(200, headers, {
           packet,
           factory_email: to,
           already_sent_at: lead.factory_sent_at || null,
           current_status: lead.status,
+          factory_notes: lead.factory_notes || '',
         });
       }
 
@@ -559,12 +553,14 @@ exports.handler = async (event) => {
         if (!body.id) return json(400, headers, { error: 'id required' });
         const lead = await getLead(body.id);
         if (!lead) return json(404, headers, { error: 'not found' });
-        const packet = await buildFactoryPacket(lead);
+        const notes = typeof body.notes === 'string' ? body.notes.trim() : '';
+        const packet = await buildFactoryPacket(lead, notes);
         const result = await sendFactoryEmail(packet);
         const now = new Date().toISOString();
         const updated = await updateLead(body.id, {
           status: 'in_production',
           factory_sent_at: now,
+          factory_notes: notes || null,
         });
         return json(200, headers, {
           ok: true,

@@ -187,6 +187,10 @@
     <div class="modal-body" id="factoryModalBody">
       <div style="color:#888;font-size:13px">Loading&hellip;</div>
     </div>
+    <div style="padding:0 26px 18px">
+      <label for="factoryNotesInput" style="display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px">Custom notes to factory <span style="color:var(--muted);text-transform:none;letter-spacing:.3px;font-weight:400">(optional)</span></label>
+      <textarea id="factoryNotesInput" placeholder="e.g. Customer wants extra attention to the prong height. Ship by May 30." style="min-height:80px"></textarea>
+    </div>
     <div class="modal-foot">
       <div class="recipient" id="factoryModalRecipient"></div>
       <div style="display:flex;gap:10px">
@@ -911,10 +915,13 @@ function renderFactoryPacket(packet){
       <div style="color:#999;font-size:11px;margin-top:4px">Photo links expire in 30 days.</div>`
     : '<div style="color:#888;font-size:13px">No photos uploaded.</div>';
 
+  const notesBlock = packet.factory_notes
+    ? `<div style="background:#faf7f2;border-left:3px solid var(--gold);padding:10px 12px;font-size:13px;color:#2A3654;white-space:pre-wrap;line-height:1.5">${escapeHTML(packet.factory_notes)}</div>`
+    : '';
+
   return [
-    section('Customer', rowBlock([
+    section('Reference', rowBlock([
       ['Name',  packet.customer.name],
-      ['Email', packet.customer.email],
       ['Ref',   packet.reference_id],
     ])),
     section('Metal', rowBlock([
@@ -926,40 +933,31 @@ function renderFactoryPacket(packet){
       ['Finger size', packet.ring.finger_size],
     ])),
     section('Center stone', rowBlock(packet.stone.rows)),
-    section('Accent / melee diamonds', rowBlock([
-      ['Pattern',      packet.accents.pattern],
-      ['Melee size',   packet.accents.size],
-      ['Approx count', packet.accents.count],
-      ['Approx TCW',   packet.accents.tcw],
-      ['Hidden halo',  packet.accents.hiddenHalo],
-    ])),
-    section('Notes', rowBlock([
-      ['Setting style',   packet.notes.setting_style],
-      ['Build weight',    packet.notes.build_weight],
-      ['Customer budget', packet.notes.budget],
-      ['Timeline',        packet.notes.timeline],
-    ])),
+    packet.factory_notes ? section('Custom notes (last sent)', notesBlock) : '',
     section('Photos', photos),
   ].join('');
 }
 
 async function openFactoryModal(id){
   factoryState = { id, packet: null, sending: false };
-  const bg   = document.getElementById('factoryModalBg');
-  const body = document.getElementById('factoryModalBody');
-  const rec  = document.getElementById('factoryModalRecipient');
-  const send = document.getElementById('factoryModalSend');
+  const bg    = document.getElementById('factoryModalBg');
+  const body  = document.getElementById('factoryModalBody');
+  const rec   = document.getElementById('factoryModalRecipient');
+  const send  = document.getElementById('factoryModalSend');
+  const notes = document.getElementById('factoryNotesInput');
 
   body.innerHTML = '<div style="color:#888;font-size:13px"><span class="spinner"></span> Loading packet&hellip;</div>';
   rec.innerHTML = '';
   send.disabled = true;
   send.textContent = 'Send packet';
+  notes.value = '';
   bg.classList.add('on');
 
   try {
     const data = await apiCall({ action: 'preview_factory_packet', id });
     factoryState.packet = data.packet;
     body.innerHTML = renderFactoryPacket(data.packet);
+    notes.value = data.factory_notes || '';
     const already = data.already_sent_at
       ? ` &middot; already sent ${new Date(data.already_sent_at).toLocaleString()}`
       : '';
@@ -985,7 +983,8 @@ async function sendFactoryPacket(){
   const orig = send.textContent;
   send.innerHTML = '<span class="spinner"></span> Sending&hellip;';
   try {
-    const data = await apiCall({ action: 'send_to_factory', id: factoryState.id });
+    const notes = document.getElementById('factoryNotesInput').value;
+    const data = await apiCall({ action: 'send_to_factory', id: factoryState.id, notes });
     toast('Packet sent to ' + (data.factory_email || 'factory'));
     factoryState.sending = false;
     document.getElementById('factoryModalBg').classList.remove('on');
