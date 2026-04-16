@@ -637,7 +637,7 @@
         </div>
         <div class="chat-body" id="chatBody">
             <div class="chat-msg chat-msg-bot">
-                Hey! I'm the Ring Collective concierge. Ask me anything about pricing, timing, lab vs mined, or how the custom process works. If it's something that needs a human eye, I'll loop in Seth and he'll reply within an hour.
+                Hey! I'm the Ring Collective concierge. Ask me anything about pricing, timing, lab vs mined, or how the custom process works. If it's something that needs a human eye, I'll loop in Kelsey and she'll reply within an hour.
             </div>
         </div>
         <form class="chat-form" onsubmit="sendChatMsg(event)">
@@ -707,7 +707,7 @@
             input.type = 'email';
             input.placeholder = 'your@email.com';
             setTimeout(function() {
-                appendChatMsg("Thanks! What's the best email for Seth to reply to? He personally reads and answers every message &mdash; usually within an hour.", 'bot');
+                appendChatMsg("Thanks! What's the best email for Kelsey to reply to? She personally reads and answers every message &mdash; usually within an hour.", 'bot');
             }, 400);
             return;
         }
@@ -723,7 +723,7 @@
             input.placeholder = 'Anything else to add?';
             postChat({ message: chatState.question, email: chatState.email });
             setTimeout(function() {
-                appendChatMsg("Got it. Seth just got a ping with your question &mdash; expect a reply at <strong>" + chatState.email.replace(/</g,'&lt;') + "</strong> shortly. In the meantime, if you want a full quote the fastest path is to <a href='quote-builder-c.html' style='color:#2E5C4A;font-weight:600;'>start the ring builder &rarr;</a>", 'bot');
+                appendChatMsg("Got it. Kelsey just got a ping with your question &mdash; expect a reply at <strong>" + chatState.email.replace(/</g,'&lt;') + "</strong> shortly. In the meantime, if you want a full quote the fastest path is to <a href='quote-builder-c.html' style='color:#2E5C4A;font-weight:600;'>start the ring builder &rarr;</a>", 'bot');
                 appendChatMsg('Message delivered.', 'system');
             }, 400);
             return;
@@ -731,7 +731,7 @@
 
         // Follow-up messages after email captured — send them straight through.
         postChat({ message: value, email: chatState.email });
-        setTimeout(function() { appendChatMsg('Got it, forwarded to Seth.', 'system'); }, 300);
+        setTimeout(function() { appendChatMsg('Got it, forwarded to Kelsey.', 'system'); }, 300);
     }
 
     // ===== Exit intent =====
