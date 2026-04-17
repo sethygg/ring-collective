@@ -63,6 +63,7 @@
   .pill.won{background:#e0f0f9;color:#1f5b8e}
   .pill.in_production{background:#ede3f3;color:#513a7a}
   .pill.lost{background:#f1e0e0;color:#8e2f2f}
+  .pill.archived{background:#e8e8e8;color:#888}
 
   /* Factory-packet modal */
   .modal-bg{position:fixed;inset:0;background:rgba(20,28,48,.55);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 20px;overflow-y:auto}
@@ -221,6 +222,7 @@
           <div class="filter-chip" data-status="won">Won</div>
           <div class="filter-chip" data-status="in_production">In Production</div>
           <div class="filter-chip" data-status="lost">Lost</div>
+          <div class="filter-chip" data-status="archived" style="margin-left:auto;opacity:0.7">Archived</div>
         </div>
         <div id="leadsList"></div>
       </aside>
@@ -479,8 +481,15 @@ async function loadLeads(){
   const list = document.getElementById('leadsList');
   list.innerHTML = '<div style="padding:18px;color:#888;font-size:13px"><span class="spinner"></span>Loading…</div>';
   try {
-    const resp = await apiCall({ action:'list', status: activeStatus });
-    leads = resp.leads || [];
+    // "All" fetches everything then filters out archived client-side.
+    // "archived" fetches only archived. Other statuses fetch as-is.
+    const fetchStatus = activeStatus === 'all' ? 'all' : activeStatus;
+    const resp = await apiCall({ action:'list', status: fetchStatus });
+    let rows = resp.leads || [];
+    if (activeStatus === 'all') {
+      rows = rows.filter(l => l.status !== 'archived');
+    }
+    leads = rows;
     renderLeadsList();
   } catch (err) {
     list.innerHTML = `<div style="padding:18px;color:#c0392b;font-size:13px">Failed: ${escapeHTML(err.message)}</div>`;
@@ -645,6 +654,10 @@ async function renderDetail(){
         ${['new','quoted','won','in_production','lost'].map(s=>`
           <button data-status="${s}" class="${s === lead.status ? 'active':''}">${s.replace('_',' ')}</button>
         `).join('')}
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12px;color:var(--muted)">${lead.status === 'archived' ? 'This lead is archived.' : 'Done with this lead?'}</span>
+        <button class="btn ghost" id="archiveBtn" style="font-size:12px;padding:6px 14px;${lead.status === 'archived' ? 'color:var(--green)' : 'color:#999'}">${lead.status === 'archived' ? '↩ Unarchive' : '📦 Archive'}</button>
       </div>
     </div>
 
@@ -832,6 +845,26 @@ async function renderDetail(){
       } catch (err) { toast('Failed: ' + err.message); }
     });
   });
+
+  // Wire up Archive / Unarchive button
+  const archiveBtn = document.getElementById('archiveBtn');
+  if (archiveBtn) {
+    archiveBtn.addEventListener('click', async ()=>{
+      const lead = leads.find(l => l.id === selectedId) || data.lead;
+      const newStatus = lead.status === 'archived' ? 'new' : 'archived';
+      try {
+        await apiCall({ action:'update_status', id: selectedId, status: newStatus });
+        toast(newStatus === 'archived' ? 'Lead archived' : 'Lead unarchived');
+        await loadLeads();
+        if (newStatus === 'archived' && activeStatus !== 'archived') {
+          selectedId = null;
+          document.getElementById('detail').innerHTML = '<div class="empty">Select a lead to view details.</div>';
+        } else {
+          await renderDetail();
+        }
+      } catch (err) { toast('Failed: ' + err.message); }
+    });
+  }
 
   // Wire up Send to factory button
   const factoryBtn = document.getElementById('factoryBtn');
