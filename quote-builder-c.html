@@ -11,8 +11,8 @@
 <style>
   :root{
     --gold:#D9B48C;
-    --green:#2E5C4A;
-    --green-dark:#24483a;
+    --green:#D9B48C;
+    --green-dark:#96753e;
     --charcoal:#1F2A44;
     --ivory:#FAF7F2;
     --blush:#E8C7BE;
@@ -39,7 +39,7 @@
   /* PAGE SHELL */
   .wrap{max-width:780px;margin:0 auto;padding:40px 24px 80px}
   .process-mini{background:#FAF7F2;border:1px solid #EFE9DE;border-radius:14px;padding:20px 22px;margin-bottom:32px}
-  .process-mini-title{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#2E5C4A;font-weight:600;margin-bottom:14px;text-align:center}
+  .process-mini-title{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#D9B48C;font-weight:600;margin-bottom:14px;text-align:center}
   .process-mini-steps{display:flex;gap:12px;align-items:stretch}
   .process-mini-step{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px;background:#fff;border-radius:10px;border:1px solid #F0EBDF}
   .process-mini-step .pm-num{width:24px;height:24px;border-radius:50%;background:#D9B48C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;margin-bottom:4px}
@@ -81,7 +81,7 @@
   .angle-tile.filled .angle-reset{position:absolute;bottom:10px;right:10px;font-size:11px;color:#fff;background:rgba(31,42,68,0.75);padding:4px 8px;border-radius:6px;z-index:2}
   .quality-bar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:26px}
   .quality-meter{flex:1;height:6px;background:var(--gray);border-radius:99px;overflow:hidden}
-  .quality-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));width:0;transition:width .4s}
+  .quality-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--charcoal));width:0;transition:width .4s}
   .quality-label{font-size:13px;color:#666;white-space:nowrap}
   .quality-label strong{color:var(--charcoal);font-weight:500}
 
@@ -99,11 +99,11 @@
   .bubble.user .avatar{background:var(--charcoal)}
   .bubble-body{max-width:78%;padding:12px 16px;border-radius:16px;font-size:14.5px;line-height:1.5}
   .bubble.bot .bubble-body{background:var(--gray);border-bottom-left-radius:4px}
-  .bubble.user .bubble-body{background:var(--green);color:#fff;border-bottom-right-radius:4px}
+  .bubble.user .bubble-body{background:var(--charcoal);color:#fff;border-bottom-right-radius:4px}
   .quick-replies{display:flex;flex-wrap:wrap;gap:8px;padding-left:42px;animation:fade .35s ease}
   .quick-replies.user-side{justify-content:flex-end;padding-left:0;padding-right:42px}
   .qr-btn{background:#fff;border:1.5px solid var(--border);border-radius:99px;padding:8px 16px;font-size:13.5px;color:var(--charcoal);transition:all .2s}
-  .qr-btn:hover{border-color:var(--green);background:#f5fbf7}
+  .qr-btn:hover{border-color:var(--gold);background:#fdf8f2}
   .qr-btn.primary{background:var(--green);color:#fff;border-color:var(--green)}
   .qr-btn.primary:hover{background:var(--green-dark)}
   .qr-select{padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff}
