@@ -313,7 +313,7 @@
 
         <div id="sliderContainer" style="position: relative; max-width: 1100px; margin: 0 auto;">
             <!-- Left Arrow -->
-            <button id="slideLeftBtn" onclick="slideLeft()" aria-label="Previous ring" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #F0EDE6; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #D9B48C; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10094;</button>
+            <button id="slideLeftBtn" aria-label="Previous ring" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #F0EDE6; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #D9B48C; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10094;</button>
 
             <!-- Slider Track -->
             <div id="sliderViewport" style="overflow: hidden; margin: 0 50px;">
@@ -323,7 +323,7 @@
             </div>
 
             <!-- Right Arrow -->
-            <button id="slideRightBtn" onclick="slideRight()" aria-label="Next ring" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #F0EDE6; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #D9B48C; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10095;</button>
+            <button id="slideRightBtn" aria-label="Next ring" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #F0EDE6; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #D9B48C; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10095;</button>
         </div>
 
         <!-- Dots -->
@@ -465,6 +465,7 @@
                 return response.json();
             })
             .then(data => {
+                console.log('[Gallery] Loaded', data.length, 'items, maxIndex=', Math.max(0, data.length - VISIBLE));
                 if (Array.isArray(data) && data.length > 0) {
                     sliderGalleryData = data;
                     renderSliderCards();
@@ -482,6 +483,18 @@
                 document.getElementById('dotsContainer').style.display = 'none';
             });
     }
+
+    // Attach arrow click handlers via JS (more reliable than inline onclick).
+    document.getElementById('slideLeftBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('[Gallery] Left arrow clicked, currentIndex=', currentIndex, 'maxIndex=', maxIndex());
+        slideLeft();
+    });
+    document.getElementById('slideRightBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('[Gallery] Right arrow clicked, currentIndex=', currentIndex, 'maxIndex=', maxIndex());
+        slideRight();
+    });
 
     // Load gallery data on page load
     window.addEventListener('DOMContentLoaded', fetchGalleryData);
