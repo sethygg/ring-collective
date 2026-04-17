@@ -344,9 +344,9 @@
 
     <script>
     let sliderGalleryData = [];
-    let currentSlide = 0;
+    let currentIndex = 0;          // index of the first visible card
     let autoSlideInterval = null;
-    let totalSlides = 0;
+    const VISIBLE = 3;             // cards visible at once
 
     function formatPrice(priceCents) {
         const dollars = (priceCents / 100).toFixed(0);
@@ -355,29 +355,22 @@
 
     function renderSliderCards() {
         const track = document.getElementById('sliderTrack');
-        const container = document.getElementById('sliderContainer');
         track.innerHTML = '';
+        currentIndex = 0;
 
-        // If 3 or fewer items, use a centered grid instead of a slider.
         const count = sliderGalleryData.length;
-        const useSlider = count > 3;
 
-        if (!useSlider) {
-            // Hide arrows for non-slider layout.
-            document.getElementById('slideLeftBtn').style.display = 'none';
-            document.getElementById('slideRightBtn').style.display = 'none';
-            track.style.justifyContent = 'center';
-        } else {
-            document.getElementById('slideLeftBtn').style.display = 'flex';
-            document.getElementById('slideRightBtn').style.display = 'flex';
-            track.style.justifyContent = '';
-        }
+        // Always show arrows (they wrap around).
+        document.getElementById('slideLeftBtn').style.display = 'flex';
+        document.getElementById('slideRightBtn').style.display = 'flex';
 
         sliderGalleryData.forEach(item => {
             const cardHtml = `
-                <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
+                <div class="gallery-slide" style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
                     <div style="border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; transition: transform 0.3s; cursor: pointer; background: #fff;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
-                        <img src="${item.image_url}" alt="${item.title || 'Ring'}" style="width: 100%; height: 320px; object-fit: cover; background: #F5E8D4;">
+                        <div style="width:100%;height:280px;overflow:hidden;background:#F5E8D4;">
+                            <img src="${item.image_url}" alt="${item.title || 'Ring'}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                        </div>
                         <div style="padding: 18px 18px 20px; background: #fff;">
                             <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px dashed #EFE9DE; padding-top: 10px; margin-bottom: 12px;">
                                 <span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #999; text-transform: uppercase; letter-spacing: 1px;">Client paid</span>
@@ -391,24 +384,25 @@
             track.innerHTML += cardHtml;
         });
 
-        if (useSlider) {
-            totalSlides = Math.ceil(count / 3);
-            renderDots();
-        } else {
-            totalSlides = 0;
-            document.getElementById('dotsContainer').innerHTML = '';
-        }
+        renderDots();
         updateSlider();
+    }
+
+    function maxIndex() {
+        // Don't scroll past the last set of VISIBLE cards.
+        return Math.max(0, sliderGalleryData.length - VISIBLE);
     }
 
     function renderDots() {
         const dotsContainer = document.getElementById('dotsContainer');
         dotsContainer.innerHTML = '';
+        const total = maxIndex() + 1;
+        if (total <= 1) return;
 
-        for (let i = 0; i < totalSlides; i++) {
+        for (let i = 0; i < total; i++) {
             const dot = document.createElement('span');
-            dot.className = 'dot';
-            dot.style.cssText = 'display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ' + (i === currentSlide ? '#D9B48C' : '#ddd') + '; margin: 0 5px; cursor: pointer; transition: background 0.3s;';
+            dot.className = 'gallery-dot';
+            dot.style.cssText = 'display:inline-block;width:10px;height:10px;border-radius:50%;background:' + (i === currentIndex ? '#D9B48C' : '#ddd') + ';margin:0 5px;cursor:pointer;transition:background 0.3s;';
             dot.onclick = function() { goToSlide(i); };
             dotsContainer.appendChild(dot);
         }
@@ -418,35 +412,40 @@
         const track = document.getElementById('sliderTrack');
         if (!track.children.length) return;
 
-        const slideWidth = track.children[0].offsetWidth + 20;
-        track.style.transform = 'translateX(-' + (currentSlide * slideWidth) + 'px)';
+        const card = track.children[0];
+        const gap = 20;
+        const slideWidth = card.offsetWidth + gap;
+        track.style.transform = 'translateX(-' + (currentIndex * slideWidth) + 'px)';
 
-        document.querySelectorAll('.dot').forEach((dot, i) => {
-            dot.style.background = i === currentSlide ? '#D9B48C' : '#ddd';
+        document.querySelectorAll('.gallery-dot').forEach((dot, i) => {
+            dot.style.background = i === currentIndex ? '#D9B48C' : '#ddd';
         });
     }
 
     function slideRight() {
-        if (totalSlides <= 0) return;
-        currentSlide = (currentSlide + 1) % totalSlides;
+        if (sliderGalleryData.length <= VISIBLE) return;
+        currentIndex = currentIndex >= maxIndex() ? 0 : currentIndex + 1;
         updateSlider();
+        renderDots();
     }
 
     function slideLeft() {
-        if (totalSlides <= 0) return;
-        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        if (sliderGalleryData.length <= VISIBLE) return;
+        currentIndex = currentIndex <= 0 ? maxIndex() : currentIndex - 1;
         updateSlider();
+        renderDots();
     }
 
     function goToSlide(n) {
-        currentSlide = n;
+        currentIndex = n;
         updateSlider();
+        renderDots();
         clearInterval(autoSlideInterval);
         autoSlideInterval = setInterval(slideRight, 5000);
     }
 
     function startAutoSlide() {
-        if (totalSlides > 0 && !autoSlideInterval) {
+        if (sliderGalleryData.length > VISIBLE && !autoSlideInterval) {
             autoSlideInterval = setInterval(slideRight, 5000);
         }
     }
@@ -461,9 +460,8 @@
                 if (Array.isArray(data) && data.length > 0) {
                     sliderGalleryData = data;
                     renderSliderCards();
-                    if (totalSlides > 0) startAutoSlide();
+                    startAutoSlide();
                 } else {
-                    // Show fallback message
                     document.getElementById('sliderLoading').style.display = 'block';
                     document.getElementById('sliderContainer').style.display = 'none';
                     document.getElementById('dotsContainer').style.display = 'none';
@@ -471,7 +469,6 @@
             })
             .catch(error => {
                 console.error('Error fetching gallery:', error);
-                // Show fallback message
                 document.getElementById('sliderLoading').style.display = 'block';
                 document.getElementById('sliderContainer').style.display = 'none';
                 document.getElementById('dotsContainer').style.display = 'none';
