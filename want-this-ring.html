@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Want This Ring — The Ring Collective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --gold:#D9B48C;
+    --green:#2E5C4A;
+    --green-dark:#24483a;
+    --charcoal:#1F2A44;
+    --ivory:#FAF7F2;
+    --border:#E6E1D6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--ivory);color:var(--charcoal);font-family:'Inter',sans-serif;font-weight:300;line-height:1.55;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Playfair Display',serif;font-weight:600}
+  a{color:inherit;text-decoration:none}
+
+  nav{background:rgba(250,247,242,0.95);border-bottom:1px solid var(--border);padding:18px 32px;text-align:center}
+  .logo{font-size:18px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;color:var(--charcoal)}
+  .logo a{text-decoration:none;color:inherit}
+
+  .container{max-width:900px;margin:0 auto;padding:40px 20px 80px}
+
+  .ring-card{display:flex;gap:36px;background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:36px}
+  .ring-image{flex:0 0 50%;max-width:50%}
+  .ring-image img{width:100%;height:100%;object-fit:cover;display:block;min-height:320px}
+  .ring-info{flex:1;padding:32px 28px 32px 0;display:flex;flex-direction:column;justify-content:center}
+  .ring-info h1{font-size:1.6rem;margin-bottom:8px}
+  .ring-price{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--green);font-weight:600;margin-bottom:16px}
+  .ring-specs{list-style:none;padding:0;margin:0 0 12px}
+  .ring-specs li{padding:6px 0;border-bottom:1px dashed var(--border);font-size:0.92rem;color:#555}
+  .ring-specs li:last-child{border-bottom:none}
+  .ring-specs .label{font-weight:500;color:var(--charcoal);margin-right:6px}
+  .ring-note{font-size:0.82rem;color:#999;font-style:italic;margin-top:8px}
+
+  .form-section{background:#fff;border-radius:14px;border:1px solid var(--border);padding:36px 32px}
+  .form-section h2{font-size:1.3rem;margin-bottom:6px}
+  .form-sub{font-size:0.95rem;color:#888;margin-bottom:28px}
+  .form-row{margin-bottom:18px}
+  .form-row label{display:block;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#888;font-weight:500;margin-bottom:5px}
+  .form-row input,.form-row select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;transition:border-color 0.2s}
+  .form-row input:focus,.form-row select:focus{outline:none;border-color:var(--gold)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+  .submit-btn{display:block;width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:background 0.3s;margin-top:8px}
+  .submit-btn:hover{background:var(--green-dark)}
+  .submit-btn:disabled{opacity:0.6;cursor:not-allowed}
+
+  .success-msg{text-align:center;padding:40px 20px}
+  .success-msg h2{font-size:1.5rem;margin-bottom:12px;color:var(--green)}
+  .success-msg p{font-size:1rem;color:#666;max-width:400px;margin:0 auto 24px}
+  .success-msg a{display:inline-block;padding:12px 28px;background:var(--gold);color:#fff;border-radius:8px;font-weight:500;transition:background 0.3s}
+  .success-msg a:hover{background:#96753e}
+
+  .loading{text-align:center;padding:60px 20px;color:#888;font-size:14px}
+  .error-msg{text-align:center;padding:60px 20px;color:#c00;font-size:14px}
+
+  @media (max-width: 640px) {
+    .ring-card{flex-direction:column}
+    .ring-image{max-width:100%;flex:none}
+    .ring-image img{min-height:240px;max-height:320px}
+    .ring-info{padding:24px 20px}
+    .form-grid{grid-template-columns:1fr}
+    .form-section{padding:28px 20px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="index.html">The Ring Collective</a></div>
+</nav>
+
+<div class="container">
+  <div id="loadingState" class="loading">Loading ring details…</div>
+  <div id="errorState" class="error-msg" style="display:none"></div>
+
+  <div id="mainContent" style="display:none">
+    <!-- Ring card -->
+    <div class="ring-card">
+      <div class="ring-image">
+        <img id="ringImg" src="" alt="Ring">
+      </div>
+      <div class="ring-info">
+        <h1 id="ringTitle"></h1>
+        <div class="ring-price" id="ringPrice"></div>
+        <ul class="ring-specs" id="ringSpecs"></ul>
+        <div class="ring-note">Get this exact ring built for you at the price shown.</div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-section" id="formSection">
+      <h2>Claim This Ring</h2>
+      <div class="form-sub">Tell us your size and we'll get started. We'll reach out within 24 hours.</div>
+
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="wantName">Your Name</label>
+          <input type="text" id="wantName" placeholder="First and last name" required>
+        </div>
+        <div class="form-row">
+          <label for="wantEmail">Email</label>
+          <input type="email" id="wantEmail" placeholder="you@email.com" required>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="wantPhone">Phone (optional)</label>
+          <input type="tel" id="wantPhone" placeholder="(555) 123-4567">
+        </div>
+        <div class="form-row">
+          <label for="wantSize">Ring Size</label>
+          <select id="wantSize" required>
+            <option value="">— select —</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="wantSubmitBtn" onclick="submitWantRing()">I Want This Ring</button>
+    </div>
+
+    <!-- Success state -->
+    <div class="success-msg" id="successState" style="display:none">
+      <h2>You're all set!</h2>
+      <p>We've received your request and will be in touch within 24 hours to get your ring started.</p>
+      <a href="index.html">Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://jcsyucadvweiskxfwedq.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_J_r7xY5JY-W0ib2uJB1AHQ_S00q-J1m';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+  let ringData = null;
+
+  // Populate ring size dropdown (quarter sizes 3–10)
+  const sizeSelect = document.getElementById('wantSize');
+  for (let s = 3; s <= 10; s += 0.25) {
+    const label = s.toFixed(2).replace(/\.?0+$/, '');
+    const opt = document.createElement('option');
+    opt.value = label;
+    opt.textContent = label;
+    sizeSelect.appendChild(opt);
+  }
+
+  function formatPrice(cents) {
+    return '$' + (cents / 100).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  // Load the ring from gallery endpoint
+  async function loadRing() {
+    const params = new URLSearchParams(window.location.search);
+    const ringId = params.get('id');
+    if (!ringId) {
+      showError('No ring specified. <a href="recent-work.html">Browse our recent work →</a>');
+      return;
+    }
+
+    try {
+      const resp = await fetch('/.netlify/functions/gallery');
+      if (!resp.ok) throw new Error('Failed to load');
+      const pieces = await resp.json();
+      ringData = pieces.find(p => p.id === ringId);
+
+      if (!ringData) {
+        showError('Ring not found. It may no longer be available. <a href="recent-work.html">Browse our recent work →</a>');
+        return;
+      }
+
+      // Populate the page
+      document.getElementById('ringImg').src = ringData.image_url;
+      document.getElementById('ringImg').alt = ringData.title || 'Ring';
+      document.getElementById('ringTitle').textContent = ringData.title || 'Custom Ring';
+      document.getElementById('ringPrice').textContent = formatPrice(ringData.price_cents);
+
+      // Build specs list
+      const specsList = document.getElementById('ringSpecs');
+      const specs = [];
+      if (ringData.stone_type) specs.push({ label: 'Stone', value: ringData.stone_carat ? `${ringData.stone_carat} ct ${ringData.stone_type}` : ringData.stone_type });
+      if (ringData.metal_type) specs.push({ label: 'Metal', value: ringData.metal_type });
+      specs.push({ label: 'Price', value: formatPrice(ringData.price_cents) });
+
+      specsList.innerHTML = specs.map(s =>
+        `<li><span class="label">${s.label}:</span> ${s.value}</li>`
+      ).join('');
+
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+    } catch (err) {
+      showError('Something went wrong loading this ring. Please try again.');
+      console.error(err);
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('loadingState').style.display = 'none';
+    const el = document.getElementById('errorState');
+    el.innerHTML = msg;
+    el.style.display = 'block';
+  }
+
+  async function submitWantRing() {
+    const name = document.getElementById('wantName').value.trim();
+    const email = document.getElementById('wantEmail').value.trim();
+    const phone = document.getElementById('wantPhone').value.trim();
+    const ringSize = document.getElementById('wantSize').value;
+
+    if (!name) { alert('Please enter your name.'); return; }
+    if (!email) { alert('Please enter your email.'); return; }
+    if (!ringSize) { alert('Please select a ring size.'); return; }
+
+    const btn = document.getElementById('wantSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    try {
+      const quoteId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+      // Build a description that references the gallery piece
+      const specParts = [];
+      if (ringData.stone_carat) specParts.push(ringData.stone_carat + ' ct');
+      if (ringData.stone_type) specParts.push(ringData.stone_type);
+      if (ringData.metal_type) specParts.push(ringData.metal_type);
+      const specSummary = specParts.join(', ');
+
+      const row = {
+        id: quoteId,
+        name: name,
+        email: email,
+        phone: phone || null,
+        ring_size: ringSize,
+        stone_type: ringData.stone_type || null,
+        stone_category: ringData.stone_type ? (ringData.stone_type.toLowerCase().includes('diamond') ? 'diamond' : 'colored') : null,
+        diamond_carat: ringData.stone_carat || null,
+        metal: ringData.metal_type || null,
+        budget: formatPrice(ringData.price_cents),
+        status: 'new',
+        ref_code: sessionStorage.getItem('trc_ref') || null,
+        raw_answers: {
+          source: 'want_this_ring',
+          gallery_piece_id: ringData.id,
+          gallery_piece_title: ringData.title,
+          gallery_price_cents: ringData.price_cents,
+          ring_specs: specSummary,
+          ring_size: ringSize,
+          name: name,
+          email: email,
+          phone: phone || null,
+        },
+      };
+
+      const { error: insErr } = await sb.from('quote_requests').insert(row);
+      if (insErr) throw insErr;
+
+      // Fire-and-forget notification
+      fetch('/.netlify/functions/notify-lead', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: quoteId })
+      }).catch(() => {});
+
+      // Show success
+      document.getElementById('formSection').style.display = 'none';
+      document.getElementById('successState').style.display = 'block';
+    } catch (err) {
+      console.error('Submission failed:', err);
+      alert("Sorry — something went wrong. Please try again or email us at sales@theringcollective.net");
+      btn.disabled = false;
+      btn.textContent = 'I Want This Ring';
+    }
+  }
+
+  loadRing();
+</script>
+
+<!-- Referral / UTM capture — persists across pages via sessionStorage -->
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('ref');
+  if (ref) sessionStorage.setItem('trc_ref', ref.trim().toLowerCase());
+  ['utm_source','utm_medium','utm_campaign'].forEach(function(k){
+    var v = params.get(k);
+    if (v) sessionStorage.setItem('trc_' + k, v.trim());
+  });
+})();
+</script>
+</body>
+</html>

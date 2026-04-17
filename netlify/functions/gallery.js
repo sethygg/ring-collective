@@ -51,7 +51,7 @@ exports.handler = async (event) => {
     const limitClause = Number.isFinite(limit) && limit > 0 ? `&limit=${limit}` : '';
 
     const resp = await fetch(
-      `${url}/rest/v1/gallery_pieces?select=id,image_path,title,description,price_cents,display_order,created_at&is_active=eq.true&order=display_order.asc,created_at.desc${limitClause}`,
+      `${url}/rest/v1/gallery_pieces?select=id,image_path,title,description,price_cents,stone_carat,stone_type,metal_type,display_order,created_at&is_active=eq.true&order=display_order.asc,created_at.desc${limitClause}`,
       {
         headers: {
           apikey: key,
@@ -75,6 +75,9 @@ exports.handler = async (event) => {
       title: r.title,
       description: r.description,
       price_cents: r.price_cents,
+      stone_carat: r.stone_carat,
+      stone_type: r.stone_type,
+      metal_type: r.metal_type,
       image_url: `${url}/storage/v1/object/public/gallery/${r.image_path}`,
       created_at: r.created_at,
     }));

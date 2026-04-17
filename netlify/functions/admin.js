@@ -769,6 +769,9 @@ exports.handler = async (event) => {
             price_cents: Math.round(Number(price_cents)),
             display_order: nextOrder,
             is_active: true,
+            stone_carat: body.stone_carat != null ? Number(body.stone_carat) : null,
+            stone_type: body.stone_type || null,
+            metal_type: body.metal_type || null,
           }),
         });
 
