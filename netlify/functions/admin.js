@@ -837,6 +837,80 @@ exports.handler = async (event) => {
         return json(200, headers, { ok: true });
       }
 
+      // ---- REFERRAL CODE MANAGEMENT ----
+
+      case 'list_referral_codes': {
+        const rows = await sbFetch(
+          '/rest/v1/referral_codes?select=*&order=created_at.desc'
+        );
+        return json(200, headers, { codes: rows || [] });
+      }
+
+      case 'add_referral_code': {
+        const { code, name } = body;
+        if (!code) return json(400, headers, { error: 'code is required' });
+        const slug = code.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        if (!slug) return json(400, headers, { error: 'Invalid code — use letters, numbers, hyphens' });
+
+        const inserted = await sbFetch('/rest/v1/referral_codes', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ code: slug, name: (name || '').trim(), is_active: true }),
+        });
+        return json(200, headers, { code: Array.isArray(inserted) ? inserted[0] : inserted });
+      }
+
+      case 'update_referral_code': {
+        const { id, ...patch } = body;
+        if (!id) return json(400, headers, { error: 'id required' });
+        // Only allow updating name and is_active.
+        const allowed = {};
+        if ('name' in patch) allowed.name = patch.name;
+        if ('is_active' in patch) allowed.is_active = !!patch.is_active;
+        if ('code' in patch) {
+          allowed.code = patch.code.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        }
+        await sbFetch(
+          `/rest/v1/referral_codes?id=eq.${encodeURIComponent(id)}`,
+          { method: 'PATCH', body: JSON.stringify(allowed) }
+        );
+        return json(200, headers, { ok: true });
+      }
+
+      case 'delete_referral_code': {
+        if (!body.id) return json(400, headers, { error: 'id required' });
+        await sbFetch(
+          `/rest/v1/referral_codes?id=eq.${encodeURIComponent(body.id)}`,
+          { method: 'DELETE' }
+        );
+        return json(200, headers, { ok: true });
+      }
+
+      case 'referral_dashboard': {
+        // Aggregate leads per ref_code.
+        const rows = await sbFetch(
+          '/rest/v1/quote_requests?select=ref_code,status,created_at&ref_code=not.is.null&order=created_at.desc'
+        );
+        // Also fetch the code→name map.
+        const codes = await sbFetch('/rest/v1/referral_codes?select=code,name,is_active');
+
+        const nameMap = {};
+        (codes || []).forEach(c => { nameMap[c.code] = c.name || c.code; });
+
+        // Build stats per code.
+        const stats = {};
+        (rows || []).forEach(r => {
+          const rc = r.ref_code;
+          if (!stats[rc]) stats[rc] = { code: rc, name: nameMap[rc] || rc, total: 0, statuses: {} };
+          stats[rc].total += 1;
+          stats[rc].statuses[r.status] = (stats[rc].statuses[r.status] || 0) + 1;
+        });
+
+        // Sort by total desc.
+        const leaderboard = Object.values(stats).sort((a, b) => b.total - a.total);
+        return json(200, headers, { leaderboard, total_referred: (rows || []).length });
+      }
+
       default:
         return json(400, headers, { error: `unknown action: ${action}` });
     }

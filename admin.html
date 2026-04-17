@@ -208,6 +208,7 @@
     <div class="tab-switcher">
       <button class="tab-btn active" id="leadsTab" data-section="leads">Leads</button>
       <button class="tab-btn" id="galleryTab" data-section="gallery">Gallery</button>
+      <button class="tab-btn" id="referralsTab" data-section="referrals">Referrals</button>
     </div>
 
     <div class="content" style="flex:1;overflow:hidden">
@@ -270,6 +271,37 @@
           </div>
         </div>
       </div>
+
+      <!-- REFERRALS SECTION -->
+      <div class="referrals-section" id="referralsSection" style="width:100%;overflow-y:auto;padding:28px 36px;background:var(--ivory);display:none">
+
+        <!-- Dashboard -->
+        <h2>Referral Dashboard</h2>
+        <div class="sub" style="margin-bottom:20px">Track which referrers are sending you leads</div>
+        <div id="refDashboard" style="margin-bottom:36px">
+          <div style="color:#888;font-size:13px"><span class="spinner"></span> Loading stats…</div>
+        </div>
+
+        <!-- Code management -->
+        <h3 style="font-size:14px;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin:28px 0 14px;font-family:'Inter',sans-serif;font-weight:600">Manage Referral Codes</h3>
+
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:120px">
+            <label style="display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Code</label>
+            <input id="refCodeInput" type="text" placeholder="e.g. jake" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px">
+          </div>
+          <div style="flex:1.5;min-width:160px">
+            <label style="display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Name</label>
+            <input id="refNameInput" type="text" placeholder="e.g. Jake Smith" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px">
+          </div>
+          <button class="btn primary" id="addRefCodeBtn" style="height:38px;white-space:nowrap">Add Code</button>
+        </div>
+
+        <div id="refCodesList" style="min-height:60px">
+          <div style="color:#888;font-size:13px"><span class="spinner"></span> Loading codes…</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -452,11 +484,14 @@ function leadRowHTML(l){
     l.shape,
     (l.metal ? `${l.karat || ''} ${l.metal}`.trim() : null),
   ].filter(Boolean).join(' · ');
+  const refBadge = l.ref_code
+    ? `<span style="display:inline-block;font-size:10px;background:#2E5C4A;color:#fff;padding:2px 7px;border-radius:4px;margin-left:6px;letter-spacing:0.5px">ref: ${escapeHTML(l.ref_code)}</span>`
+    : '';
   return `
     <div class="lead-row" data-id="${l.id}">
       <div class="name">
         <span>${escapeHTML(l.name || 'Unknown')}</span>
-        <span class="pill ${l.status}">${escapeHTML(l.status)}</span>
+        <span class="pill ${l.status}">${escapeHTML(l.status)}</span>${refBadge}
       </div>
       <div class="meta">${escapeHTML(l.email || '')} · ${date}</div>
       <div class="summary">${escapeHTML(stoneSummary)}</div>
@@ -1233,19 +1268,33 @@ function renderGallery(){
 
 // Tab switching
 document.getElementById('leadsTab').addEventListener('click', () => {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('leadsTab').classList.add('active');
-  document.querySelectorAll('.leads-section').forEach(s => s.classList.remove('hidden'));
-  document.getElementById('gallerySection').classList.remove('active');
+  switchTab('leads');
 });
 
-document.getElementById('galleryTab').addEventListener('click', async () => {
+document.getElementById('galleryTab').addEventListener('click', () => switchTab('gallery'));
+document.getElementById('referralsTab').addEventListener('click', () => switchTab('referrals'));
+
+function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('galleryTab').classList.add('active');
+  // Hide all sections
   document.querySelectorAll('.leads-section').forEach(s => s.classList.add('hidden'));
-  document.getElementById('gallerySection').classList.add('active');
-  await loadGallery();
-});
+  document.getElementById('gallerySection').classList.remove('active');
+  document.getElementById('referralsSection').style.display = 'none';
+
+  if (tab === 'leads') {
+    document.getElementById('leadsTab').classList.add('active');
+    document.querySelectorAll('.leads-section').forEach(s => s.classList.remove('hidden'));
+  } else if (tab === 'gallery') {
+    document.getElementById('galleryTab').classList.add('active');
+    document.getElementById('gallerySection').classList.add('active');
+    loadGallery();
+  } else if (tab === 'referrals') {
+    document.getElementById('referralsTab').classList.add('active');
+    document.getElementById('referralsSection').style.display = 'block';
+    loadReferralCodes();
+    loadReferralDashboard();
+  }
+}
 
 // Upload zone drag-and-drop
 const uploadZone = document.getElementById('uploadZone');
@@ -1350,6 +1399,133 @@ document.getElementById('uploadSaveBtn').addEventListener('click', async () => {
     btn.textContent = orig;
   }
 });
+/* ---------- REFERRALS ---------- */
+
+let refCodes = [];
+
+async function loadReferralCodes() {
+  const list = document.getElementById('refCodesList');
+  try {
+    const data = await apiCall({ action: 'list_referral_codes' });
+    refCodes = data.codes || [];
+    renderRefCodes();
+  } catch (err) {
+    list.innerHTML = '<div style="color:#c00;padding:12px">Failed to load codes: ' + escapeHTML(err.message) + '</div>';
+  }
+}
+
+function renderRefCodes() {
+  const list = document.getElementById('refCodesList');
+  if (refCodes.length === 0) {
+    list.innerHTML = '<div style="color:#888;padding:16px;text-align:center;font-size:13px">No referral codes yet. Add one above.</div>';
+    return;
+  }
+  list.innerHTML = refCodes.map(c => {
+    const link = 'theringcollective.co?ref=' + encodeURIComponent(c.code);
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:140px">
+          <div style="font-weight:600;font-size:14px;color:var(--charcoal)">${escapeHTML(c.name || c.code)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;font-family:monospace">${escapeHTML(link)}</div>
+        </div>
+        <button class="btn ghost" style="font-size:11px;padding:5px 12px" onclick="copyRefLink('${escapeHTML(c.code)}')">Copy Link</button>
+        <button class="btn ghost" style="font-size:11px;padding:5px 12px;${c.is_active ? 'color:#c00' : 'color:#2E5C4A'}" onclick="toggleRefCode('${c.id}', ${!c.is_active})">${c.is_active ? 'Deactivate' : 'Activate'}</button>
+        <span class="pill ${c.is_active ? 'new' : 'lost'}" style="font-size:10px">${c.is_active ? 'ACTIVE' : 'INACTIVE'}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function copyRefLink(code) {
+  const link = 'https://theringcollective.co?ref=' + encodeURIComponent(code);
+  navigator.clipboard.writeText(link).then(() => toast('Link copied!')).catch(() => {
+    // Fallback
+    prompt('Copy this link:', link);
+  });
+}
+
+async function toggleRefCode(id, newActive) {
+  try {
+    await apiCall({ action: 'update_referral_code', id, is_active: newActive });
+    toast(newActive ? 'Code activated' : 'Code deactivated');
+    await loadReferralCodes();
+  } catch (err) {
+    toast('Failed: ' + err.message);
+  }
+}
+
+document.getElementById('addRefCodeBtn').addEventListener('click', async () => {
+  const codeInput = document.getElementById('refCodeInput');
+  const nameInput = document.getElementById('refNameInput');
+  const code = codeInput.value.trim();
+  const name = nameInput.value.trim();
+  if (!code) { toast('Enter a code'); return; }
+  try {
+    await apiCall({ action: 'add_referral_code', code, name });
+    toast('Code "' + code + '" created!');
+    codeInput.value = '';
+    nameInput.value = '';
+    await loadReferralCodes();
+    loadReferralDashboard();
+  } catch (err) {
+    toast('Failed: ' + err.message);
+  }
+});
+
+async function loadReferralDashboard() {
+  const container = document.getElementById('refDashboard');
+  try {
+    const data = await apiCall({ action: 'referral_dashboard' });
+    const lb = data.leaderboard || [];
+    if (lb.length === 0) {
+      container.innerHTML = '<div style="color:#888;padding:20px;text-align:center;font-size:13px">No referred leads yet. Share your referral links to start tracking!</div>';
+      return;
+    }
+    let html = `
+      <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px 24px;flex:1;min-width:140px;text-align:center">
+          <div style="font-size:2rem;font-weight:700;color:var(--charcoal)">${data.total_referred}</div>
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:4px">Total Referred Leads</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px 24px;flex:1;min-width:140px;text-align:center">
+          <div style="font-size:2rem;font-weight:700;color:var(--charcoal)">${lb.length}</div>
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:4px">Active Referrers</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+        <thead>
+          <tr style="background:var(--charcoal);color:#fff">
+            <th style="padding:10px 14px;text-align:left;font-size:12px;letter-spacing:1px;text-transform:uppercase">#</th>
+            <th style="padding:10px 14px;text-align:left;font-size:12px;letter-spacing:1px;text-transform:uppercase">Referrer</th>
+            <th style="padding:10px 14px;text-align:left;font-size:12px;letter-spacing:1px;text-transform:uppercase">Code</th>
+            <th style="padding:10px 14px;text-align:center;font-size:12px;letter-spacing:1px;text-transform:uppercase">Total Leads</th>
+            <th style="padding:10px 14px;text-align:center;font-size:12px;letter-spacing:1px;text-transform:uppercase">New</th>
+            <th style="padding:10px 14px;text-align:center;font-size:12px;letter-spacing:1px;text-transform:uppercase">Quoted</th>
+            <th style="padding:10px 14px;text-align:center;font-size:12px;letter-spacing:1px;text-transform:uppercase">Won</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    lb.forEach((r, i) => {
+      html += `
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 14px;font-weight:600;color:var(--gold)">${i + 1}</td>
+          <td style="padding:10px 14px;font-weight:500">${escapeHTML(r.name)}</td>
+          <td style="padding:10px 14px;font-family:monospace;font-size:13px;color:var(--muted)">${escapeHTML(r.code)}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700">${r.total}</td>
+          <td style="padding:10px 14px;text-align:center">${r.statuses['new'] || 0}</td>
+          <td style="padding:10px 14px;text-align:center">${r.statuses['quoted'] || 0}</td>
+          <td style="padding:10px 14px;text-align:center;color:#2E5C4A;font-weight:600">${r.statuses['won'] || 0}</td>
+        </tr>
+      `;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = '<div style="color:#c00;padding:12px">Failed to load dashboard: ' + escapeHTML(err.message) + '</div>';
+  }
+}
+
 </script>
 </body>
 </html>

@@ -391,5 +391,18 @@ function toggleMobileMenu() {
     document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
 }
 </script>
+
+<!-- Referral / UTM capture — persists across pages via sessionStorage -->
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('ref');
+  if (ref) sessionStorage.setItem('trc_ref', ref.trim().toLowerCase());
+  ['utm_source','utm_medium','utm_campaign'].forEach(function(k){
+    var v = params.get(k);
+    if (v) sessionStorage.setItem('trc_' + k, v.trim());
+  });
+})();
+</script>
 </body>
 </html>
