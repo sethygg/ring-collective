@@ -465,7 +465,6 @@
                 return response.json();
             })
             .then(data => {
-                console.log('[Gallery] Loaded', data.length, 'items, maxIndex=', Math.max(0, data.length - VISIBLE));
                 if (Array.isArray(data) && data.length > 0) {
                     sliderGalleryData = data;
                     renderSliderCards();
@@ -484,15 +483,13 @@
             });
     }
 
-    // Attach arrow click handlers via JS (more reliable than inline onclick).
+    // Attach arrow click handlers via JS.
     document.getElementById('slideLeftBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        console.log('[Gallery] Left arrow clicked, currentIndex=', currentIndex, 'maxIndex=', maxIndex());
         slideLeft();
     });
     document.getElementById('slideRightBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        console.log('[Gallery] Right arrow clicked, currentIndex=', currentIndex, 'maxIndex=', maxIndex());
         slideRight();
     });
 
