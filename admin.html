@@ -1111,6 +1111,43 @@ document.addEventListener('DOMContentLoaded', ()=>{
 let gallery = [];
 let galleryFileData = null;
 
+// --- Image crop / resize helper ---
+// Center-crops and resizes any image to a uniform width×height using a canvas.
+// Returns a promise that resolves to { dataUrl, blob }.
+function cropAndResize(file, targetW, targetH, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      // Figure out the largest source rect that matches the target aspect ratio.
+      const srcAspect = img.width / img.height;
+      const tgtAspect = targetW / targetH;
+      let sx, sy, sw, sh;
+      if (srcAspect > tgtAspect) {
+        // Source is wider — crop sides.
+        sh = img.height;
+        sw = Math.round(sh * tgtAspect);
+        sx = Math.round((img.width - sw) / 2);
+        sy = 0;
+      } else {
+        // Source is taller — crop top/bottom.
+        sw = img.width;
+        sh = Math.round(sw / tgtAspect);
+        sx = 0;
+        sy = Math.round((img.height - sh) / 2);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality || 0.88);
+      resolve({ dataUrl });
+    };
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 async function loadGallery(){
   const grid = document.getElementById('galleryGrid');
   grid.innerHTML = '<div style="grid-column:1/-1;padding:30px;text-align:center;color:#888"><span class="spinner"></span> Loading gallery…</div>';
@@ -1246,16 +1283,15 @@ function handleFileSelect(file){
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    galleryFileData = { base64: e.target.result, filename: file.name };
+  // Resize and center-crop to a uniform 1200×800 (3:2) before upload.
+  cropAndResize(file, 1200, 800, 0.88).then(({ dataUrl }) => {
+    galleryFileData = { base64: dataUrl, filename: file.name.replace(/\.[^.]+$/, '.jpg') };
     const preview = document.getElementById('uploadPreview');
-    preview.innerHTML = `<img src="${e.target.result}" alt="preview">`;
+    preview.innerHTML = `<img src="${dataUrl}" alt="preview">`;
     preview.classList.remove('empty');
     document.getElementById('uploadForm').style.display = 'block';
     uploadZone.style.display = 'none';
-  };
-  reader.readAsDataURL(file);
+  }).catch(err => { console.error(err); toast('Could not process image'); });
 }
 
 document.getElementById('uploadCancelBtn').addEventListener('click', () => {
