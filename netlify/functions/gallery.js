@@ -68,15 +68,39 @@ exports.handler = async (event) => {
 
     const rows = await resp.json();
 
-    // Build full public image URLs.
-    const pieces = rows.map(r => ({
-      id: r.id,
-      title: r.title,
-      description: r.description,
-      price_cents: r.price_cents,
-      image_url: `${url}/storage/v1/object/public/gallery/${r.image_path}`,
-      created_at: r.created_at,
-    }));
+    // Sign each image URL (7-day expiry) so images work regardless of
+    // whether the gallery bucket is public or private.
+    const pieces = [];
+    for (const r of rows) {
+      let image_url = `${url}/storage/v1/object/public/gallery/${r.image_path}`;
+      try {
+        const signResp = await fetch(
+          `${url}/storage/v1/object/sign/gallery/${encodeURI(r.image_path)}`,
+          {
+            method: 'POST',
+            headers: {
+              apikey: key,
+              Authorization: `Bearer ${key}`,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({ expiresIn: 7 * 24 * 3600 }),
+          }
+        );
+        if (signResp.ok) {
+          const signData = await signResp.json();
+          image_url = `${url}/storage/v1${signData.signedURL || signData.signedUrl}`;
+        }
+      } catch (_) { /* fall back to public URL */ }
+
+      pieces.push({
+        id: r.id,
+        title: r.title,
+        description: r.description,
+        price_cents: r.price_cents,
+        image_url,
+        created_at: r.created_at,
+      });
+    }
 
     return {
       statusCode: 200,

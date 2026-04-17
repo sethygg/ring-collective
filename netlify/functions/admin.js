@@ -683,10 +683,30 @@ exports.handler = async (event) => {
           '/rest/v1/gallery_pieces?select=*&order=display_order.asc,created_at.desc'
         );
         const sbUrl = requireEnv('SUPABASE_URL');
-        const pieces = (rows || []).map(r => ({
-          ...r,
-          image_url: `${sbUrl}/storage/v1/object/public/gallery/${r.image_path}`,
-        }));
+        const sbKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
+        const pieces = [];
+        for (const r of (rows || [])) {
+          let image_url = `${sbUrl}/storage/v1/object/public/gallery/${r.image_path}`;
+          try {
+            const signResp = await fetch(
+              `${sbUrl}/storage/v1/object/sign/gallery/${encodeURI(r.image_path)}`,
+              {
+                method: 'POST',
+                headers: {
+                  apikey: sbKey,
+                  Authorization: `Bearer ${sbKey}`,
+                  'content-type': 'application/json',
+                },
+                body: JSON.stringify({ expiresIn: 7 * 24 * 3600 }),
+              }
+            );
+            if (signResp.ok) {
+              const signData = await signResp.json();
+              image_url = `${sbUrl}/storage/v1${signData.signedURL || signData.signedUrl}`;
+            }
+          } catch (_) { /* fall back to public URL */ }
+          pieces.push({ ...r, image_url });
+        }
         return json(200, headers, { pieces });
       }
 
@@ -700,7 +720,7 @@ exports.handler = async (event) => {
         const sbUrl = requireEnv('SUPABASE_URL');
         const sbKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
 
-        // Ensure the public gallery bucket exists.
+        // Ensure the public gallery bucket exists and is public.
         await fetch(`${sbUrl}/storage/v1/bucket`, {
           method: 'POST',
           headers: {
@@ -710,6 +730,16 @@ exports.handler = async (event) => {
           },
           body: JSON.stringify({ id: 'gallery', name: 'gallery', public: true }),
         }); // Ignore conflict if bucket already exists.
+        // Force-update to public in case the bucket was created without it.
+        await fetch(`${sbUrl}/storage/v1/bucket/gallery`, {
+          method: 'PUT',
+          headers: {
+            apikey: sbKey,
+            Authorization: `Bearer ${sbKey}`,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({ public: true }),
+        });
 
         // Upload image to storage.
         const ext = (filename.match(/\.[^.]+$/) || ['.jpg'])[0];
