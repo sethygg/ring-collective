@@ -316,7 +316,7 @@
             <button id="slideLeftBtn" onclick="slideLeft()" aria-label="Previous ring" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(255,255,255,0.9); border: 1px solid #F0EDE6; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #D9B48C; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.2s;">&#10094;</button>
 
             <!-- Slider Track -->
-            <div style="overflow: hidden; margin: 0 50px;">
+            <div id="sliderViewport" style="overflow: hidden; margin: 0 50px;">
                 <div id="sliderTrack" style="display: flex; gap: 20px; transition: transform 0.5s ease; will-change: transform;">
                     <!-- Cards will be populated by JavaScript -->
                 </div>
@@ -344,13 +344,21 @@
 
     <script>
     let sliderGalleryData = [];
-    let currentIndex = 0;          // index of the first visible card
+    let currentIndex = 0;
     let autoSlideInterval = null;
-    const VISIBLE = 3;             // cards visible at once
+    const VISIBLE = 3;
+    const GAP = 20;
 
     function formatPrice(priceCents) {
         const dollars = (priceCents / 100).toFixed(0);
         return '$' + dollars.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function getCardWidth() {
+        // Measure the actual visible viewport width and compute card size from it.
+        const viewport = document.getElementById('sliderViewport');
+        const vpWidth = viewport.offsetWidth;
+        return Math.floor((vpWidth - GAP * (VISIBLE - 1)) / VISIBLE);
     }
 
     function renderSliderCards() {
@@ -358,15 +366,15 @@
         track.innerHTML = '';
         currentIndex = 0;
 
-        const count = sliderGalleryData.length;
-
-        // Always show arrows (they wrap around).
+        // Always show arrows.
         document.getElementById('slideLeftBtn').style.display = 'flex';
         document.getElementById('slideRightBtn').style.display = 'flex';
 
+        const cardW = getCardWidth();
+
         sliderGalleryData.forEach(item => {
             const cardHtml = `
-                <div class="gallery-slide" style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
+                <div class="gallery-slide" style="width: ${cardW}px; min-width: ${cardW}px; flex-shrink: 0;">
                     <div style="border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; transition: transform 0.3s; cursor: pointer; background: #fff;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
                         <div style="width:100%;height:280px;overflow:hidden;background:#F5E8D4;">
                             <img src="${item.image_url}" alt="${item.title || 'Ring'}" style="width:100%;height:100%;object-fit:cover;display:block;">
@@ -389,7 +397,6 @@
     }
 
     function maxIndex() {
-        // Don't scroll past the last set of VISIBLE cards.
         return Math.max(0, sliderGalleryData.length - VISIBLE);
     }
 
@@ -412,10 +419,9 @@
         const track = document.getElementById('sliderTrack');
         if (!track.children.length) return;
 
-        const card = track.children[0];
-        const gap = 20;
-        const slideWidth = card.offsetWidth + gap;
-        track.style.transform = 'translateX(-' + (currentIndex * slideWidth) + 'px)';
+        const cardW = getCardWidth();
+        const step = cardW + GAP;
+        track.style.transform = 'translateX(-' + (currentIndex * step) + 'px)';
 
         document.querySelectorAll('.gallery-dot').forEach((dot, i) => {
             dot.style.background = i === currentIndex ? '#D9B48C' : '#ddd';
@@ -423,15 +429,17 @@
     }
 
     function slideRight() {
-        if (sliderGalleryData.length <= VISIBLE) return;
-        currentIndex = currentIndex >= maxIndex() ? 0 : currentIndex + 1;
+        const mi = maxIndex();
+        if (mi <= 0) return;
+        currentIndex = currentIndex >= mi ? 0 : currentIndex + 1;
         updateSlider();
         renderDots();
     }
 
     function slideLeft() {
-        if (sliderGalleryData.length <= VISIBLE) return;
-        currentIndex = currentIndex <= 0 ? maxIndex() : currentIndex - 1;
+        const mi = maxIndex();
+        if (mi <= 0) return;
+        currentIndex = currentIndex <= 0 ? mi : currentIndex - 1;
         updateSlider();
         renderDots();
     }
@@ -445,7 +453,7 @@
     }
 
     function startAutoSlide() {
-        if (sliderGalleryData.length > VISIBLE && !autoSlideInterval) {
+        if (maxIndex() > 0 && !autoSlideInterval) {
             autoSlideInterval = setInterval(slideRight, 5000);
         }
     }
@@ -478,8 +486,14 @@
     // Load gallery data on page load
     window.addEventListener('DOMContentLoaded', fetchGalleryData);
 
-    // Also handle window resize to update slider
-    window.addEventListener('resize', updateSlider);
+    // Re-render on resize so card widths recalculate.
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (sliderGalleryData.length) renderSliderCards();
+        }, 150);
+    });
     </script>
 
     <!-- Social Proof: Stats Bar (with ★ rating & context) -->
