@@ -724,7 +724,9 @@ exports.handler = async (event) => {
         // Upload image to storage.
         const ext = (filename.match(/\.[^.]+$/) || ['.jpg'])[0];
         const storagePath = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
-        const buf = Buffer.from(image_base64, 'base64');
+        // Strip the data-URL prefix (e.g. "data:image/jpeg;base64,") if present.
+        const raw = image_base64.includes(',') ? image_base64.split(',')[1] : image_base64;
+        const buf = Buffer.from(raw, 'base64');
 
         // Infer content-type from extension.
         const ctMap = {
