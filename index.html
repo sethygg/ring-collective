@@ -197,10 +197,7 @@
             align-items: center !important;
         }
 
-        /* Slider cards - show 1 at a time */
-        [style*="min-width: calc(33.333%"] {
-            min-width: 85% !important;
-        }
+        /* Slider cards — responsive handled in JS now */
 
         /* Education cards */
         [style*="grid-template-columns: 1fr 1fr 1fr"] {
@@ -346,8 +343,14 @@
     let sliderGalleryData = [];
     let currentIndex = 0;
     let autoSlideInterval = null;
-    const VISIBLE = 3;
     const GAP = 20;
+
+    function getVisible() {
+        const w = window.innerWidth;
+        if (w <= 600) return 1;
+        if (w <= 900) return 2;
+        return 3;
+    }
 
     function formatPrice(priceCents) {
         const dollars = (priceCents / 100).toFixed(0);
@@ -355,10 +358,10 @@
     }
 
     function getCardWidth() {
-        // Measure the actual visible viewport width and compute card size from it.
         const viewport = document.getElementById('sliderViewport');
         const vpWidth = viewport.offsetWidth;
-        return Math.floor((vpWidth - GAP * (VISIBLE - 1)) / VISIBLE);
+        const vis = getVisible();
+        return Math.floor((vpWidth - GAP * (vis - 1)) / vis);
     }
 
     function renderSliderCards() {
@@ -397,7 +400,7 @@
     }
 
     function maxIndex() {
-        return Math.max(0, sliderGalleryData.length - VISIBLE);
+        return Math.max(0, sliderGalleryData.length - getVisible());
     }
 
     function renderDots() {
