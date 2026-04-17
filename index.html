@@ -9,14 +9,15 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Georgia', serif; color: #2A3654; background-color: #FAF7F2; }
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #fff; border-bottom: 1px solid #F0EDE6; }
-        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #1F2A44; text-transform: uppercase; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #1F2A44; border-bottom: none; }
+        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #fff; text-transform: uppercase; }
+        .logo a { color: #fff; text-decoration: none; }
         .nav-links { display: flex; gap: 35px; list-style: none; }
-        .nav-links a { text-decoration: none; color: #4A5568; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a { text-decoration: none; color: rgba(255,255,255,0.7); font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
         .nav-links a:hover { color: #D9B48C; }
 
         /* Trust strip under nav */
-        .trust-strip { background: #1F2A44; color: #F5E8D4; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 0.5px; padding: 10px 20px; text-align: center; }
+        .trust-strip { background: #1F2A44; color: #F5E8D4; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 0.5px; padding: 10px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
         .trust-strip .ts-item { display: inline-block; margin: 0 14px; white-space: nowrap; }
         .trust-strip .ts-stars { color: #D9B48C; letter-spacing: 1px; margin-right: 6px; }
         .trust-strip .ts-sep { color: #4A5B7A; margin: 0 2px; }
@@ -151,7 +152,7 @@
 
     /* Hamburger Menu */
     .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
-    .hamburger span { display: block; width: 24px; height: 2px; background: #1F2A44; margin: 5px 0; transition: all 0.3s; border-radius: 2px; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: #fff; margin: 5px 0; transition: all 0.3s; border-radius: 2px; }
     .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
     .hamburger.active span:nth-child(2) { opacity: 0; }
     .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
@@ -249,7 +250,7 @@
 </head>
 <body>
     <nav>
-        <div class="logo">The Ring Collective</div>
+        <div class="logo"><a href="index.html">The Ring Collective</a></div>
         <ul class="nav-links">
             <li><a href="#projects">Recent Rings</a></li>
             <li><a href="#how-it-works">How It Works</a></li>
