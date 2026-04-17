@@ -675,6 +675,156 @@ exports.handler = async (event) => {
         });
       }
 
+      // --- Gallery management -----------------------------------------------
+
+      case 'list_gallery': {
+        // Returns ALL pieces (including inactive) for admin management.
+        const rows = await sbFetch(
+          '/rest/v1/gallery_pieces?select=*&order=display_order.asc,created_at.desc'
+        );
+        const sbUrl = requireEnv('SUPABASE_URL');
+        const pieces = (rows || []).map(r => ({
+          ...r,
+          image_url: `${sbUrl}/storage/v1/object/public/gallery/${r.image_path}`,
+        }));
+        return json(200, headers, { pieces });
+      }
+
+      case 'add_gallery_piece': {
+        // Expects: { image_base64, filename, title, description?, price_cents }
+        const { image_base64, filename, title, price_cents } = body;
+        if (!image_base64 || !filename || price_cents == null) {
+          return json(400, headers, { error: 'image_base64, filename, price_cents required' });
+        }
+
+        const sbUrl = requireEnv('SUPABASE_URL');
+        const sbKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
+
+        // Ensure the public gallery bucket exists.
+        await fetch(`${sbUrl}/storage/v1/bucket`, {
+          method: 'POST',
+          headers: {
+            apikey: sbKey,
+            Authorization: `Bearer ${sbKey}`,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({ id: 'gallery', name: 'gallery', public: true }),
+        }); // Ignore conflict if bucket already exists.
+
+        // Upload image to storage.
+        const ext = (filename.match(/\.[^.]+$/) || ['.jpg'])[0];
+        const storagePath = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+        const buf = Buffer.from(image_base64, 'base64');
+
+        // Infer content-type from extension.
+        const ctMap = {
+          '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
+          '.webp': 'image/webp', '.gif': 'image/gif', '.avif': 'image/avif',
+        };
+        const contentType = ctMap[ext.toLowerCase()] || 'image/jpeg';
+
+        const uploadResp = await fetch(
+          `${sbUrl}/storage/v1/object/gallery/${storagePath}`,
+          {
+            method: 'POST',
+            headers: {
+              apikey: sbKey,
+              Authorization: `Bearer ${sbKey}`,
+              'content-type': contentType,
+            },
+            body: buf,
+          }
+        );
+        if (!uploadResp.ok) {
+          const t = await uploadResp.text();
+          throw new Error(`Storage upload failed ${uploadResp.status}: ${t}`);
+        }
+
+        // Get the max display_order so new piece goes at the end.
+        const maxRows = await sbFetch(
+          '/rest/v1/gallery_pieces?select=display_order&order=display_order.desc&limit=1'
+        );
+        const nextOrder = (maxRows && maxRows[0] ? maxRows[0].display_order : 0) + 1;
+
+        // Insert the row.
+        const inserted = await sbFetch('/rest/v1/gallery_pieces', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({
+            image_path: storagePath,
+            title: title || '',
+            description: body.description || '',
+            price_cents: Math.round(Number(price_cents)),
+            display_order: nextOrder,
+            is_active: true,
+          }),
+        });
+
+        const piece = Array.isArray(inserted) ? inserted[0] : inserted;
+        piece.image_url = `${sbUrl}/storage/v1/object/public/gallery/${storagePath}`;
+        return json(200, headers, { piece });
+      }
+
+      case 'update_gallery_piece': {
+        if (!body.id) return json(400, headers, { error: 'id required' });
+        const patch = {};
+        if (typeof body.title === 'string') patch.title = body.title;
+        if (typeof body.description === 'string') patch.description = body.description;
+        if (body.price_cents != null) patch.price_cents = Math.round(Number(body.price_cents));
+        if (typeof body.is_active === 'boolean') patch.is_active = body.is_active;
+        if (Object.keys(patch).length === 0) return json(400, headers, { error: 'nothing to update' });
+        const out = await sbFetch(
+          `/rest/v1/gallery_pieces?id=eq.${encodeURIComponent(body.id)}`,
+          {
+            method: 'PATCH',
+            headers: { Prefer: 'return=representation' },
+            body: JSON.stringify(patch),
+          }
+        );
+        return json(200, headers, { piece: Array.isArray(out) ? out[0] : out });
+      }
+
+      case 'delete_gallery_piece': {
+        if (!body.id) return json(400, headers, { error: 'id required' });
+
+        // Fetch the row to get image_path for storage cleanup.
+        const rows = await sbFetch(
+          `/rest/v1/gallery_pieces?select=image_path&id=eq.${encodeURIComponent(body.id)}&limit=1`
+        );
+        const row = rows && rows[0];
+        if (!row) return json(404, headers, { error: 'not found' });
+
+        // Delete from storage.
+        const sbUrl = requireEnv('SUPABASE_URL');
+        const sbKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
+        await fetch(`${sbUrl}/storage/v1/object/gallery/${row.image_path}`, {
+          method: 'DELETE',
+          headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
+        }); // Best-effort; don't fail if storage delete fails.
+
+        // Delete from DB.
+        await sbFetch(
+          `/rest/v1/gallery_pieces?id=eq.${encodeURIComponent(body.id)}`,
+          { method: 'DELETE' }
+        );
+        return json(200, headers, { ok: true });
+      }
+
+      case 'reorder_gallery': {
+        // Expects: { order: [ { id, display_order }, ... ] }
+        if (!Array.isArray(body.order)) return json(400, headers, { error: 'order array required' });
+        for (const item of body.order) {
+          await sbFetch(
+            `/rest/v1/gallery_pieces?id=eq.${encodeURIComponent(item.id)}`,
+            {
+              method: 'PATCH',
+              body: JSON.stringify({ display_order: item.display_order }),
+            }
+          );
+        }
+        return json(200, headers, { ok: true });
+      }
+
       default:
         return json(400, headers, { error: `unknown action: ${action}` });
     }

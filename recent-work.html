@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Recent Work | The Ring Collective | Custom Engagement Rings</title>
+    <meta name="description" content="Browse our gallery of custom engagement rings built for real clients at jeweler pricing.">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Georgia', serif; color: #2A3654; background-color: #FAF7F2; }
+
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; background-color: #fff; border-bottom: 1px solid #F0EDE6; }
+        .logo { font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #1F2A44; text-transform: uppercase; }
+        .nav-links { display: flex; gap: 35px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #4A5568; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a:hover { color: #D9B48C; }
+
+        /* Hero Banner */
+        .hero-section { background: linear-gradient(135deg, #1F2A44 0%, #2E3B5A 100%); color: #fff; padding: 80px 40px; text-align: center; }
+        .hero-inner { max-width: 720px; margin: 0 auto; }
+        .hero-section h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.5rem; font-weight: normal; margin-bottom: 16px; letter-spacing: 1px; }
+        .hero-section p { font-family: 'Inter', sans-serif; font-size: 1.1rem; color: rgba(255,255,255,0.82); line-height: 1.8; }
+
+        /* Gallery Grid */
+        .gallery-section { padding: 80px 40px; background: #fff; }
+        .gallery-inner { max-width: 1200px; margin: 0 auto; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 60px; }
+
+        .gallery-card { border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; background: #fff; transition: transform 0.3s; }
+        .gallery-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+        .gallery-card-image { width: 100%; aspect-ratio: 1; object-fit: cover; background: #F5E8D4; display: block; }
+        .gallery-card-content { padding: 20px; }
+        .gallery-card-title { font-family: 'Playfair Display', serif; font-weight: 600; color: #1F2A44; font-size: 1.1rem; margin-bottom: 8px; }
+        .gallery-card-desc { font-family: 'Inter', sans-serif; color: #777; font-size: 0.85rem; margin-bottom: 12px; line-height: 1.5; }
+        .gallery-card-price { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px dashed #EFE9DE; padding-top: 10px; margin-bottom: 14px; }
+        .gallery-card-price-label { font-family: 'Inter', sans-serif; font-size: 0.7rem; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+        .gallery-card-price-value { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: #2E5C4A; font-weight: 600; }
+        .gallery-card-btn { display: block; text-align: center; padding: 12px 16px; background: #D9B48C; color: #fff; text-decoration: none; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px; transition: background 0.3s; }
+        .gallery-card-btn:hover { background: #96753e; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 80px 40px; }
+        .empty-state h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #1F2A44; margin-bottom: 16px; }
+        .empty-state p { font-family: 'Inter', sans-serif; font-size: 1.05rem; color: #888; }
+
+        /* CTA Banner */
+        .cta-banner { background: linear-gradient(135deg, #1F2A44 0%, #333 100%); color: #fff; padding: 60px 40px; text-align: center; }
+        .cta-banner h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 20px; letter-spacing: 1px; }
+        .cta-banner-btn { display: inline-block; padding: 16px 45px; background-color: #D9B48C; color: #fff; text-decoration: none; font-family: 'Inter', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border: none; cursor: pointer; transition: background-color 0.3s; border-radius: 4px; }
+        .cta-banner-btn:hover { background-color: #96753e; }
+
+        footer { padding: 40px 60px; text-align: center; background-color: #1F2A44; color: #777; font-size: 13px; letter-spacing: 1px; }
+
+        /* Mobile Menu */
+        .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+        .hamburger span { display: block; width: 24px; height: 2px; background: #1F2A44; margin: 5px 0; transition: all 0.3s; border-radius: 2px; }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        .mobile-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(250,247,242,0.98); z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 28px; backdrop-filter: blur(10px); }
+        .mobile-menu.open { display: flex; }
+        .mobile-menu a { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #1F2A44; text-decoration: none; transition: color 0.2s; }
+        .mobile-menu a:hover { color: #D9B48C; }
+        .mobile-menu .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 2rem; color: #1F2A44; cursor: pointer; }
+
+        h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif !important; }
+        .logo { font-family: 'Playfair Display', Georgia, serif !important; }
+
+        /* Loading indicator */
+        #galleryLoading { text-align: center; padding: 40px 20px; }
+        .loading-spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #F0EDE6; border-top: 4px solid #D9B48C; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 15px; padding: 20px; }
+            .hamburger { display: block !important; }
+            .nav-links { display: none !important; }
+            .logo { font-size: 1.1rem !important; }
+
+            .hero-section { padding: 60px 24px; }
+            .hero-section h1 { font-size: 1.8rem; }
+            .hero-section p { font-size: 1rem; }
+
+            .gallery-section { padding: 60px 20px; }
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+            .gallery-card-title { font-size: 1rem; }
+            .gallery-card-desc { font-size: 0.8rem; }
+            .gallery-card-btn { padding: 10px 12px; font-size: 0.8rem; }
+
+            .cta-banner { padding: 40px 20px; }
+            .cta-banner h2 { font-size: 1.5rem; }
+            .cta-banner-btn { padding: 14px 36px; font-size: 13px; }
+
+            footer { padding: 24px 16px; font-size: 0.8rem; }
+        }
+
+        @media (max-width: 480px) {
+            .gallery-grid { grid-template-columns: 1fr; gap: 16px; }
+            .hero-section h1 { font-size: 1.5rem; }
+            .cta-banner h2 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">The Ring Collective</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quote-builder-c.html">Build Your Ring</a></li>
+            <li><a href="recent-work.html">Recent Work</a></li>
+        </ul>
+        <button class="hamburger" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <button class="close-btn" onclick="toggleMobileMenu()">&times;</button>
+        <a href="index.html" onclick="toggleMobileMenu()">Home</a>
+        <a href="quote-builder-c.html" onclick="toggleMobileMenu()">Build Your Ring</a>
+        <a href="recent-work.html" onclick="toggleMobileMenu()">Recent Work</a>
+    </div>
+
+    <!-- Hero Banner -->
+    <section class="hero-section">
+        <div class="hero-inner">
+            <h1>Our Recent Work</h1>
+            <p>Real custom builds, with the prices our clients actually paid.</p>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery-section">
+        <div class="gallery-inner">
+            <div id="galleryGrid" class="gallery-grid">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+            <div id="galleryLoading" style="display: none;">
+                <div class="loading-spinner"></div>
+            </div>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h2>Our gallery is being updated</h2>
+                <p>Check back soon to see our latest custom creations!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="cta-banner">
+        <h2>Love what you see?</h2>
+        <p style="margin-bottom: 24px; font-family: 'Inter', sans-serif; font-size: 1.05rem; color: rgba(255,255,255,0.82);">Let's build yours.</p>
+        <a href="quote-builder-c.html" class="cta-banner-btn">Start Your Custom Ring</a>
+    </section>
+
+    <footer>&copy; 2026 The Ring Collective. All rights reserved.</footer>
+
+    <script>
+        function toggleMobileMenu() {
+            var menu = document.getElementById('mobileMenu');
+            var hamburger = document.querySelector('.hamburger');
+            menu.classList.toggle('open');
+            hamburger.classList.toggle('active');
+            document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+        }
+
+        function formatPrice(priceCents) {
+            const dollars = (priceCents / 100).toFixed(0);
+            return '$' + dollars.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function renderGallery(items) {
+            const galleryGrid = document.getElementById('galleryGrid');
+            const emptyState = document.getElementById('emptyState');
+            const loading = document.getElementById('galleryLoading');
+
+            if (!items || items.length === 0) {
+                galleryGrid.style.display = 'none';
+                emptyState.style.display = 'block';
+                loading.style.display = 'none';
+                return;
+            }
+
+            galleryGrid.innerHTML = '';
+            items.forEach(item => {
+                const cardHtml = `
+                    <div class="gallery-card">
+                        <img src="${item.image_url}" alt="${item.title}" class="gallery-card-image">
+                        <div class="gallery-card-content">
+                            <div class="gallery-card-title">${item.title}</div>
+                            <div class="gallery-card-desc">${item.description}</div>
+                            <div class="gallery-card-price">
+                                <span class="gallery-card-price-label">Client paid</span>
+                                <span class="gallery-card-price-value">${formatPrice(item.price_cents)}</span>
+                            </div>
+                            <a href="quote-builder-c.html" class="gallery-card-btn">Build Yours</a>
+                        </div>
+                    </div>
+                `;
+                galleryGrid.innerHTML += cardHtml;
+            });
+
+            galleryGrid.style.display = 'grid';
+            emptyState.style.display = 'none';
+            loading.style.display = 'none';
+        }
+
+        function fetchAllGallery() {
+            document.getElementById('galleryLoading').style.display = 'block';
+            document.getElementById('galleryGrid').style.display = 'none';
+
+            fetch('/.netlify/functions/gallery')
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch gallery');
+                    return response.json();
+                })
+                .then(data => {
+                    renderGallery(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching gallery:', error);
+                    document.getElementById('galleryLoading').style.display = 'none';
+                    document.getElementById('emptyState').style.display = 'block';
+                });
+        }
+
+        // Load gallery on page load
+        window.addEventListener('DOMContentLoaded', fetchAllGallery);
+    </script>
+</body>
+</html>
