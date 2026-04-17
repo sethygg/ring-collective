@@ -377,7 +377,7 @@
             const cardHtml = `
                 <div style="min-width: calc(33.333% - 14px); flex-shrink: 0;">
                     <div style="border-radius: 12px; overflow: hidden; border: 1px solid #F0EDE6; transition: transform 0.3s; cursor: pointer; background: #fff;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
-                        <img src="${item.image_url}" alt="${item.title || 'Ring'}" style="width: 100%; height: 320px; object-fit: cover; background: #F5E8D4;" onerror="this.alt='Image failed: ' + this.src.substring(0,80) + '...'; this.style.height='60px'; this.style.fontSize='10px'; this.style.color='red'; this.style.padding='8px'; this.style.objectFit='contain'">
+                        <img src="${item.image_url}" alt="${item.title || 'Ring'}" style="width: 100%; height: 320px; object-fit: cover; background: #F5E8D4;">
                         <div style="padding: 18px 18px 20px; background: #fff;">
                             <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px dashed #EFE9DE; padding-top: 10px; margin-bottom: 12px;">
                                 <span style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #999; text-transform: uppercase; letter-spacing: 1px;">Client paid</span>
