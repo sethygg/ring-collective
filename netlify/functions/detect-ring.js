@@ -123,28 +123,34 @@ exports.handler = async (event) => {
   const content = [{
     type: 'text',
     text: [
-      'You are analyzing photos of an engagement ring. Identify eight things:',
-      '1. stoneCategory: exactly "diamond" (clear/colorless center stone) or "colored" (non-white gemstone like sapphire, ruby, emerald, etc.).',
-      '2. shape: exactly one of ' + SHAPES.join(', ') + '.',
-      '3. metalColor: exactly one of ' + METALS.join(', ') + '. Platinum and white gold look identical in photos, so default to "White Gold" unless obviously different.',
-      '4. settingStyle: exactly one of ' + SETTINGS.join(', ') + '. "solitaire" = single center stone with plain band, "halo" = center stone surrounded by a ring of smaller stones, "pave" = small diamonds set along the band, "three-stone" = one center + two side stones.',
-      '5. weightClass: exactly one of ' + WEIGHTS.join(', ') + ' describing how substantial the band and setting appear. "delicate" = very thin/dainty, "standard" = average heft, "substantial" = chunky/heavy/wide.',
+      'FIRST: Determine if these photos show a ring or jewelry (engagement ring, wedding ring, promise ring, etc.). Look carefully at ALL uploaded photos.',
+      '',
+      'If NONE of the photos show a ring or jewelry, return ONLY this JSON: {"isRing":false}',
+      'Do NOT try to guess ring attributes from non-ring photos. Food, landscapes, robots, people, animals, cars, buildings, etc. are NOT rings.',
+      '',
+      'If at least one photo clearly shows a ring, analyze it and return a JSON object with these fields:',
+      '- isRing: true',
+      '- stoneCategory: exactly "diamond" (clear/colorless center stone) or "colored" (non-white gemstone like sapphire, ruby, emerald, etc.).',
+      '- shape: exactly one of ' + SHAPES.join(', ') + '.',
+      '- metalColor: exactly one of ' + METALS.join(', ') + '. Platinum and white gold look identical in photos, so default to "White Gold" unless obviously different.',
+      '- settingStyle: exactly one of ' + SETTINGS.join(', ') + '. "solitaire" = single center stone with plain band, "halo" = center stone surrounded by a ring of smaller stones, "pave" = small diamonds set along the band, "three-stone" = one center + two side stones.',
+      '- weightClass: exactly one of ' + WEIGHTS.join(', ') + ' describing how substantial the band and setting appear. "delicate" = very thin/dainty, "standard" = average heft, "substantial" = chunky/heavy/wide.',
       '',
       'Accent / melee diamonds on the BAND (small stones set into the band itself, NOT the halo around the center stone):',
-      '6. accentPattern: exactly one of ' + ACCENT_PATTERNS.join(', ') + '.',
-      '   - "none" = plain band, no accent stones on it.',
-      '   - "shoulders" = accents only near the center stone head, stopping partway down each side (roughly the top 25-30% of the band).',
-      '   - "half-eternity" = accents span the top half of the ring, visible from the front but stop before the bottom.',
-      '   - "three-quarter-eternity" = accents cover the top 3/4 of the ring, stopping only at the bottom inch.',
-      '   - "full-eternity" = accents go all the way around the entire ring.',
-      '7. accentMeleeSize: exactly one of ' + MELEE_SIZES.join(', ') + ' describing how large each individual band accent stone is.',
-      '   - "none" = no band accents (accentPattern is "none").',
-      '   - "small" = very tiny stones, pave-like (~1.2-1.5mm), many stones close together.',
-      '   - "medium" = visibly distinct small stones (~1.6-2.0mm), typical for channel or shared-prong bands.',
-      '   - "large" = chunky band stones (~2.0mm+), fewer and more substantial.',
-      '8. hiddenHalo: boolean true/false. A "hidden halo" is a small ring of tiny stones set on the side profile of the basket, UNDER the center stone — only visible from the side, not from above. Return false if no hidden halo is visible, or if you cannot see the side profile.',
+      '- accentPattern: exactly one of ' + ACCENT_PATTERNS.join(', ') + '.',
+      '   "none" = plain band, no accent stones on it.',
+      '   "shoulders" = accents only near the center stone head, stopping partway down each side (roughly the top 25-30% of the band).',
+      '   "half-eternity" = accents span the top half of the ring, visible from the front but stop before the bottom.',
+      '   "three-quarter-eternity" = accents cover the top 3/4 of the ring, stopping only at the bottom inch.',
+      '   "full-eternity" = accents go all the way around the entire ring.',
+      '- accentMeleeSize: exactly one of ' + MELEE_SIZES.join(', ') + ' describing how large each individual band accent stone is.',
+      '   "none" = no band accents (accentPattern is "none").',
+      '   "small" = very tiny stones, pave-like (~1.2-1.5mm), many stones close together.',
+      '   "medium" = visibly distinct small stones (~1.6-2.0mm), typical for channel or shared-prong bands.',
+      '   "large" = chunky band stones (~2.0mm+), fewer and more substantial.',
+      '- hiddenHalo: boolean true/false. A "hidden halo" is a small ring of tiny stones set on the side profile of the basket, UNDER the center stone — only visible from the side, not from above. Return false if no hidden halo is visible, or if you cannot see the side profile.',
       '',
-      'Return ONLY a minified JSON object with exactly these fields: stoneCategory, shape, metalColor, settingStyle, weightClass, accentPattern, accentMeleeSize, hiddenHalo. No preamble, no markdown, no code fences. If uncertain, pick the single most likely option. If the band clearly has no accents, return accentPattern:"none", accentMeleeSize:"none".'
+      'Return ONLY a minified JSON object. No preamble, no markdown, no code fences. If uncertain about ring details, pick the single most likely option.'
     ].join('\n')
   }];
 
@@ -185,6 +191,15 @@ exports.handler = async (event) => {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     let parsed = {};
     try { parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text); } catch (_) {}
+
+    // Check if photos actually contain a ring
+    if (parsed.isRing === false) {
+      return {
+        statusCode: 200,
+        headers: { ...headers, 'content-type': 'application/json' },
+        body: JSON.stringify({ isRing: false })
+      };
+    }
 
     // Validate + normalize
     const accentPattern = ACCENT_PATTERNS.includes(parsed.accentPattern) ? parsed.accentPattern : 'none';

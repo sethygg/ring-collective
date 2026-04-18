@@ -80,9 +80,9 @@
   .angle-tile.filled .angle-check{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:2}
   .angle-tile.filled .angle-reset{position:absolute;bottom:10px;right:10px;font-size:11px;color:#fff;background:rgba(31,42,68,0.75);padding:4px 8px;border-radius:6px;z-index:2}
   .quality-bar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:26px}
-  .quality-meter{flex:1;height:6px;background:var(--gray);border-radius:99px;overflow:hidden}
+  .quality-meter{flex:0 0 auto;width:60px;height:6px;background:var(--gray);border-radius:99px;overflow:hidden}
   .quality-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--charcoal));width:0;transition:width .4s}
-  .quality-label{font-size:13px;color:#666;white-space:nowrap}
+  .quality-label{font-size:13px;color:#666;min-width:0}
   .quality-label strong{color:var(--charcoal);font-weight:500}
 
   .extra-upload{border:1px dashed var(--border);border-radius:12px;padding:16px;text-align:center;font-size:13px;color:#888;margin-bottom:30px;cursor:pointer}
@@ -144,6 +144,9 @@
     .btn{padding:12px 22px;font-size:13px}
     .actions{flex-direction:column-reverse}
     .actions .btn{width:100%}
+    .quality-bar{flex-direction:column;align-items:stretch;gap:8px;text-align:center}
+    .quality-meter{width:100%;flex:none}
+    .quality-label{font-size:12px}
   }
   @media (max-width:480px){
     .step-title{font-size:22px}
@@ -479,6 +482,8 @@
       clearTimeout(timer);
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const data = await resp.json();
+      // If the AI says these aren't ring photos, pass that through
+      if (data.isRing === false) return { isRing: false };
       return {
         stoneCategory: data.stoneCategory || DEFAULTS.stoneCategory,
         shape: data.shape || DEFAULTS.shape,
@@ -508,6 +513,39 @@
     // Kick off the vision call while the intro bubble is rendering
     const detectPromise = detectFromPhotos();
     const detected = await detectPromise;
+
+    // If the AI couldn't find a ring in the photos, let the user know
+    if (detected.isRing === false) {
+      await botSay('chat2', "Hmm — I wasn't able to spot a ring in those photos. Could you try uploading clearer photos of the ring you'd like us to build? Tap <strong>Back</strong> below to re-upload.", 400);
+      showReplies('chat2', [
+        {label:'← Back to photos', value:'back'},
+        {label:'Skip detection — build from scratch', value:'skip'}
+      ], async choice => {
+        if (choice === 'back') {
+          chat2Started = false;
+          goStep(1);
+        } else {
+          // Continue without detection — ask everything manually
+          await botSay('chat2', "No problem! Let's build your ring from scratch.", 300);
+          await askManualStoneCategory();
+          await confirmField({
+            key:'shape', value:'Round', options: SHAPE_OPTIONS,
+            confirmMsg: "What shape would you like for the center stone?",
+            alternatesMsg: "Pick the shape:"
+          });
+          await confirmField({
+            key:'metal', value:'White Gold', options: METAL_OPTIONS,
+            confirmMsg: "Which metal for the band?",
+            alternatesMsg: "Pick a metal:"
+          });
+          if (/Gold/.test(state.answers.metal)) await askKarat();
+          await askSize();
+          await finishChat2();
+        }
+      });
+      return;
+    }
+
     await botSay('chat2', "Great shots! Here's what I can make out. Confirm each below, or tap <em>No</em> if I got it wrong.", 400);
 
     // Stash AI-detected setting style + weight class for the quote engine.
@@ -536,6 +574,34 @@
     }
     await askSize();
     await finishChat2();
+  }
+
+  // Manual stone selection (used when photo detection is skipped)
+  function askManualStoneCategory(){
+    return new Promise(async resolve=>{
+      await botSay('chat2', "What type of center stone would you like?");
+      showReplies('chat2', [
+        {label:'Lab Diamond', value:'diamond_lab'},
+        {label:'Moissanite', value:'diamond_moiss'},
+        {label:'Colored gemstone', value:'colored'},
+        {label:"I'll provide my own stone", value:'customer'}
+      ], async choice=>{
+        if (choice === 'diamond_lab') {
+          state.answers.stoneCategory = 'diamond';
+          state.answers.stoneType = 'Lab Diamond';
+          await askCarat();
+        } else if (choice === 'diamond_moiss') {
+          state.answers.stoneCategory = 'diamond';
+          state.answers.stoneType = 'Moissanite';
+          await askCarat();
+        } else if (choice === 'colored') {
+          await askColoredStone();
+        } else {
+          await askCustomerStone();
+        }
+        resolve();
+      });
+    });
   }
 
   function confirmStoneCategory(detected){
