@@ -662,11 +662,23 @@ exports.handler = async (event) => {
         const packet = await buildFactoryPacket(lead, notes);
         const result = await sendFactoryEmail(packet);
         const now = new Date().toISOString();
+        // Get old status before update for activity log
+        const oldStatus = lead.status;
         const updated = await updateLead(body.id, {
           status: 'in_production',
           factory_sent_at: now,
           factory_notes: notes || null,
         });
+        // Log factory send + status change
+        try {
+          await sbFetch('/rest/v1/lead_activity_log', {
+            method: 'POST',
+            body: JSON.stringify([
+              { lead_id: body.id, event_type: 'factory_sent', detail: `Sent to ${result.to}` },
+              ...(oldStatus !== 'in_production' ? [{ lead_id: body.id, event_type: 'status_change', old_value: oldStatus, new_value: 'in_production' }] : []),
+            ]),
+          });
+        } catch(_){}
         return json(200, headers, {
           ok: true,
           factory_email: result.to,
@@ -838,6 +850,33 @@ exports.handler = async (event) => {
           );
         }
         return json(200, headers, { ok: true });
+      }
+
+      // ---- ACTIVITY LOG ----
+
+      case 'list_activity': {
+        if (!body.lead_id) return json(400, headers, { error: 'lead_id required' });
+        const rows = await sbFetch(
+          `/rest/v1/lead_activity_log?select=*&lead_id=eq.${encodeURIComponent(body.lead_id)}&order=created_at.desc&limit=50`
+        );
+        return json(200, headers, { events: rows || [] });
+      }
+
+      case 'add_activity': {
+        if (!body.lead_id || !body.event_type) return json(400, headers, { error: 'lead_id + event_type required' });
+        const row = {
+          lead_id: body.lead_id,
+          event_type: body.event_type,
+          old_value: body.old_value || null,
+          new_value: body.new_value || null,
+          detail: body.detail || null,
+        };
+        const inserted = await sbFetch('/rest/v1/lead_activity_log', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify(row),
+        });
+        return json(200, headers, { event: Array.isArray(inserted) ? inserted[0] : inserted });
       }
 
       // ---- REFERRAL CODE MANAGEMENT ----

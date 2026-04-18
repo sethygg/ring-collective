@@ -128,6 +128,33 @@
   textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:14px;resize:vertical;min-height:90px}
   textarea:focus{outline:none;border-color:var(--gold)}
 
+  /* Dashboard stats bar */
+  .dash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--border);background:#fff}
+  .dash-stat{padding:14px 12px;text-align:center;border-right:1px solid var(--border)}
+  .dash-stat:last-child{border-right:0}
+  .dash-stat .val{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--charcoal);line-height:1.2}
+  .dash-stat .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+  /* Activity log timeline */
+  .timeline{position:relative;padding:0 0 0 20px;margin:0;list-style:none}
+  .timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--border)}
+  .timeline li{position:relative;padding:0 0 16px 14px;font-size:13px;line-height:1.5}
+  .timeline li:last-child{padding-bottom:0}
+  .timeline li::before{content:'';position:absolute;left:-17px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--border);border:2px solid #fff;z-index:1}
+  .timeline li.status-change::before{background:var(--gold)}
+  .timeline li.factory::before{background:var(--charcoal)}
+  .timeline li.note::before{background:var(--green)}
+  .timeline li.created::before{background:#aaa}
+  .timeline .time{font-size:11px;color:var(--muted);display:block;margin-top:1px}
+  .timeline .event-text{color:var(--text)}
+  .timeline .event-text strong{color:var(--charcoal);font-weight:600}
+
+  /* Add note form inside timeline */
+  .add-note-form{display:flex;gap:8px;margin-top:12px}
+  .add-note-form input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit}
+  .add-note-form input:focus{outline:none;border-color:var(--gold)}
+  .add-note-form button{padding:8px 14px;border:0;border-radius:6px;background:var(--charcoal);color:#fff;font-size:12px;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
+
   /* Tab switcher */
   .tab-switcher{display:flex;gap:0;border-bottom:1px solid var(--border);background:#fff}
   .tab-btn{flex:1;padding:14px 18px;font-size:13px;letter-spacing:1px;text-transform:uppercase;background:transparent;border:0;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;transition:all .2s}
@@ -215,6 +242,12 @@
     <div class="content" style="flex:1;overflow:hidden">
       <!-- LEADS SECTION -->
       <aside class="sidebar leads-section" id="leadsSection">
+        <div class="dash-stats" id="dashStats">
+          <div class="dash-stat"><div class="val" id="statWeek">—</div><div class="lbl">This Week</div></div>
+          <div class="dash-stat"><div class="val" id="statMonth">—</div><div class="lbl">This Month</div></div>
+          <div class="dash-stat"><div class="val" id="statConversion">—</div><div class="lbl">Won Rate</div></div>
+          <div class="dash-stat"><div class="val" id="statRevenue">—</div><div class="lbl">Revenue</div></div>
+        </div>
         <div style="padding:12px 18px 0;border-bottom:1px solid var(--border)">
           <input type="text" id="leadSearch" placeholder="Search by name or email…" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;background:#faf7f2;margin-bottom:8px" oninput="applyLeadFilters()">
           <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -508,6 +541,9 @@ async function loadLeads(){
     }
     allLeads = rows;
     populateRefFilter(rows);
+    // Update dashboard when viewing "all" status (most complete picture)
+    if (activeStatus === 'all') updateDashboard(rows);
+    else computeDashboard();
     applyLeadFilters();
   } catch (err) {
     list.innerHTML = `<div style="padding:18px;color:#c0392b;font-size:13px">Failed: ${escapeHTML(err.message)}</div>`;
@@ -632,6 +668,138 @@ function exportCSV(){
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast(`Exported ${leads.length} leads`);
+}
+
+// ── Dashboard stats ──────────────────────────────────────────────────
+// Computed from allLeads (the full unfiltered set for current status tab).
+// We also need ALL leads regardless of status to compute conversion + revenue,
+// so we store a second copy the first time we see a full 'all' fetch.
+
+let dashboardAllLeads = null;
+
+function updateDashboard(rows){
+  // rows = the "all" leads set (excluding archived)
+  dashboardAllLeads = rows;
+  computeDashboard();
+}
+
+function computeDashboard(){
+  const rows = dashboardAllLeads || allLeads || [];
+  const now = new Date();
+
+  // This week (Mon-Sun)
+  const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; // 0=Mon
+  const weekStart = new Date(now);
+  weekStart.setHours(0,0,0,0);
+  weekStart.setDate(weekStart.getDate() - dayOfWeek);
+  const thisWeek = rows.filter(l => new Date(l.created_at) >= weekStart).length;
+
+  // This month
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thisMonth = rows.filter(l => new Date(l.created_at) >= monthStart).length;
+
+  // Conversion rate: won / (won + lost) — only count leads that have reached a terminal state
+  const won = rows.filter(l => l.status === 'won' || l.status === 'in_production').length;
+  const lost = rows.filter(l => l.status === 'lost').length;
+  const terminal = won + lost;
+  const convRate = terminal > 0 ? Math.round((won / terminal) * 100) : 0;
+
+  // Revenue: sum of quote_total for won + in_production leads
+  const revenue = rows
+    .filter(l => l.status === 'won' || l.status === 'in_production')
+    .reduce((sum, l) => sum + (l.quote_total || 0), 0);
+  const revDisplay = revenue >= 100000
+    ? '$' + (revenue / 100000).toFixed(revenue >= 1000000 ? 0 : 1) + 'k'
+    : revenue > 0 ? '$' + revenue.toLocaleString() : '$0';
+
+  document.getElementById('statWeek').textContent = thisWeek;
+  document.getElementById('statMonth').textContent = thisMonth;
+  document.getElementById('statConversion').textContent = terminal > 0 ? convRate + '%' : '—';
+  document.getElementById('statRevenue').textContent = revDisplay;
+}
+
+// ── Activity log ─────────────────────────────────────────────────────
+// Uses a lead_activity_log table in Supabase.
+// Falls back gracefully if the table doesn't exist yet.
+
+async function loadActivityLog(leadId){
+  const el = document.getElementById('activityTimeline');
+  if (!el) return;
+  el.innerHTML = '<span class="spinner"></span> Loading…';
+  try {
+    const resp = await apiCall({ action: 'list_activity', lead_id: leadId });
+    const events = resp.events || [];
+    renderActivityTimeline(events, leadId);
+  } catch(err) {
+    // If the table doesn't exist yet, show a setup message
+    if (err.message && err.message.includes('lead_activity_log')) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Activity logging needs a database table. Run the migration to enable it.</div>';
+    } else {
+      el.innerHTML = `<div style="font-size:12px;color:#c0392b">Failed to load activity: ${escapeHTML(err.message)}</div>`;
+    }
+  }
+}
+
+function renderActivityTimeline(events, leadId){
+  const el = document.getElementById('activityTimeline');
+  if (!events.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:4px 0">No activity recorded yet.</div>';
+    return;
+  }
+  const items = events.map(e => {
+    const time = new Date(e.created_at).toLocaleString();
+    let cls = '';
+    let text = '';
+    switch(e.event_type){
+      case 'status_change':
+        cls = 'status-change';
+        text = `Status changed from <strong>${escapeHTML(e.old_value || '—')}</strong> to <strong>${escapeHTML(e.new_value || '—')}</strong>`;
+        break;
+      case 'factory_sent':
+        cls = 'factory';
+        text = `<strong>Factory packet sent</strong>${e.detail ? ' — ' + escapeHTML(e.detail) : ''}`;
+        break;
+      case 'quote_saved':
+        cls = 'status-change';
+        text = `<strong>Quote saved</strong>${e.new_value ? ' — $' + escapeHTML(e.new_value) : ''}`;
+        break;
+      case 'quote_sent':
+        cls = 'factory';
+        text = `<strong>Quote email sent</strong> to customer`;
+        break;
+      case 'note':
+        cls = 'note';
+        text = escapeHTML(e.detail || e.new_value || 'Note added');
+        break;
+      case 'created':
+        cls = 'created';
+        text = '<strong>Lead submitted</strong> via quote builder';
+        break;
+      default:
+        text = escapeHTML(e.event_type) + (e.detail ? ': ' + escapeHTML(e.detail) : '');
+    }
+    return `<li class="${cls}"><span class="event-text">${text}</span><span class="time">${time}</span></li>`;
+  });
+  el.innerHTML = `<ul class="timeline">${items.join('')}</ul>`;
+}
+
+async function addActivityNote(){
+  const input = document.getElementById('newNoteInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || !selectedId) return;
+  input.disabled = true;
+  try {
+    await apiCall({ action: 'add_activity', lead_id: selectedId, event_type: 'note', detail: text });
+    input.value = '';
+    await loadActivityLog(selectedId);
+    toast('Note added');
+  } catch(err) {
+    toast('Failed: ' + err.message);
+  } finally {
+    input.disabled = false;
+    input.focus();
+  }
 }
 
 function renderLeadsList(){
@@ -854,6 +1022,15 @@ async function renderDetail(){
         </div>` : '<div style="color:#888;font-size:13px">No photos uploaded.</div>'}
     </div>
 
+    <div class="panel" id="activityPanel">
+      <h3>Activity Log</h3>
+      <div id="activityTimeline"><span class="spinner"></span> Loading…</div>
+      <div class="add-note-form">
+        <input type="text" id="newNoteInput" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addActivityNote()">
+        <button onclick="addActivityNote()">+ Note</button>
+      </div>
+    </div>
+
     <div class="panel">
       <h3>Quote calculator</h3>
       ${isColored ? `
@@ -974,12 +1151,18 @@ async function renderDetail(){
     ${renderSequencePanel(lead)}
   `;
 
+  // Load activity log
+  loadActivityLog(selectedId);
+
   // Wire up status switcher
   el.querySelectorAll('#statusSwitcher button').forEach(b=>{
     b.addEventListener('click', async ()=>{
       const s = b.dataset.status;
+      const oldStatus = lead.status;
       try {
         await apiCall({ action:'update_status', id: selectedId, status: s });
+        // Log the status change
+        try { await apiCall({ action:'add_activity', lead_id: selectedId, event_type:'status_change', old_value: oldStatus, new_value: s }); } catch(_){}
         toast('Status updated');
         await loadLeads();
         await renderDetail();
@@ -1087,6 +1270,8 @@ async function renderDetail(){
         quote_notes: notes,
       });
       toast('Quote saved');
+      // Log the quote save
+      try { await apiCall({ action:'add_activity', lead_id: selectedId, event_type:'quote_saved', new_value: total != null ? String(Math.round(total)) : '' }); } catch(_){}
     } catch (err) { toast('Failed: ' + err.message); }
   });
 
@@ -1127,6 +1312,11 @@ async function renderDetail(){
         return data;
       });
       toast('Quote email sent · Lead marked Quoted');
+      // Log quote sent + status change
+      try {
+        await apiCall({ action:'add_activity', lead_id: selectedId, event_type:'quote_sent', new_value: String(Math.round(total)) });
+        await apiCall({ action:'add_activity', lead_id: selectedId, event_type:'status_change', old_value: lead.status, new_value:'quoted' });
+      } catch(_){}
       await loadLeads();
       await renderDetail();
     } catch (err) {
