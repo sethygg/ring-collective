@@ -231,6 +231,7 @@
           <div class="filter-chip" data-status="in_production">In Production</div>
           <div class="filter-chip" data-status="lost">Lost</div>
           <div class="filter-chip" data-status="archived" style="margin-left:auto;opacity:0.7">Archived</div>
+          <button onclick="exportCSV()" style="margin-left:8px;padding:6px 12px;border-radius:20px;font-size:12px;background:var(--charcoal);color:#fff;border:none;cursor:pointer;letter-spacing:.4px;white-space:nowrap" title="Export visible leads as CSV">⬇ Export</button>
         </div>
         <div id="leadsList"></div>
       </aside>
@@ -539,6 +540,62 @@ function clearDateFilters(){
   document.getElementById('dateFrom').value = '';
   document.getElementById('dateTo').value = '';
   applyLeadFilters();
+}
+
+function exportCSV(){
+  if (!leads || leads.length === 0) { toast('No leads to export'); return; }
+
+  const cols = [
+    {key:'name',        label:'Name'},
+    {key:'email',       label:'Email'},
+    {key:'phone',       label:'Phone'},
+    {key:'status',      label:'Status'},
+    {key:'stone_category', label:'Stone Category'},
+    {key:'stone_type',  label:'Stone Type'},
+    {key:'diamond_carat', label:'Carat'},
+    {key:'shape',       label:'Shape'},
+    {key:'metal',       label:'Metal'},
+    {key:'karat',       label:'Karat'},
+    {key:'ring_size',   label:'Ring Size'},
+    {key:'budget',      label:'Budget'},
+    {key:'timeline',    label:'Timeline'},
+    {key:'setting_style', label:'Setting Style'},
+    {key:'ref_code',    label:'Referral Code'},
+    {key:'quote_total', label:'Quote Total'},
+    {key:'created_at',  label:'Submitted'},
+  ];
+
+  function csvEscape(val) {
+    if (val == null) return '';
+    const s = String(val);
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  const header = cols.map(c => c.label).join(',');
+  const rows = leads.map(l =>
+    cols.map(c => {
+      let v = l[c.key];
+      if (c.key === 'created_at' && v) v = new Date(v).toLocaleString();
+      if (c.key === 'quote_total' && v) v = '$' + (v / 100).toFixed(0);
+      return csvEscape(v);
+    }).join(',')
+  );
+
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.download = `ring-collective-leads-${dateStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`Exported ${leads.length} leads`);
 }
 
 function renderLeadsList(){
