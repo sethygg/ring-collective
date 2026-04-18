@@ -215,6 +215,14 @@
     <div class="content" style="flex:1;overflow:hidden">
       <!-- LEADS SECTION -->
       <aside class="sidebar leads-section" id="leadsSection">
+        <div style="padding:12px 18px 0;border-bottom:1px solid var(--border)">
+          <input type="text" id="leadSearch" placeholder="Search by name or email…" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;background:#faf7f2;margin-bottom:8px" oninput="applyLeadFilters()">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="date" id="dateFrom" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;background:#faf7f2" onchange="applyLeadFilters()" title="From date">
+            <input type="date" id="dateTo" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;background:#faf7f2" onchange="applyLeadFilters()" title="To date">
+            <button onclick="clearDateFilters()" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:#fff;color:var(--muted);cursor:pointer" title="Clear dates">✕</button>
+          </div>
+        </div>
         <div class="filters" id="filters">
           <div class="filter-chip active" data-status="all">All</div>
           <div class="filter-chip" data-status="new">New</div>
@@ -477,6 +485,8 @@ document.querySelectorAll('.filter-chip').forEach(c=>{
   });
 });
 
+let allLeads = []; // raw unfiltered set from server
+
 async function loadLeads(){
   const list = document.getElementById('leadsList');
   list.innerHTML = '<div style="padding:18px;color:#888;font-size:13px"><span class="spinner"></span>Loading…</div>';
@@ -489,20 +499,58 @@ async function loadLeads(){
     if (activeStatus === 'all') {
       rows = rows.filter(l => l.status !== 'archived');
     }
-    leads = rows;
-    renderLeadsList();
+    allLeads = rows;
+    applyLeadFilters();
   } catch (err) {
     list.innerHTML = `<div style="padding:18px;color:#c0392b;font-size:13px">Failed: ${escapeHTML(err.message)}</div>`;
   }
 }
 
+function applyLeadFilters(){
+  const q = (document.getElementById('leadSearch').value || '').trim().toLowerCase();
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+
+  let filtered = allLeads;
+
+  // Text search — match name or email
+  if (q) {
+    filtered = filtered.filter(l =>
+      (l.name || '').toLowerCase().includes(q) ||
+      (l.email || '').toLowerCase().includes(q)
+    );
+  }
+
+  // Date range
+  if (from) {
+    const fromDate = new Date(from + 'T00:00:00');
+    filtered = filtered.filter(l => new Date(l.created_at) >= fromDate);
+  }
+  if (to) {
+    const toDate = new Date(to + 'T23:59:59');
+    filtered = filtered.filter(l => new Date(l.created_at) <= toDate);
+  }
+
+  leads = filtered;
+  renderLeadsList();
+}
+
+function clearDateFilters(){
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  applyLeadFilters();
+}
+
 function renderLeadsList(){
   const list = document.getElementById('leadsList');
+  const q = (document.getElementById('leadSearch').value || '').trim();
+  const hasFilters = q || document.getElementById('dateFrom').value || document.getElementById('dateTo').value;
   if (leads.length === 0) {
-    list.innerHTML = '<div style="padding:30px 18px;color:#888;font-size:13px;text-align:center">No leads yet.</div>';
+    list.innerHTML = `<div style="padding:30px 18px;color:#888;font-size:13px;text-align:center">${hasFilters ? 'No leads match your search.' : 'No leads yet.'}</div>`;
     return;
   }
-  list.innerHTML = leads.map(l => leadRowHTML(l)).join('');
+  const countLabel = hasFilters ? `<div style="padding:8px 18px 4px;font-size:11px;color:var(--muted)">${leads.length} of ${allLeads.length} leads</div>` : '';
+  list.innerHTML = countLabel + leads.map(l => leadRowHTML(l)).join('');
   list.querySelectorAll('.lead-row').forEach(el=>{
     el.addEventListener('click', ()=>{
       selectedId = el.dataset.id;
