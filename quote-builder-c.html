@@ -577,25 +577,11 @@
   function askDiamondType(){
     return new Promise(async resolve=>{
       await botSay('chat2',
-        "We offer three options: <strong>Lab Diamond</strong> \u2014 a real diamond grown in a lab, chemically identical to a mined one but 40\u201360% less. <strong>Moissanite</strong> \u2014 even more fire and sparkle than diamond (9.25 on the Mohs scale) and up to 90% less. <strong>CZ</strong> (cubic zirconia) \u2014 a lab-created stone that looks similar to a diamond at the lowest price point. Which would you like?"
+        "We offer two options: <strong>Lab Diamond</strong> \u2014 a real diamond grown in a lab, chemically identical to a mined one but 40\u201360% less. <strong>Moissanite</strong> \u2014 even more fire and sparkle than diamond (9.25 on the Mohs scale) and up to 90% less. Which would you like?"
       );
       showReplies('chat2', [
-        {label:'Lab Diamond'}, {label:'Moissanite'}, {label:'CZ'}, {label:"Tell me more about CZ"}
+        {label:'Lab Diamond'}, {label:'Moissanite'}
       ], async v=>{
-        if (v === 'Tell me more about CZ') {
-          await botSay('chat2',
-            "<strong>CZ (cubic zirconia)</strong> is a lab-created stone that looks similar to a diamond for a fraction of the price. It's softer than diamond or moissanite (8.5 vs. 10 on the Mohs scale), so it can scratch or cloud over years of daily wear. It's a great pick for a placeholder ring, travel ring, or a budget-first build. Which would you like?"
-          );
-          showReplies('chat2', [
-            {label:'Lab Diamond'}, {label:'Moissanite'}, {label:'CZ'}
-          ], async v2=>{
-            state.answers.stoneCategory = 'diamond';
-            state.answers.stoneType = v2;
-            await askCarat();
-            resolve();
-          });
-          return;
-        }
         state.answers.stoneCategory = 'diamond';
         state.answers.stoneType = v;
         await askCarat();
