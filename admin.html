@@ -222,6 +222,12 @@
             <input type="date" id="dateTo" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;background:#faf7f2" onchange="applyLeadFilters()" title="To date">
             <button onclick="clearDateFilters()" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;background:#fff;color:var(--muted);cursor:pointer" title="Clear dates">✕</button>
           </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <select id="refFilter" style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;background:#faf7f2;color:var(--charcoal)" onchange="applyLeadFilters()" title="Filter by referral source">
+              <option value="">All Referrals</option>
+              <option value="__none__">No Referral (Organic)</option>
+            </select>
+          </div>
         </div>
         <div class="filters" id="filters">
           <div class="filter-chip active" data-status="all">All</div>
@@ -501,9 +507,28 @@ async function loadLeads(){
       rows = rows.filter(l => l.status !== 'archived');
     }
     allLeads = rows;
+    populateRefFilter(rows);
     applyLeadFilters();
   } catch (err) {
     list.innerHTML = `<div style="padding:18px;color:#c0392b;font-size:13px">Failed: ${escapeHTML(err.message)}</div>`;
+  }
+}
+
+function populateRefFilter(rows){
+  const sel = document.getElementById('refFilter');
+  const current = sel.value;
+  const codes = [...new Set(rows.map(l => l.ref_code).filter(Boolean))].sort();
+  // Keep the first two static options, rebuild the rest
+  while (sel.options.length > 2) sel.remove(2);
+  codes.forEach(code => {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = code;
+    sel.appendChild(opt);
+  });
+  // Restore previous selection if still valid
+  if (current && [...sel.options].some(o => o.value === current)) {
+    sel.value = current;
   }
 }
 
@@ -530,6 +555,14 @@ function applyLeadFilters(){
   if (to) {
     const toDate = new Date(to + 'T23:59:59');
     filtered = filtered.filter(l => new Date(l.created_at) <= toDate);
+  }
+
+  // Referral filter
+  const ref = document.getElementById('refFilter').value;
+  if (ref === '__none__') {
+    filtered = filtered.filter(l => !l.ref_code);
+  } else if (ref) {
+    filtered = filtered.filter(l => (l.ref_code || '') === ref);
   }
 
   leads = filtered;
@@ -561,6 +594,9 @@ function exportCSV(){
     {key:'timeline',    label:'Timeline'},
     {key:'setting_style', label:'Setting Style'},
     {key:'ref_code',    label:'Referral Code'},
+    {key:'utm_source',  label:'UTM Source'},
+    {key:'utm_medium',  label:'UTM Medium'},
+    {key:'utm_campaign',label:'UTM Campaign'},
     {key:'quote_total', label:'Quote Total'},
     {key:'created_at',  label:'Submitted'},
   ];
@@ -631,7 +667,7 @@ function leadRowHTML(l){
     (l.metal ? `${l.karat || ''} ${l.metal}`.trim() : null),
   ].filter(Boolean).join(' · ');
   const refBadge = l.ref_code
-    ? `<span style="display:inline-block;font-size:10px;background:#2E5C4A;color:#fff;padding:2px 7px;border-radius:4px;margin-left:6px;letter-spacing:0.5px">ref: ${escapeHTML(l.ref_code)}</span>`
+    ? `<span style="display:inline-block;font-size:10px;background:var(--gold);color:#fff;padding:2px 7px;border-radius:4px;margin-left:6px;letter-spacing:0.5px">ref: ${escapeHTML(l.ref_code)}</span>`
     : '';
   return `
     <div class="lead-row" data-id="${l.id}">
