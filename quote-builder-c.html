@@ -77,8 +77,12 @@
   .angle-desc{font-size:12px;color:#888;line-height:1.4}
   .angle-preview{position:absolute;inset:0;background-size:cover;background-position:center;display:none}
   .angle-tile.filled .angle-preview{display:block}
+  /* Empty state: hide check + reset; show CTA. Filled state inverts. */
+  .angle-check,.angle-reset{display:none}
+  .angle-cta{font-size:11px;color:var(--gold);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+  .angle-tile.filled .angle-cta{display:none}
   .angle-tile.filled .angle-check{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:2}
-  .angle-tile.filled .angle-reset{position:absolute;bottom:10px;right:10px;font-size:11px;color:#fff;background:rgba(31,42,68,0.75);padding:4px 8px;border-radius:6px;z-index:2}
+  .angle-tile.filled .angle-reset{position:absolute;bottom:10px;right:10px;font-size:11px;color:#fff;background:rgba(31,42,68,0.75);padding:4px 8px;border-radius:6px;z-index:2;display:block;border:none;cursor:pointer}
   .quality-bar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:26px}
   .quality-meter{flex:0 0 auto;width:60px;height:6px;background:var(--gray);border-radius:99px;overflow:hidden}
   .quality-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--charcoal));width:0;transition:width .4s}
@@ -158,7 +162,7 @@
 
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="logo">The Ring Collective</a>
+    <a class='logo' href='/'>The Ring Collective</a>
     <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -166,11 +170,11 @@
 </nav>
 <div class="mobile-menu" id="mobileMenu">
   <button class="close" onclick="toggleMobileMenu()" aria-label="Close">&times;</button>
-  <a href="index.html">Home</a>
-  <a href="diamond-guide.html">Diamond Guide</a>
-  <a href="setting-styles.html">Setting Styles</a>
-  <a href="metal-types.html">Metal Types</a>
-  <a href="quote-builder-c.html">Build Your Ring</a>
+  <a href='/'>Home</a>
+  <a href='/diamond-guide'>Diamond Guide</a>
+  <a href='/setting-styles'>Setting Styles</a>
+  <a href='/metal-types'>Metal Types</a>
+  <a href='/quote-builder-c'>Build Your Ring</a>
 </div>
 
 <div class="wrap">
@@ -215,6 +219,7 @@
         <div class="angle-icon">◐</div>
         <div class="angle-title">Front view</div>
         <div class="angle-desc">Camera facing the ring head-on</div>
+        <div class="angle-cta">+ Tap to upload</div>
         <input type="file" accept="image/*" onchange="handleAngle(this,'front')">
         <button type="button" class="angle-reset" onclick="resetAngle(event,'front')">Replace</button>
       </label>
@@ -224,6 +229,7 @@
         <div class="angle-icon">◑</div>
         <div class="angle-title">Side profile</div>
         <div class="angle-desc">Shows band and stone height</div>
+        <div class="angle-cta">+ Tap to upload</div>
         <input type="file" accept="image/*" onchange="handleAngle(this,'side')">
         <button type="button" class="angle-reset" onclick="resetAngle(event,'side')">Replace</button>
       </label>
@@ -233,6 +239,7 @@
         <div class="angle-icon">◉</div>
         <div class="angle-title">Top-down</div>
         <div class="angle-desc">Looking straight down at the stone</div>
+        <div class="angle-cta">+ Tap to upload</div>
         <input type="file" accept="image/*" onchange="handleAngle(this,'top')">
         <button type="button" class="angle-reset" onclick="resetAngle(event,'top')">Replace</button>
       </label>
@@ -242,6 +249,7 @@
         <div class="angle-icon">◎</div>
         <div class="angle-title">Close-up of setting</div>
         <div class="angle-desc">Zoomed in on prongs / detail</div>
+        <div class="angle-cta">+ Tap to upload</div>
         <input type="file" accept="image/*" onchange="handleAngle(this,'detail')">
         <button type="button" class="angle-reset" onclick="resetAngle(event,'detail')">Replace</button>
       </label>
@@ -303,7 +311,7 @@
       <div class="success-check">✓</div>
       <h2>Thank you — we've got it.</h2>
       <p>Our designer is reviewing your photos now. You'll receive a personalized quote and a preliminary design mockup by email within one business day.</p>
-      <a href="index.html" class="btn btn-primary">Back to Home</a>
+      <a class='btn btn-primary' href='/'>Back to Home</a>
     </div>
   </section>
 
@@ -889,13 +897,18 @@
       <input type="text" id="fName" placeholder="Your name" autocomplete="name">
       <input type="email" id="fEmail" placeholder="Email address" autocomplete="email">
       <input type="tel" id="fPhone" placeholder="Phone (optional)" autocomplete="tel">
+      <!-- Honeypot: real users won't fill this; bots usually do. Hidden visually + from accessibility tree. -->
+      <input type="text" id="fHpWebsite" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
     `;
     chat.appendChild(form);
     const check = ()=>{
       const n = document.getElementById('fName').value.trim();
       const e = document.getElementById('fEmail').value.trim();
-      const valid = n.length>1 && /.+@.+\..+/.test(e);
-      document.getElementById('submitBtn').disabled = !valid;
+      // Name: at least 2 chars and contains a letter (rejects "12", "??", emoji-only)
+      const nameOk = n.length >= 2 && /[A-Za-zÀ-ÿ]/.test(n);
+      // Email: stricter — no spaces, single @, TLD of 2+ chars (rejects "a@b.c", "john doe@x.com", "foo@bar@baz.com")
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+      document.getElementById('submitBtn').disabled = !(nameOk && emailOk);
       state.answers.name = n; state.answers.email = e;
       state.answers.phone = document.getElementById('fPhone').value.trim();
     };
@@ -915,6 +928,16 @@
   async function submitQuote(){
     const btn = document.getElementById('submitBtn');
     const originalLabel = btn.textContent;
+
+    // Honeypot: if a bot filled the hidden field, fake a successful submission
+    // and drop the lead silently. Don't tell the bot it was rejected.
+    const hp = document.getElementById('fHpWebsite');
+    if (hp && hp.value.trim() !== '') {
+      console.warn('Submission blocked by honeypot.');
+      goStep(5);
+      return;
+    }
+
     btn.disabled = true;
     btn.textContent = 'Sending…';
 
