@@ -536,11 +536,14 @@
           // Continue without detection — ask everything manually
           await botSay('chat2', "No problem! Let's build your ring from scratch.", 300);
           await askManualStoneCategory();
-          await confirmField({
-            key:'shape', value:'Round', options: SHAPE_OPTIONS,
-            confirmMsg: "What shape would you like for the center stone?",
-            alternatesMsg: "Pick the shape:"
-          });
+          // Skip the shape question when there's no center stone to shape.
+          if (state.answers.stoneCategory !== 'no_stone') {
+            await confirmField({
+              key:'shape', value:'Round', options: SHAPE_OPTIONS,
+              confirmMsg: "What shape would you like for the center stone?",
+              alternatesMsg: "Pick the shape:"
+            });
+          }
           await confirmField({
             key:'metal', value:'White Gold', options: METAL_OPTIONS,
             confirmMsg: "Which metal for the band?",
@@ -567,11 +570,14 @@
     state.answers.estimatedAccentTcw   = detected.estimatedAccentTcw;
 
     await confirmStoneCategory(detected);
-    await confirmField({
-      key:'shape', value: detected.shape, options: SHAPE_OPTIONS,
-      confirmMsg: `I see a <strong>${detected.shape.toLowerCase()}</strong> shape — correct?`,
-      alternatesMsg: "Got it — pick the shape:"
-    });
+    // Skip shape entirely if it's a band-only ring (no center stone to shape).
+    if (state.answers.stoneCategory !== 'no_stone') {
+      await confirmField({
+        key:'shape', value: detected.shape, options: SHAPE_OPTIONS,
+        confirmMsg: `I see a <strong>${detected.shape.toLowerCase()}</strong> shape — correct?`,
+        alternatesMsg: "Got it — pick the shape:"
+      });
+    }
     await confirmField({
       key:'metal', value: detected.metalColor, options: METAL_OPTIONS,
       confirmMsg: `The band looks like <strong>${detected.metalColor.toLowerCase()}</strong> — is that right?`,
@@ -592,7 +598,8 @@
         {label:'Lab Diamond', value:'diamond_lab'},
         {label:'Moissanite', value:'diamond_moiss'},
         {label:'Colored gemstone', value:'colored'},
-        {label:"I'll provide my own stone", value:'customer'}
+        {label:"I'll provide my own stone", value:'customer'},
+        {label:"No center stone — band only", value:'band'}
       ], async choice=>{
         if (choice === 'diamond_lab') {
           state.answers.stoneCategory = 'diamond';
@@ -604,6 +611,8 @@
           await askCarat();
         } else if (choice === 'colored') {
           await askColoredStone();
+        } else if (choice === 'band') {
+          await askBandOnly();
         } else {
           await askCustomerStone();
         }
@@ -619,15 +628,20 @@
       } else {
         await botSay('chat2', "Looks like this has a <strong>colored gemstone</strong> center — is that right?");
       }
+      const yesLabel = detected.stoneCategory === 'diamond' ? 'Yes, diamond' : "Yes, it's colored";
+      const yesValue = detected.stoneCategory === 'diamond' ? 'diamond' : 'colored';
       showReplies('chat2', [
-        {label:'Yes, diamond', value:'diamond'},
+        {label:yesLabel, value:yesValue},
         {label:"It's a colored stone", value:'colored'},
-        {label:"I'll provide my own stone", value:'customer'}
+        {label:"I'll provide my own stone", value:'customer'},
+        {label:"It's a band — no center stone", value:'band'}
       ], async choice=>{
         if (choice === 'diamond') {
           await askDiamondType();
         } else if (choice === 'colored') {
           await askColoredStone();
+        } else if (choice === 'band') {
+          await askBandOnly();
         } else {
           await askCustomerStone();
         }
@@ -644,6 +658,21 @@
       state.answers.stoneCategory = 'customer_supplied';
       state.answers.stoneType = 'Customer-supplied stone';
       await askCarat();
+      resolve();
+    });
+  }
+
+  // No center stone \u2014 band only (eternity band, plain band, men's ring, etc.)
+  function askBandOnly(){
+    return new Promise(async resolve=>{
+      state.answers.stoneCategory = 'no_stone';
+      state.answers.stoneType = null;
+      state.answers.shape = null;
+      state.answers.diamondCarat = null;
+      state.answers.diamondCaratLabel = null;
+      await botSay('chat2',
+        "Got it \u2014 just the band, no center stone. We'll skip the stone questions and focus on the metal."
+      );
       resolve();
     });
   }
@@ -801,8 +830,12 @@
   async function finishChat2(){
     const a = state.answers;
     const parts = [];
-    if (a.stoneType) parts.push(a.stoneType.toLowerCase());
-    if (a.shape) parts.push(a.shape.toLowerCase());
+    if (a.stoneCategory === 'no_stone') {
+      parts.push('band only');
+    } else {
+      if (a.stoneType) parts.push(a.stoneType.toLowerCase());
+      if (a.shape) parts.push(a.shape.toLowerCase());
+    }
     if (a.metal) {
       const m = a.metal.toLowerCase();
       parts.push(a.karat && /^(10K|14K|18K)$/.test(a.karat) ? `${a.karat} ${m}` : m);
